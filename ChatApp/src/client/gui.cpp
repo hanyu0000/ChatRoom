@@ -28,10 +28,10 @@ public:
     // 登陆页面
     void dologin()
     {
-        cout << "请输入您的登录名:" << endl;
+        cout << "请输入您的登录名(少于30字符):" << endl;
         cin.ignore(); // 忽略之前输入留下的换行符
         cin.getline(_name, sizeof(_name));
-        cout << "请输入您的密码:" << endl;
+        cout << "请输入您的密码(少于30字符):" << endl;
         cin.getline(_pwd, sizeof(_pwd));
         if (!(_db.QueryName(_name)))
             cout << "该用户还没有注册" << endl;
@@ -59,7 +59,7 @@ public:
     void doregister()
     {
         cout << "欢迎注册!" << endl;
-        cout << "请输入您的注册名称" << endl;
+        cout << "请输入您的注册名称:" << endl;
         cin.ignore();
         cin.getline(_name, sizeof(_name));
         cout << "请输入您的密码:" << endl;

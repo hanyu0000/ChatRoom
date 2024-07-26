@@ -1,27 +1,12 @@
-#include <iostream>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
+#include "head.h"
 #include "gui_main.h"
-using namespace std;
-void err_(const char *n)
-{
-    if (n)
-        perror(n);
-    else
-        perror("Error\n");
-    exit(1);
-}
 int main(int argc, char *argv[])
 {
     struct sockaddr_in serv;
     int fd = socket(AF_INET, SOCK_STREAM, 0); // 创建socket设备，返回设备文件描述符
     if (fd == -1)
         err_("socket");
-    // 服务器信息初始化
+
     serv.sin_family = AF_INET;
     serv.sin_port = htons(8080);
     inet_pton(AF_INET, argv[1], &serv.sin_addr);
@@ -39,12 +24,17 @@ int main(int argc, char *argv[])
             cout << "用户名称: " << user_info.name << endl;
             cout << "用户密码: " << user_info.pwd << endl;
 
+            json u_i =
+                {
+                    {"name", user_info.name},
+                    {"pwd", user_info.pwd},
+                };
+            // 将 JSON 对象转换为字符串
+            string str = u_i.dump();
+            ssize_t w = write(fd, str.c_str(), str.size());
+            if (w == -1)
+                err_("write");
             // 在这里可以添加跳转到其他处理逻辑的代码
-
-            if (write(fd, user_info.name, strlen(user_info.name)) == -1)
-                err_("name");
-            if (write(fd, user_info.pwd, strlen(user_info.pwd)) == -1)
-                err_("pwd");
         }
     }
     close(fd);

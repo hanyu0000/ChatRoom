@@ -5,10 +5,21 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/uio.h>
 #include <hiredis/hiredis.h>
+#include <fstream>
+#include <json.hpp>
+using json = nlohmann::json;
+
 #define PORT 12345
 #define BUFFER_SIZE 50
+
 using namespace std;
+
+struct UserInfo {
+    string name;
+    string pwd;
+};
 static void err_(const char *n)
 {
     if (n)
