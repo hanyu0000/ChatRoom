@@ -3,13 +3,15 @@
 #include <cstring>
 #include <limits>
 #include "base.h"
-
+#include "gui_main.h"
 using namespace std;
+
+UI _userInfo;
 
 class GUI
 {
 public:
-    GUI() : _running(true) {}
+    GUI() : _running(true), _loginSuccess(false) {}
 
     void run();
 
@@ -23,8 +25,8 @@ public:
         cout << "         4.退出        " << endl;
         cout << "******************************" << endl;
     }
-
-    void dologin() // 登陆页面
+    // 登陆页面
+    void dologin()
     {
         cout << "请输入您的登录名:" << endl;
         cin.ignore(); // 忽略之前输入留下的换行符
@@ -32,17 +34,29 @@ public:
         cout << "请输入您的密码:" << endl;
         cin.getline(_pwd, sizeof(_pwd));
         if (!(_db.QueryName(_name)))
-        {
             cout << "该用户还没有注册" << endl;
-            return;
-        }
         if (_db.CheckUserDate(_name, _pwd))
+        {
             cout << "登陆成功!" << endl;
+            strcpy(_userInfo.name, _name);
+            strcpy(_userInfo.pwd, _pwd);
+            cout << "********1.进入聊天室*********" << endl;
+            cout << "********2.停留登陆页面********" << endl;
+            char a;
+            cin >> a;
+            if (a == '1')
+            {
+                _loginSuccess = true;
+                _running = false; // 停止运行
+            }
+            else
+                cout << "登陆成功！"<< endl;
+        }
         else
             cout << "用户名或密码错误！请重新输入！" << endl;
     }
-
-    void doregister() // 注册页面
+    // 注册页面
+    void doregister()
     {
         cout << "欢迎注册!" << endl;
         cout << "请输入您的注册名称" << endl;
@@ -58,8 +72,8 @@ public:
             cout << "用户名" << _name << "注册成功" << endl;
         }
     }
-
-    void dologout() // 注销
+    // 注销
+    void dologout()
     {
         cout << "请输入您的用户名称" << endl;
         cin.ignore();
@@ -75,20 +89,27 @@ public:
         char in;
         cin >> in;
         cout << "你的选择是:" << in << endl;
-        if(in == 'T' || in == 't')
-            _db.DeleteUserDate(_name,_pwd);
+        if (in == 'T' || in == 't')
+            _db.DeleteUserDate(_name, _pwd);
         cout << "用户" << _name << "注销成功！" << endl;
     }
-
-    void doexit() // 退出页面
+    // 退出页面
+    void doexit()
     {
         _running = false;
+        exit(0);
+    }
+
+    bool isLoginSuccess() const
+    {
+        return _loginSuccess;
     }
 
 private:
     char _name[50];
     char _pwd[50];
     bool _running;
+    bool _loginSuccess;
     Base _db;
 };
 // FuncPointer 是一个指向 CGUI 成员函数的指针类型
@@ -99,7 +120,6 @@ typedef struct _table
     int choice;
     FuncPointer pfunc;
 } table;
-
 table gtable[] = {
     {1, &GUI::dologin},
     {2, &GUI::doregister},
@@ -139,9 +159,13 @@ void GUI::run()
     }
 }
 
-int main()
+UI gui_main()
 {
     GUI gui;
     gui.run();
-    return 0;
+    if (gui.isLoginSuccess())
+    {
+        return _userInfo;
+    }
+    return UI{};
 }
