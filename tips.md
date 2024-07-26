@@ -1,212 +1,13 @@
-# 项目整体规划
-### 1.初步设置
+### 项目整体规划详细任务分析
 
-选择和配置项目构建工具（CMake）。
+#### 阶段一：初步设置
 
-设置项目目录结构。
+##### 1. 配置项目构建工具
 
-配置日志系统（GLog）和单元测试框架（GTest）。
+###### 任务：
+- 创建 `CMakeLists.txt` 文件，设置项目基础配置。
+- 配置编译选项和依赖库。
 
-### 2.模块开发
-
-账号管理模块：登录、注册、注销功能。
-
-好友管理模块：好友添加、删除、查询、状态显示、屏蔽、聊天等功能。
-
-群组管理模块：群组创建、解散、加入、退出、成员管理、聊天等功能。
-
-聊天功能模块：私聊和群聊的消息记录、在线聊天、离线通知、文件传输等功能。
-### 3.数据库设计和集成
-
-配置和连接数据库。
-
-实现数据的序列化和反序列化（JSON/Proto）。
-### 4.网络通信
-
-使用 Epoll ET 模式实现 I/O 多路复用。
-
-实现 TCP 心跳检测以保持连接稳定性。
-
-用户文档和测试
-
-### 5.编写用户文档和开发文档。
-进行功能测试和压力测试，确保系统能够支持大量客户端同时访问。
-
-## 详细任务分析
-### 阶段一：初步设置
-1.配置项目构建工具
-
-创建 CMakeLists.txt 文件，设置项目基础配置。
-
-配置编译选项和依赖库。
-
-2.设置项目目录结构
-
-创建目录结构：src/, include/, tests/, build/ 等。
-
-确保源代码和头文件分开存放，便于管理和维护。
-
-3.配置日志系统和单元测试框架
-
-在 CMakeLists.txt 中添加 GLog 和 GTest 的配置。
-
-创建基本的日志记录和测试框架。
-
-### 阶段二：模块开发
-1.账号管理模块
-
-功能：登录、注册、注销
-
-任务：
-
-设计 AccountManager 类及其接口。
-
-实现登录、注册、注销
-
-编写单元测试，测试每个功能。
-
-2.好友管理模块
-
-功能：好友添加、删除、查询、状态显示、屏蔽、聊天。
-
-任务：
-
-设计 FriendManager 类及其接口。
-
-实现添加、删除、查询好友的功能。
-
-实现好友在线状态显示和屏蔽功能。
-
-实现好友间的聊天功能。
-
-编写单元测试，测试每个功能。
-
-3.群组管理模块
-
-功能：群组创建、解散、加入、退出、成员管理、聊天。
-
-任务：
-
-设计 GroupManager 类及其接口。
-
-实现群组的创建和解散。
-
-实现用户申请加入、退出和查看群组。
-
-实现群组成员的管理功能（添加、删除管理员）。
-
-实现群组内的聊天功能。
-
-编写单元测试，测试每个功能。
-
-4.聊天功能模块
-
-功能：私聊和群聊的消息记录、在线聊天、离线通知、文件传输。
-
-任务：
-
-设计 ChatManager 类及其接口。
-
-实现消息记录查看功能。
-
-实现用户间的在线聊天功能。
-
-实现离线消息通知功能。
-
-
-编写单元测试，测试每个功能。
-
-### 阶段三：数据库设计和集成
-1.配置和连接 Redis 数据库
-
-安装和配置 Redis。
-
-编写代码连接 Redis 数据库。
-
-2.实现数据的序列化和反序列化
-
-选择序列化工具（JSON 或 Proto）。
-
-编写序列化和反序列化代码，确保数据能够正确存储和读取。
-
-### 阶段四：网络通信
-1.实现 I/O 多路复用（Epoll ET 模式）
-
-设计网络通信的基础结构。
-
-使用 Epoll ET 模式实现高效的 I/O 多路复用。
-
-2.实现 TCP 心跳检测
-
-设计心跳包机制，定期发送心跳包以保持连接。
-
-实现心跳包的发送和接收逻辑，检测连接是否断开。
-
-### 阶段五：用户文档和测试
-1.编写用户文档和开发文档
-
-编写详细的用户文档，说明系统的使用方法。
-
-编写开发文档，记录设计思路和实现细节。
-
-2.进行功能测试和压力测试
-
-编写自动化测试脚本，测试各个功能模块。
-
-进行压力测试，确保系统能够支持大量客户端同时访问。
-
-## 具体实施计划
-1：
-
-配置项目构建工具和目录结构。
-
-设置日志系统和单元测试框架。
-
-2：
-
-开发账号管理模块，并编写单元测试。
-
-完成账号管理模块的测试和调试。
-
-3：
-
-开发好友管理模块，并编写单元测试。
-
-完成好友管理模块的测试和调试。
-
-4：
-
-开发群组管理模块，并编写单元测试。
-
-完成群组管理模块的测试和调试。
-
-5：
-
-开发聊天功能模块，并编写单元测试。
-
-完成聊天功能模块的测试和调试。
-
-6：
-
-配置和连接 Redis 数据库。
-
-实现数据的序列化和反序列化。
-
-7：
-
-实现 I/O 多路复用（Epoll ET 模式）。
-
-实现 TCP 心跳检测。
-
-8：
-
-编写用户文档和开发文档。
-
-进行功能测试和压力测试。
-
-## 详细实施步骤
-### 设置项目构建工具
-CMakeLists.txt：
 ```cmake
 cmake_minimum_required(VERSION 3.10)
 project(ChatApp)
@@ -234,10 +35,55 @@ target_link_libraries(ChatApp ${GLOG_LIBRARIES})
 enable_testing()
 add_subdirectory(tests)
 ```
-### 账号管理模块
-AccountManager.h：
+
+###### 解释：
+- 设置最低CMake版本。
+- 设置项目名称和C++标准。
+- 添加源文件和头文件。
+- 配置OpenSSL和Glog库。
+- 启用测试并添加测试目录。
+
+##### 2. 设置项目目录结构
+
+###### 任务：
+- 创建目录结构：`src/`, `include/`, `tests/`, `build/` 等。
+- 确保源代码和头文件分开存放，便于管理和维护。
+
+```shell
+mkdir -p ChatApp/{src,include,tests,build}
+```
+
+##### 3. 配置日志系统和单元测试框架
+
+###### 任务：
+- 在 `CMakeLists.txt` 中添加 GLog 和 GTest 的配置。
+- 创建基本的日志记录和测试框架。
 
 ```cpp
+// src/main.cpp
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+
+int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+    ::testing::InitGoogleTest(&argc, argv);
+    LOG(INFO) << "Starting ChatApp...";
+    return RUN_ALL_TESTS();
+}
+```
+
+#### 阶段二：模块开发
+
+##### 1. 账号管理模块
+
+###### 功能：登录、注册、注销
+
+###### 任务：
+- 设计 `AccountManager` 类及其接口。
+- 实现登录、注册、注销。
+
+```cpp
+// include/AccountManager.h
 #pragma once
 #include <string>
 
@@ -252,23 +98,14 @@ public:
 private:
     std::string encryptPassword(const std::string& password);
 };
-```
-AccountManager.cpp：
 
-```cpp
+// src/AccountManager.cpp
 #include "AccountManager.h"
-#include <iostream>
-#include <openssl/sha.h> // For password encryption
-
-bool AccountManager::login(const std::string& username, const std::string& password) {
-    // 实现登录逻辑
-    std::string encryptedPassword = encryptPassword(password);
-    // 验证用户名和加密密码
-    return true;
-}
+#include <openssl/sha.h>
+#include <sstream>
+#include <iomanip>
 
 bool AccountManager::registerUser(const std::string& username, const std::string& password, const std::string& email) {
-    // 实现注册逻辑
     std::string encryptedPassword = encryptPassword(password);
     // 保存用户数据到数据库
     return true;
@@ -281,11 +118,6 @@ bool AccountManager::logout(const std::string& username) {
 
 bool AccountManager::recoverPassword(const std::string& email) {
     // 实现找回密码逻辑
-    return true;
-}
-
-bool AccountManager::verifyCaptcha(const std::string& captcha) {
-    // 实现验证码验证逻辑
     return true;
 }
 
@@ -302,10 +134,20 @@ std::string AccountManager::encryptPassword(const std::string& password) {
     return ss.str();
 }
 ```
-### 好友管理模块
-FriendManager.h：
+
+##### 2. 好友管理模块
+
+###### 功能：好友添加、删除、查询、状态显示、屏蔽、聊天。
+
+###### 任务：
+- 设计 `FriendManager` 类及其接口。
+- 实现添加、删除、查询好友的功能。
+- 实现好友在线状态显示和屏蔽功能。
+- 实现好友间的聊天功能。
+- 编写单元测试，测试每个功能。
 
 ```cpp
+// include/FriendManager.h
 #pragma once
 #include <string>
 #include <vector>
@@ -318,13 +160,9 @@ public:
     bool blockFriend(const std::string& user, const std::string& friendUser);
     bool sendMessage(const std::string& user, const std::string& friendUser, const std::string& message);
 };
-```
-FriendManager.cpp：
 
-```cpp
+// src/FriendManager.cpp
 #include "FriendManager.h"
-#include <iostream>
-#include <vector>
 
 bool FriendManager::addFriend(const std::string& user, const std::string& friendUser) {
     // 实现添加好友逻辑
@@ -351,4 +189,201 @@ bool FriendManager::sendMessage(const std::string& user, const std::string& frie
     return true;
 }
 ```
-通过以上的详细计划和任务分析，你可以按步骤实施每个阶段的任务。希望这些信息能帮助你清晰地了解项目需求和实现路径。
+
+#### 阶段三：数据库设计和集成
+
+##### 1. 配置和连接 Redis 数据库
+
+###### 任务：
+- 安装和配置 Redis。
+- 编写代码连接 Redis 数据库。
+
+```cpp
+// include/Database.h
+#pragma once
+#include <hiredis/hiredis.h>
+
+class Database {
+public:
+    Database();
+    ~Database();
+    bool connect(const std::string& host, int port);
+    // 数据库操作方法
+private:
+    redisContext* context;
+};
+
+// src/Database.cpp
+#include "Database.h"
+
+Database::Database() : context(nullptr) {}
+
+Database::~Database() {
+    if (context) {
+        redisFree(context);
+    }
+}
+
+bool Database::connect(const std::string& host, int port) {
+    context = redisConnect(host.c_str(), port);
+    return context && !context->err;
+}
+```
+
+##### 2. 实现数据的序列化和反序列化
+
+###### 任务：
+- 选择序列化工具（JSON 或 Proto）。
+- 编写序列化和反序列化代码，确保数据能够正确存储和读取。
+
+```cpp
+// include/Serializer.h
+#pragma once
+#include <string>
+#include <json/json.h>
+
+class Serializer {
+public:
+    static std::string serialize(const Json::Value& value);
+    static Json::Value deserialize(const std::string& str);
+};
+
+// src/Serializer.cpp
+#include "Serializer.h"
+
+std::string Serializer::serialize(const Json::Value& value) {
+    Json::StreamWriterBuilder writer;
+    return Json::writeString(writer, value);
+}
+
+Json::Value Serializer::deserialize(const std::string& str) {
+    Json::CharReaderBuilder reader;
+    Json::Value value;
+    std::string errs;
+    std::istringstream s(str);
+    std::parseFromStream(reader, s, &value, &errs);
+    return value;
+}
+```
+
+#### 阶段四：网络通信
+
+##### 1. 实现 I/O 多路复用（Epoll ET 模式）
+
+###### 任务：
+- 设计网络通信的基础结构。
+- 使用 Epoll ET 模式实现高效的 I/O 多路复用。
+
+```cpp
+// include/Network.h
+#pragma once
+#include <sys/epoll.h>
+#include <vector>
+
+class Network {
+public:
+    Network();
+    ~Network();
+    bool init(int maxEvents);
+    void run();
+private:
+    int epollFd;
+    std::vector<epoll_event> events;
+};
+
+// src/Network.cpp
+#include "Network.h"
+#include <unistd.h>
+
+Network::Network() : epollFd(-1) {}
+
+Network::~Network() {
+    if (epollFd != -1) {
+        close(epollFd);
+    }
+}
+
+bool Network::init(int maxEvents) {
+    epollFd = epoll_create1(0);
+    if (epollFd == -1) return false;
+    events.resize(maxEvents);
+    return true;
+}
+
+void Network::run() {
+    while (true) {
+        int n = epoll_wait(epollFd, events.data(), events.size(), -1);
+        for (int i = 0; i < n; ++i) {
+            // 处理事件
+        }
+    }
+}
+```
+
+##### 2. 实现 TCP 心跳检测
+
+###### 任务：
+- 设计心跳包机制，定期发送心跳包以保持连接。
+
+
+- 实现心跳包的发送和接收逻辑，检测连接是否断开。
+
+```cpp
+// include/Heartbeat.h
+#pragma once
+#include <chrono>
+#include <thread>
+
+class Heartbeat {
+public:
+    void start();
+    void stop();
+private:
+    void sendHeartbeat();
+    bool running;
+};
+
+// src/Heartbeat.cpp
+#include "Heartbeat.h"
+#include <iostream>
+
+void Heartbeat::start() {
+    running = true;
+    std::thread(&Heartbeat::sendHeartbeat, this).detach();
+}
+
+void Heartbeat::stop() {
+    running = false;
+}
+
+void Heartbeat::sendHeartbeat() {
+    while (running) {
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        // 发送心跳包逻辑
+        std::cout << "Sending heartbeat..." << std::endl;
+    }
+}
+```
+
+### 具体实施计划
+
+1. 配置项目构建工具和目录结构。
+2. 设置日志系统和单元测试框架。
+3. 开发账号管理模块
+4. 开发好友管理模块
+5. 开发群组管理模块
+6. 开发聊天功能模块
+7. 配置和连接 Redis 数据库
+8. 实现数据的序列化和反序列化
+9. 实现 I/O 多路复用（Epoll ET 模式）
+10. 实现 TCP 心跳检测
+
+### 相关建议
+**a.** 添加单元测试示例以确保各个模块功能正常。  
+**b.** 完善网络通信部分的错误处理和异常处理逻辑。
+
+### 具体分析项目概况
+
+通过上述阶段和任务的详细分析，我们可以看到项目的整体规划是合理的，涵盖了项目启动、模块开发、数据库集成、网络通信等各个方面。每个阶段都包含具体的任务和实现步骤，确保项目有条不紊地进行。
+
+项目实施计划合理安排了各个阶段的任务，确保开发过程中每个功能模块都能独立开发、测试和调试，降低了项目的复杂度，提高了项目的可维护性和可靠性。

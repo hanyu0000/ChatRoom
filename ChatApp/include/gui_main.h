@@ -2,8 +2,8 @@
 #define T_MAIN_H_
 typedef struct User_Information
 {
-    char name[50];
-    char pwd[50];
+    char name[30];
+    char pwd[30];
 } UI;
 UI gui_main();
 #endif
