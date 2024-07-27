@@ -2,8 +2,8 @@
 #include <cstdio>
 #include <cstring>
 #include <limits>
-#include "base.h"
-#include "gui_main.h"
+#include "base.hpp"
+#include "gui_main.hpp"
 using namespace std;
 
 UI _userInfo;

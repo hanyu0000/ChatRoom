@@ -1,5 +1,5 @@
-#include "gui_main.h"
-#include "head.h"
+#include "gui_main.hpp"
+#include "head.hpp"
 
 class TUI
 {

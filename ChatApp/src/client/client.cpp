@@ -1,5 +1,5 @@
-#include "head.h"
-#include "gui_main.h"
+#include "head.hpp"
+#include "tui_main.hpp"
 int main(int argc, char *argv[])
 {
     struct sockaddr_in serv;
