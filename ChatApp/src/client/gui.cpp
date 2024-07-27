@@ -8,40 +8,40 @@ using namespace std;
 
 UI _userInfo;
 
-class GUI
+class TUI
 {
 public:
-    GUI() : _running(true), _loginSuccess(false) {}
+    TUI() : _running(true), _loginSuccess(false) {}
 
     void run();
 
     void menu()
     {
-        cout << "******************************" << endl;
-        cout << "  欢迎来到聊天室!请输入你的选项：  " << endl;
-        cout << "         1.登录        " << endl;
-        cout << "         2.注册        " << endl;
-        cout << "         3.注销        " << endl;
-        cout << "         4.退出        " << endl;
-        cout << "******************************" << endl;
+        cout << "********************************" << endl;
+        cout << "*  欢迎来到聊天室!请输入你的选项    *" << endl;
+        cout << "*           1.登录              *" << endl;
+        cout << "*           2.注册              *" << endl;
+        cout << "*           3.注销              *" << endl;
+        cout << "*           4.退出              *" << endl;
+        cout << "********************************" << endl;
     }
     // 登陆页面
     void dologin()
     {
-        cout << "请输入您的登录名(少于30字符):" << endl;
+        cout << "请输入您的登录名:" << endl;
         cin.ignore(); // 忽略之前输入留下的换行符
         cin.getline(_name, sizeof(_name));
-        cout << "请输入您的密码(少于30字符):" << endl;
+        cout << "请输入您的密码:" << endl;
         cin.getline(_pwd, sizeof(_pwd));
         if (!(_db.QueryName(_name)))
             cout << "该用户还没有注册" << endl;
         if (_db.CheckUserDate(_name, _pwd))
         {
-            cout << "登陆成功!" << endl;
+            cout << "登录成功!" << endl;
             strcpy(_userInfo.name, _name);
             strcpy(_userInfo.pwd, _pwd);
             cout << "********1.进入聊天室*********" << endl;
-            cout << "********2.停留登陆页面********" << endl;
+            cout << "********2.停留登录页面********" << endl;
             char a;
             cin >> a;
             if (a == '1')
@@ -50,7 +50,7 @@ public:
                 _running = false; // 停止运行
             }
             else
-                cout << "登陆成功！"<< endl;
+                cout << "登录成功！"<< endl;
         }
         else
             cout << "用户名或密码错误！请重新输入！" << endl;
@@ -113,7 +113,7 @@ private:
     Base _db;
 };
 // FuncPointer 是一个指向 CGUI 成员函数的指针类型
-typedef void (GUI::*FuncPointer)();
+typedef void (TUI::*FuncPointer)();
 
 typedef struct _table
 {
@@ -121,14 +121,14 @@ typedef struct _table
     FuncPointer pfunc;
 } table;
 table gtable[] = {
-    {1, &GUI::dologin},
-    {2, &GUI::doregister},
-    {3, &GUI::dologout},
-    {4, &GUI::doexit}};
+    {1, &TUI::dologin},
+    {2, &TUI::doregister},
+    {3, &TUI::dologout},
+    {4, &TUI::doexit}};
 
 int tlen = sizeof(gtable) / sizeof(gtable[0]);
 
-void GUI::run()
+void TUI::run()
 {
     int choice;
     while (_running)
@@ -159,13 +159,11 @@ void GUI::run()
     }
 }
 
-UI gui_main()
+UI tui_main()
 {
-    GUI gui;
-    gui.run();
-    if (gui.isLoginSuccess())
-    {
+    TUI tui;
+    tui.run();
+    if (tui.isLoginSuccess())
         return _userInfo;
-    }
     return UI{};
 }

@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     // 三次握手成功
     while (1)
     {
-        UI user_info = gui_main();
+        UI user_info = tui_main();
         cout << " -------------------欢迎来到聊天室！！！ -------------------" << endl;
         if (strlen(user_info.name) > 0 && strlen(user_info.pwd) > 0)
         {
@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
             ssize_t w = write(fd, str.c_str(), str.size());
             if (w == -1)
                 err_("write");
-            // 在这里可以添加跳转到其他处理逻辑的代码
+            
+            int content();
         }
     }
     close(fd);
