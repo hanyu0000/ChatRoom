@@ -74,7 +74,8 @@ int main()
                 redisFree(redis_Context);
                 exit(1);
             }
-            freeReplyObject(reply);
+            cout << "数据传输成功" << endl;
+
             t_main(c_fd); // 业务处理
 
             close(c_fd); // 关闭本次连接

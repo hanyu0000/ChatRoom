@@ -11,9 +11,7 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
-#define PORT 12345
 #define BUFFER_SIZE 50
-
 using namespace std;
 
 struct UserInfo {

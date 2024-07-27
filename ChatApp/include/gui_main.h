@@ -5,5 +5,6 @@ typedef struct User_Information
     char name[30];
     char pwd[30];
 } UI;
-UI gui_main();
+UI tui_main();
+int content();
 #endif
