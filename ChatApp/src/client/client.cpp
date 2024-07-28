@@ -1,5 +1,6 @@
 #include "head.hpp"
 #include "tui_main.hpp"
+
 int main(int argc, char *argv[])
 {
     struct sockaddr_in serv;
@@ -34,8 +35,18 @@ int main(int argc, char *argv[])
             ssize_t w = write(fd, str.c_str(), str.size());
             if (w == -1)
                 err_("write");
-            
-            int content();
+
+            char buf[128] = {0};
+            int r = read(fd, buf, sizeof(buf) - 1);
+            if (r == -1)
+                err_("read");
+            // thread_pool();
+            if (r > 0)
+                cout << "服务器响应" << endl;
+            buf[r] = '\0'; // 确保字符串以 null 结尾
+            cout << "从服务端接收到: " << buf << endl;
+
+            // int content();
         }
     }
     close(fd);

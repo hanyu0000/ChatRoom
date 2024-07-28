@@ -83,30 +83,30 @@ CMakeFiles/client.dir/src/client/client.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/client.dir/src/client/client.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/client/client.cpp -o CMakeFiles/client.dir/src/client/client.cpp.s
 
-CMakeFiles/client.dir/src/client/gui.cpp.o: CMakeFiles/client.dir/flags.make
-CMakeFiles/client.dir/src/client/gui.cpp.o: /home/zxc/ChatRoom/ChatApp/src/client/gui.cpp
-CMakeFiles/client.dir/src/client/gui.cpp.o: CMakeFiles/client.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/client.dir/src/client/gui.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/client.dir/src/client/gui.cpp.o -MF CMakeFiles/client.dir/src/client/gui.cpp.o.d -o CMakeFiles/client.dir/src/client/gui.cpp.o -c /home/zxc/ChatRoom/ChatApp/src/client/gui.cpp
+CMakeFiles/client.dir/src/client/tui.cpp.o: CMakeFiles/client.dir/flags.make
+CMakeFiles/client.dir/src/client/tui.cpp.o: /home/zxc/ChatRoom/ChatApp/src/client/tui.cpp
+CMakeFiles/client.dir/src/client/tui.cpp.o: CMakeFiles/client.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/client.dir/src/client/tui.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/client.dir/src/client/tui.cpp.o -MF CMakeFiles/client.dir/src/client/tui.cpp.o.d -o CMakeFiles/client.dir/src/client/tui.cpp.o -c /home/zxc/ChatRoom/ChatApp/src/client/tui.cpp
 
-CMakeFiles/client.dir/src/client/gui.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/client.dir/src/client/gui.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxc/ChatRoom/ChatApp/src/client/gui.cpp > CMakeFiles/client.dir/src/client/gui.cpp.i
+CMakeFiles/client.dir/src/client/tui.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/client.dir/src/client/tui.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxc/ChatRoom/ChatApp/src/client/tui.cpp > CMakeFiles/client.dir/src/client/tui.cpp.i
 
-CMakeFiles/client.dir/src/client/gui.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/client.dir/src/client/gui.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/client/gui.cpp -o CMakeFiles/client.dir/src/client/gui.cpp.s
+CMakeFiles/client.dir/src/client/tui.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/client.dir/src/client/tui.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/client/tui.cpp -o CMakeFiles/client.dir/src/client/tui.cpp.s
 
 # Object files for target client
 client_OBJECTS = \
 "CMakeFiles/client.dir/src/client/client.cpp.o" \
-"CMakeFiles/client.dir/src/client/gui.cpp.o"
+"CMakeFiles/client.dir/src/client/tui.cpp.o"
 
 # External object files for target client
 client_EXTERNAL_OBJECTS =
 
 client: CMakeFiles/client.dir/src/client/client.cpp.o
-client: CMakeFiles/client.dir/src/client/gui.cpp.o
+client: CMakeFiles/client.dir/src/client/tui.cpp.o
 client: CMakeFiles/client.dir/build.make
 client: CMakeFiles/client.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable client"

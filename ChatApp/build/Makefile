@@ -211,29 +211,29 @@ src/client/client.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/client.cpp.s
 .PHONY : src/client/client.cpp.s
 
-src/client/gui.o: src/client/gui.cpp.o
-.PHONY : src/client/gui.o
+src/client/tui.o: src/client/tui.cpp.o
+.PHONY : src/client/tui.o
 
 # target to build an object file
-src/client/gui.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/gui.cpp.o
-.PHONY : src/client/gui.cpp.o
+src/client/tui.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/tui.cpp.o
+.PHONY : src/client/tui.cpp.o
 
-src/client/gui.i: src/client/gui.cpp.i
-.PHONY : src/client/gui.i
+src/client/tui.i: src/client/tui.cpp.i
+.PHONY : src/client/tui.i
 
 # target to preprocess a source file
-src/client/gui.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/gui.cpp.i
-.PHONY : src/client/gui.cpp.i
+src/client/tui.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/tui.cpp.i
+.PHONY : src/client/tui.cpp.i
 
-src/client/gui.s: src/client/gui.cpp.s
-.PHONY : src/client/gui.s
+src/client/tui.s: src/client/tui.cpp.s
+.PHONY : src/client/tui.s
 
 # target to generate assembly for a file
-src/client/gui.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/gui.cpp.s
-.PHONY : src/client/gui.cpp.s
+src/client/tui.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/tui.cpp.s
+.PHONY : src/client/tui.cpp.s
 
 src/server/server.o: src/server/server.cpp.o
 .PHONY : src/server/server.o
@@ -300,9 +300,9 @@ help:
 	@echo "... src/client/client.o"
 	@echo "... src/client/client.i"
 	@echo "... src/client/client.s"
-	@echo "... src/client/gui.o"
-	@echo "... src/client/gui.i"
-	@echo "... src/client/gui.s"
+	@echo "... src/client/tui.o"
+	@echo "... src/client/tui.i"
+	@echo "... src/client/tui.s"
 	@echo "... src/server/server.o"
 	@echo "... src/server/server.i"
 	@echo "... src/server/server.s"

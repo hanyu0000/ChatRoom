@@ -3,7 +3,7 @@
 #include <cstring>
 #include <limits>
 #include "base.hpp"
-#include "gui_main.hpp"
+#include "tui_main.hpp"
 using namespace std;
 
 UI _userInfo;
@@ -18,7 +18,7 @@ public:
     void menu()
     {
         cout << "********************************" << endl;
-        cout << "*  欢迎来到聊天室!请输入你的选项    *" << endl;
+        cout << "* 欢迎来到聊天室!请输入你的选项 *" << endl;
         cout << "*           1.登录              *" << endl;
         cout << "*           2.注册              *" << endl;
         cout << "*           3.注销              *" << endl;

@@ -1,4 +1,4 @@
-#include "gui_main.hpp"
+#include "tui_main.hpp"
 #include "head.hpp"
 
 class TUI
@@ -13,9 +13,9 @@ public:
         if (a == '1')
         {
             cout << "**********************************" << endl;
-            cout << "*   1.查询好友列表     2.屏蔽好友    *" << endl;
-            cout << "*   3.添加好友        4.删除好友    *" << endl;
-            cout << "*   5.好友聊天                     *" << endl;
+            cout << "*   1.查询好友列表      2.好友聊天    *" << endl;
+            cout << "*   3.添加好友         4.删除好友    *" << endl;
+            cout << "*   5.屏蔽好友                     *" << endl;
             cout << "********************************" << endl;
         } 
 /*

@@ -3,9 +3,9 @@
 
 CMakeFiles/client.dir/src/client/client.cpp.o
  /home/zxc/ChatRoom/ChatApp/src/client/client.cpp
- /home/zxc/ChatRoom/ChatApp/include/gui_main.h
- /home/zxc/ChatRoom/ChatApp/include/head.h
+ /home/zxc/ChatRoom/ChatApp/include/head.hpp
  /home/zxc/ChatRoom/ChatApp/include/json.hpp
+ /home/zxc/ChatRoom/ChatApp/include/tui_main.hpp
  /usr/include/alloca.h
  /usr/include/arpa/inet.h
  /usr/include/asm-generic/bitsperlong.h
@@ -249,6 +249,7 @@ CMakeFiles/client.dir/src/client/client.cpp.o
  /usr/include/x86_64-linux-gnu/bits/endian.h
  /usr/include/x86_64-linux-gnu/bits/endianness.h
  /usr/include/x86_64-linux-gnu/bits/environments.h
+ /usr/include/x86_64-linux-gnu/bits/epoll.h
  /usr/include/x86_64-linux-gnu/bits/errno.h
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h
  /usr/include/x86_64-linux-gnu/bits/floatn.h
@@ -365,6 +366,7 @@ CMakeFiles/client.dir/src/client/client.cpp.o
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h
  /usr/include/x86_64-linux-gnu/gnu/stubs.h
  /usr/include/x86_64-linux-gnu/sys/cdefs.h
+ /usr/include/x86_64-linux-gnu/sys/epoll.h
  /usr/include/x86_64-linux-gnu/sys/select.h
  /usr/include/x86_64-linux-gnu/sys/single_threaded.h
  /usr/include/x86_64-linux-gnu/sys/socket.h
@@ -377,10 +379,10 @@ CMakeFiles/client.dir/src/client/client.cpp.o
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h
 
-CMakeFiles/client.dir/src/client/gui.cpp.o
- /home/zxc/ChatRoom/ChatApp/src/client/gui.cpp
- /home/zxc/ChatRoom/ChatApp/include/base.h
- /home/zxc/ChatRoom/ChatApp/include/gui_main.h
+CMakeFiles/client.dir/src/client/tui.cpp.o
+ /home/zxc/ChatRoom/ChatApp/src/client/tui.cpp
+ /home/zxc/ChatRoom/ChatApp/include/base.hpp
+ /home/zxc/ChatRoom/ChatApp/include/tui_main.hpp
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h

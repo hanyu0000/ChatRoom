@@ -2,6 +2,7 @@
 #include <cstring> 
 #include <fstream>
 #include <unistd.h>
+ #include <fcntl.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
 #include <sys/epoll.h>

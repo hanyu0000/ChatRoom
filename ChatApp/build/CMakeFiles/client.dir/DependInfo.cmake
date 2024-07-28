@@ -9,7 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/zxc/ChatRoom/ChatApp/src/client/client.cpp" "CMakeFiles/client.dir/src/client/client.cpp.o" "gcc" "CMakeFiles/client.dir/src/client/client.cpp.o.d"
-  "/home/zxc/ChatRoom/ChatApp/src/client/gui.cpp" "CMakeFiles/client.dir/src/client/gui.cpp.o" "gcc" "CMakeFiles/client.dir/src/client/gui.cpp.o.d"
+  "/home/zxc/ChatRoom/ChatApp/src/client/tui.cpp" "CMakeFiles/client.dir/src/client/tui.cpp.o" "gcc" "CMakeFiles/client.dir/src/client/tui.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

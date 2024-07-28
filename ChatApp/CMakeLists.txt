@@ -19,7 +19,7 @@ set(SOURCES
     src/server/t_main.cpp
 )
 # 添加客户端可执行文件
-add_executable(client src/client/client.cpp src/client/gui.cpp)
+add_executable(client src/client/client.cpp src/client/tui.cpp)
 target_link_libraries(client ${HIREDIS_LIBRARIES})
 # 添加服务器可执行文件
 add_executable(server src/server/server.cpp src/server/t_main.cpp)
