@@ -1,5 +1,6 @@
 #include "head.hpp"
 #include "t_main.hpp"
+
 int main()
 {
     int lfd = socket(AF_INET, SOCK_STREAM, 0); // 创建一个通讯端点，返回端点文件描述符
@@ -89,20 +90,17 @@ int main()
                     int len = recv(curfd, buf, sizeof(buf), 0);
                     if (len == 0)
                     {
-                        cout << "客户端断开了连接..." << endl;
+                        cout << "----------------用户下线 ----------------" << endl;
                         epoll_ctl(epfd, EPOLL_CTL_DEL, curfd, nullptr); // 将这个文件描述符从epoll模型中删除
                         close(curfd);
                         break;
                     }
                     else if (len > 0)
                     {
-                        // 通信
                         string data(buf, len);
                         json user_info = json::parse(data);
-
                         cout << "用户名称: " << user_info["name"] << endl;
                         cout << "用户密码: " << user_info["pwd"] << endl;
-
                         // 存储用户名和密码到Redis
                         redisReply *reply;
                         string redis_command = "用户名称" + user_info["name"].get<string>() +
@@ -135,7 +133,7 @@ int main()
                         else
                             err_("recv");
                     }
-                }               
+                }
             }
         }
     }

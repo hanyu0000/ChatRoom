@@ -2,12 +2,106 @@
 #include <cstdio>
 #include <cstring>
 #include <limits>
-#include "base.hpp"
 #include "tui_main.hpp"
 using namespace std;
 
-UI _userInfo;
+class Base
+{
+public:
+    Base()
+    {
+        _phead = new Node();
+    }
 
+    ~Base() // 析沟函数：释放链表中的所有节点，防止内存泄漏
+    {
+        Node *ptr = _phead;
+        while (ptr != nullptr)
+        {
+            Node *next = ptr->getNext();
+            delete ptr;
+            ptr = next;
+        }
+    }
+
+    bool CheckUserDate(char *name, char *pwd) // 判断用户名、密码是否匹配
+    {
+        Node *ptr = _phead->getNext();
+        while (ptr != nullptr)
+        {
+            if ((strcmp(name, ptr->_name) == 0 && strcmp(pwd, ptr->_pwd) == 0))
+                return true;
+            ptr = ptr->getNext();
+        }
+        return false;
+    }
+
+    bool QueryName(char *name) // 名字是否匹配
+    {
+        Node *ptr = _phead->getNext();
+        while (ptr != nullptr)
+        {
+            if (strcmp(name, ptr->_name) == 0)
+                return true;
+            ptr = ptr->getNext();
+        }
+        return false;
+    }
+
+    void WriteUserDate(char *name, char *pwd)
+    {
+        Node *p = new Node(name, pwd);
+        p->setNext(_phead->getNext());
+        _phead->setNext(p);
+    }
+
+    void DeleteUserDate(char *name, char *pwd)
+    {
+        Node *prev = _phead;
+        Node *cur = prev->getNext();
+
+        while (cur != nullptr)
+        {
+            if (strcmp(cur->_name, name) == 0 && strcmp(cur->_pwd, pwd) == 0)
+            {
+                prev->setNext(cur->getNext());
+                delete cur;
+                return;
+            }
+            prev = cur;
+            cur = cur->getNext();
+        }
+    }
+
+private:
+    struct Node
+    {
+        Node() : _pnext(nullptr) {} // 构造函数
+
+        Node(char *n, char *p) : _pnext(nullptr)
+        {
+            strcpy(_name, n);
+            strcpy(_pwd, p);
+        }
+
+        char _name[50];
+        char _pwd[50];
+        Node *_pnext;
+
+        void setNext(Node *p)
+        {
+            _pnext = p;
+        }
+
+        Node *getNext()
+        {
+            return _pnext;
+        }
+    };
+    Node *_phead;
+};
+
+UI _userInfo;
 class TUI
 {
 public:
@@ -50,7 +144,7 @@ public:
                 _running = false; // 停止运行
             }
             else
-                cout << "登录成功！"<< endl;
+                cout << "登录成功！" << endl;
         }
         else
             cout << "用户名或密码错误！请重新输入！" << endl;
@@ -126,7 +220,7 @@ table gtable[] = {
     {3, &TUI::dologout},
     {4, &TUI::doexit}};
 
-int tlen = sizeof(gtable) / sizeof(gtable[0]);
+int len = sizeof(gtable) / sizeof(gtable[0]);
 
 void TUI::run()
 {
@@ -138,7 +232,7 @@ void TUI::run()
         if (cin >> choice)
         {
             bool found = false;
-            for (int i = 0; i < tlen; i++)
+            for (int i = 0; i < len; i++)
             {
                 if (choice == gtable[i].choice)
                 {
@@ -148,11 +242,11 @@ void TUI::run()
                 }
             }
             if (!found)
-                cout << "无效的选择，请重新输入。" << endl;
+                cout << "无效的选择，请重新输入:" << endl;
         }
         else
         {
-            cout << "输入无效，请重新输入。" << endl;
+            cout << "输入无效，请重新输入:" << endl;
             cin.clear();                                         // 清除错误标志
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // 忽略错误输入
         }
