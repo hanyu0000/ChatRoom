@@ -235,30 +235,6 @@ src/client/thread_pool.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/thread_pool.cpp.s
 .PHONY : src/client/thread_pool.cpp.s
 
-src/client/tui.o: src/client/tui.cpp.o
-.PHONY : src/client/tui.o
-
-# target to build an object file
-src/client/tui.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/tui.cpp.o
-.PHONY : src/client/tui.cpp.o
-
-src/client/tui.i: src/client/tui.cpp.i
-.PHONY : src/client/tui.i
-
-# target to preprocess a source file
-src/client/tui.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/tui.cpp.i
-.PHONY : src/client/tui.cpp.i
-
-src/client/tui.s: src/client/tui.cpp.s
-.PHONY : src/client/tui.s
-
-# target to generate assembly for a file
-src/client/tui.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/tui.cpp.s
-.PHONY : src/client/tui.cpp.s
-
 src/server/server.o: src/server/server.cpp.o
 .PHONY : src/server/server.o
 
@@ -327,9 +303,6 @@ help:
 	@echo "... src/client/thread_pool.o"
 	@echo "... src/client/thread_pool.i"
 	@echo "... src/client/thread_pool.s"
-	@echo "... src/client/tui.o"
-	@echo "... src/client/tui.i"
-	@echo "... src/client/tui.s"
 	@echo "... src/server/server.o"
 	@echo "... src/server/server.i"
 	@echo "... src/server/server.s"

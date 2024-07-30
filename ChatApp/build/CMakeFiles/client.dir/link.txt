@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/client.dir/src/client/client.cpp.o CMakeFiles/client.dir/src/client/thread_pool.cpp.o CMakeFiles/client.dir/src/client/tui.cpp.o -o client  -lhiredis 
+/usr/bin/c++ CMakeFiles/client.dir/src/client/client.cpp.o CMakeFiles/client.dir/src/client/thread_pool.cpp.o -o client  -lhiredis 

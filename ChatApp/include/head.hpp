@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <cstring>
 #include <fstream>
+#include <cstdio>
+#include <limits>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/uio.h>
@@ -15,6 +17,7 @@
 
 using json = nlohmann::json;
 using namespace std;
+
 static void err_(const char *n)
 {
     perror(n);
