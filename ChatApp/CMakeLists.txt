@@ -14,7 +14,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(CLIENT_SOURCES
     src/client/client.cpp
     src/client/thread_pool.cpp
-    src/client/tui.cpp
 )
 # 添加服务器源文件
 set(SERVER_SOURCES
