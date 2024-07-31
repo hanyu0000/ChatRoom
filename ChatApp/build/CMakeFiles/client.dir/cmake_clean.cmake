@@ -1,4 +1,8 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/client.dir/src/client/_friend.cpp.o"
+  "CMakeFiles/client.dir/src/client/_friend.cpp.o.d"
+  "CMakeFiles/client.dir/src/client/_group.cpp.o"
+  "CMakeFiles/client.dir/src/client/_group.cpp.o.d"
   "CMakeFiles/client.dir/src/client/client.cpp.o"
   "CMakeFiles/client.dir/src/client/client.cpp.o.d"
   "CMakeFiles/client.dir/src/client/thread_pool.cpp.o"

@@ -187,6 +187,54 @@ server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
 .PHONY : server/fast
 
+src/client/_friend.o: src/client/_friend.cpp.o
+.PHONY : src/client/_friend.o
+
+# target to build an object file
+src/client/_friend.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_friend.cpp.o
+.PHONY : src/client/_friend.cpp.o
+
+src/client/_friend.i: src/client/_friend.cpp.i
+.PHONY : src/client/_friend.i
+
+# target to preprocess a source file
+src/client/_friend.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_friend.cpp.i
+.PHONY : src/client/_friend.cpp.i
+
+src/client/_friend.s: src/client/_friend.cpp.s
+.PHONY : src/client/_friend.s
+
+# target to generate assembly for a file
+src/client/_friend.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_friend.cpp.s
+.PHONY : src/client/_friend.cpp.s
+
+src/client/_group.o: src/client/_group.cpp.o
+.PHONY : src/client/_group.o
+
+# target to build an object file
+src/client/_group.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_group.cpp.o
+.PHONY : src/client/_group.cpp.o
+
+src/client/_group.i: src/client/_group.cpp.i
+.PHONY : src/client/_group.i
+
+# target to preprocess a source file
+src/client/_group.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_group.cpp.i
+.PHONY : src/client/_group.cpp.i
+
+src/client/_group.s: src/client/_group.cpp.s
+.PHONY : src/client/_group.s
+
+# target to generate assembly for a file
+src/client/_group.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_group.cpp.s
+.PHONY : src/client/_group.cpp.s
+
 src/client/client.o: src/client/client.cpp.o
 .PHONY : src/client/client.o
 
@@ -235,6 +283,30 @@ src/client/thread_pool.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/thread_pool.cpp.s
 .PHONY : src/client/thread_pool.cpp.s
 
+src/server/serv_main.o: src/server/serv_main.cpp.o
+.PHONY : src/server/serv_main.o
+
+# target to build an object file
+src/server/serv_main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.o
+.PHONY : src/server/serv_main.cpp.o
+
+src/server/serv_main.i: src/server/serv_main.cpp.i
+.PHONY : src/server/serv_main.i
+
+# target to preprocess a source file
+src/server/serv_main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.i
+.PHONY : src/server/serv_main.cpp.i
+
+src/server/serv_main.s: src/server/serv_main.cpp.s
+.PHONY : src/server/serv_main.s
+
+# target to generate assembly for a file
+src/server/serv_main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.s
+.PHONY : src/server/serv_main.cpp.s
+
 src/server/server.o: src/server/server.cpp.o
 .PHONY : src/server/server.o
 
@@ -259,30 +331,6 @@ src/server/server.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/server.cpp.s
 .PHONY : src/server/server.cpp.s
 
-src/server/t_main.o: src/server/t_main.cpp.o
-.PHONY : src/server/t_main.o
-
-# target to build an object file
-src/server/t_main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/t_main.cpp.o
-.PHONY : src/server/t_main.cpp.o
-
-src/server/t_main.i: src/server/t_main.cpp.i
-.PHONY : src/server/t_main.i
-
-# target to preprocess a source file
-src/server/t_main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/t_main.cpp.i
-.PHONY : src/server/t_main.cpp.i
-
-src/server/t_main.s: src/server/t_main.cpp.s
-.PHONY : src/server/t_main.s
-
-# target to generate assembly for a file
-src/server/t_main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/t_main.cpp.s
-.PHONY : src/server/t_main.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -297,18 +345,24 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... client"
 	@echo "... server"
+	@echo "... src/client/_friend.o"
+	@echo "... src/client/_friend.i"
+	@echo "... src/client/_friend.s"
+	@echo "... src/client/_group.o"
+	@echo "... src/client/_group.i"
+	@echo "... src/client/_group.s"
 	@echo "... src/client/client.o"
 	@echo "... src/client/client.i"
 	@echo "... src/client/client.s"
 	@echo "... src/client/thread_pool.o"
 	@echo "... src/client/thread_pool.i"
 	@echo "... src/client/thread_pool.s"
+	@echo "... src/server/serv_main.o"
+	@echo "... src/server/serv_main.i"
+	@echo "... src/server/serv_main.s"
 	@echo "... src/server/server.o"
 	@echo "... src/server/server.i"
 	@echo "... src/server/server.s"
-	@echo "... src/server/t_main.o"
-	@echo "... src/server/t_main.i"
-	@echo "... src/server/t_main.s"
 .PHONY : help
 
 

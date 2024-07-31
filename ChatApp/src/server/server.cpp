@@ -1,5 +1,6 @@
 #include "head.hpp"
-#include "t_main.hpp"
+#include "serv_main.hpp"
+
 class RedisServer
 {
 public:
@@ -22,6 +23,7 @@ public:
             redisFree(context);
     }
 
+    // 存储用户信息
     bool setPassword(const string &username, const string &password)
     {
         redisReply *reply = (redisReply *)redisCommand(context, "SET %s %s", username.c_str(), password.c_str());
@@ -35,14 +37,14 @@ public:
         freeReplyObject(reply);
         return success;
     }
-
+    // 判断用户是否注册
     bool isUser(const string &username, const string &password)
     {
         redisReply *reply = (redisReply *)redisCommand(context, "GET %s", username.c_str());
         if (reply == nullptr)
         {
             cerr << "Redis GET 命令失败" << endl;
-            return "";
+            return false;
         }
 
         bool registered = false;
@@ -52,7 +54,24 @@ public:
         freeReplyObject(reply);
         return registered;
     }
+    // 判断好友是否存在
+    bool friends_exit(const string &username)
+    {
+        redisReply *reply = (redisReply *)redisCommand(context, "EXISTS %s", username.c_str());
+        if (reply == nullptr)
+        {
+            cerr << "Redis EXISTS 命令失败" << endl;
+            return false;
+        }
+        // 检查返回的回复类型和内容
+        bool registered = false;
+        if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1)
+            registered = true;
 
+        freeReplyObject(reply);
+        return registered;
+    }
+    // 删除用户信息
     bool deleteUser(const string &username)
     {
         redisReply *reply = (redisReply *)redisCommand(context, "DEL %s", username.c_str());
@@ -61,8 +80,6 @@ public:
             cerr << "Redis DEL 命令失败" << endl;
             return false;
         }
-
-        // 检查 DEL 命令的返回值，0 表示未找到键，1 表示成功删除
         bool success = (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1);
         freeReplyObject(reply);
         return success;
@@ -113,7 +130,7 @@ int main()
 
     // 连接到redis服务器
     RedisServer redisServer("127.0.0.1", 6379);
-    
+
     // 握手成功
     while (1)
     {
@@ -168,57 +185,72 @@ int main()
                         break;
                     }
 
-                    string name;
-                    string pwd;
                     buf.resize(len);
-                    cout << "接收到数据: " << buf << endl;
+                    cout << "服务端接收到数据: " << buf << endl;
                     try
                     {
                         json request = json::parse(buf);
-                        if (request.contains("xxxxx")) // 检查是否包含 "xxxxx" 键
+                        // 好友管理，群管理
+                        if (request.contains("manage-manage"))
                         {
-                            name = request["name"].get<string>();
+                            // 业务处理
+                            serv_main(fd, request);
+                        }
+                        // 用户信息删除
+                        else if (request.contains("xxxxx")) // 检查是否包含 "xxxxx" 键
+                        {
+                            string name = request["name"].get<string>();
                             bool success = redisServer.deleteUser(name);
-                            // 返回删除结果
-                            string response = success ? "用户信息删除成功" : "用户信息删除失败";
+
+                            string response = success ? "deleteOK" : "deleteNO";
                             if (send(fd, response.c_str(), response.size(), 0) == -1)
                                 err_("send");
                             cout << response << endl;
                         }
-                        else if (request.contains("sssss"))
+                        // 用户信息注册
+                        else if (request.contains("------sssss------"))
                         {
-                            name = request["name"].get<string>();
-                            pwd = request["pwd"].get<string>();
+                            string name = request["name"].get<string>();
+                            string pwd = request["pwd"].get<string>();
                             bool success = redisServer.setPassword(name, pwd);
 
-                            string response = success ? "用户信息注册成功" : "用户信息注册失败";
+                            string response = success ? "setOK" : "setNO";
                             if (send(fd, response.c_str(), response.size(), 0) == -1)
                                 err_("send");
+
                             cout << response << endl;
                         }
-                        else
+                        // 判断好友是否存在
+                        else if (request.contains("-----firends_exit-----"))
                         {
-                            name = request["name"].get<string>();
-                            pwd = request["pwd"].get<string>();
-                            cout << "用户名称: " << name << endl;
-                            cout << "用户密码: " << pwd << endl;
+                            string name = request["name"].get<string>();
+                            bool success = redisServer.friends_exit(name);
 
-                            bool registered = redisServer.isUser(name, pwd);
-                            string response = registered ? "OK" : "NO";
-
+                            string response = success ? "OK" : "NO";
                             if (send(fd, response.c_str(), response.size(), 0) == -1)
                                 err_("send");
 
-                            cout << "发送响应: " << response << endl;
+                            cout << response << endl;
+                        }
+                        // 判断用户是否注册
+                        else if (request.contains("---charge_user---"))
+                        {
+                            string name = request["name"].get<string>();
+                            string pwd = request["pwd"].get<string>();
+                            bool registered = redisServer.isUser(name, pwd);
+
+                            string response = registered ? "IS" : "NO";
+                            if (send(fd, response.c_str(), response.size(), 0) == -1)
+                                err_("send");
+
+                            cout << response << endl;
                         }
                     }
                     catch (const json::parse_error &e)
                     {
-                        cerr << "JSON解析错误: " << e.what() << endl;
+                        cerr << "服务端JSON解析错误: " << e.what() << endl;
                         continue;
                     }
-                    
-                    t_main(fd); // 业务处理
                 }
             }
         }

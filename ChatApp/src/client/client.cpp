@@ -1,4 +1,6 @@
 #include "head.hpp"
+#include "_main.hpp"
+string my_name;
 class TUI
 {
 public:
@@ -9,16 +11,12 @@ public:
     void dologin(int fd);
     void doregister(int fd);
     void dologout(int fd);
-    bool isLoginSuccess() const;
 
 private:
     bool _running;
     int read_response(int fd, const string &name, const string &pwd);
 };
-void debug(string message)
-{
-    cout << message << endl;
-}
+
 void TUI::menu()
 {
     cout << "********************************" << endl;
@@ -48,10 +46,14 @@ void TUI::dologin(int fd)
     if (_loginSuccess)
     {
         cout << "登录成功!" << endl;
+        my_name = name;
         _running = false;
     }
     else
+    {
         cout << "用户名或密码错误！请重新输入！" << endl;
+        run(fd);
+    }
 }
 // 注册页面
 void TUI::doregister(int fd)
@@ -67,7 +69,7 @@ void TUI::doregister(int fd)
 
     json u_i =
         {
-            {"sssss", "sssss"},
+            {"------sssss------", "------sssss------"},
             {"name", name},
             {"pwd", pwd},
         };
@@ -79,21 +81,23 @@ void TUI::doregister(int fd)
     int r = read(fd, &buf[0], buf.size() - 1);
     if (r == -1)
         err_("read");
-    if (r > 0) // 如果读取到数据，则处理响应
+    if (r == 0)
+        cout << "服务器关闭连接......" << endl;
+    if (r > 0)
     {
-        buf[r] = '\0';
-        cout << "从服务端接收到: " << buf << endl;
-        return;
+        buf.resize(r);
+        if (buf == "setOK")
+        {
+            cout << "注册成功!" << endl;
+            cout << "您可以进行登录了!" << endl;
+            run(fd);
+        }
+        else if (buf == "setNO")
+        {
+            cout << "注册失败，请检查用户名或密码并重试!" << endl;
+            run(fd);
+        }
     }
-    int _loginSuccess = read_response(fd, name,pwd);
-    if (_loginSuccess)
-    {
-        cout << "注册成功!" << endl;
-        cout << "您可以进行登录了!" << endl;
-        dologin(fd);
-    }
-    else
-        cout << "注册失败，请检查用户名或密码并重试!" << endl;
 }
 // 注销
 void TUI::dologout(int fd)
@@ -144,6 +148,7 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
     string buf(128, '\0');
     json u_i =
         {
+            {"---charge_user---", "---charge_user---"},
             {"name", name},
             {"pwd", pwd},
         };
@@ -156,27 +161,27 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
         err_("read");
     if (r == 0)
         cout << "服务器关闭连接......" << endl;
-    if (r > 0) // 如果读取到数据，则处理响应
+    // 如果读取到数据，则处理响应
+    if (r > 0)
     {
-        buf.resize(r); // 重新调整 buf 的大小以匹配读取的数据量
+        buf.resize(r);
         cout << "从服务端接收到: " << buf << endl;
 
-        if (buf == "OK")
+        if (buf == "IS")
         {
-            cout << "OK" << endl;
+            cout << "IS" << endl;
             return 1;
         }
         else if (buf == "NO")
         {
             cout << "用户还未注册，请先注册" << endl;
-            doregister(fd);
+            run(fd);
         }
     }
     return -100;
 }
 // FuncPointer 是一个指向 CGUI 成员函数的指针类型
 typedef void (TUI::*FuncPointer)(int fd);
-
 typedef struct _table
 {
     int choice;
@@ -189,7 +194,7 @@ table gtable[] = {
     {3, &TUI::dologout},
 };
 
-int len = sizeof(gtable) / sizeof(gtable[0]);
+int g_len = sizeof(gtable) / sizeof(gtable[0]);
 
 void TUI::run(int fd)
 {
@@ -201,7 +206,7 @@ void TUI::run(int fd)
         if (cin >> choice)
         {
             bool flag = false;
-            for (int i = 0; i < len; i++)
+            for (int i = 0; i < g_len; i++)
             {
                 if (choice == gtable[i].choice)
                 {
@@ -247,35 +252,28 @@ int main(int argc, char *argv[])
 
     TUI tui;
     tui.run(fd);
+    string name = my_name;
     while (1)
     {
-        cout << " ----------------欢迎来到聊天室！！！----------------" << endl;
+        cout << " -------------------------------------------------" << endl;
+        cout << " -------------------------------------------------" << endl;
+        cout << " -------------欢迎" << name << "来到聊天室！！！--------------" << endl;
+        cout << " -------------------------------------------------" << endl;
+        cout << " -------------------------------------------------" << endl;
 
-        // 读取服务器响应
-        string buf(128, '\0');
-        int r = read(fd, &buf[0], buf.size() - 1);
-        if (r == -1)
-            err_("read");
-
-        if (r > 0)
+        while (1)
         {
-            buf[r] = '\0';
-            cout << "从服务端接收到: " << buf << endl;
-
-            // 根据服务器的响应进行处理
-            if (buf.find("Registration successful") != string::npos)
-                cout << "注册成功！" << endl;
-            else if (buf.find("Registration failed") != string::npos)
-                cout << "注册失败！" << endl;
+            char in;
+            cout << "       1.好友管理       2.群组管理" << endl;
+            cout << "请输入你的选项： " << endl;
+            cin >> in;
+            if (in == '1')
+                _friend(fd, name);
+            else if (in == '2')
+                _group(fd, name);
             else
-                cout << "未知响应: " << buf << endl;
+                cout << "输入错误，请输入正确选项" << endl;
         }
-        else if (r == 0)
-        {
-            cout << "服务器关闭连接" << endl;
-            break;
-        }
-        cout << "按任意键继续..." << endl;
         getchar();
     }
     close(fd);

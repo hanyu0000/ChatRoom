@@ -1,3 +1,5 @@
+#ifndef USER_TO_FD_HPP
+#define USER_TO_FD_HPP
 #include <iostream>
 #include <cstddef>
 #include <cstring>
@@ -23,3 +25,5 @@ static void err_(const char *n)
     perror(n);
     exit(1);
 }
+
+#endif // USER_TO_FD_HPP

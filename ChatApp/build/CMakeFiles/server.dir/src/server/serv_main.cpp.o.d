@@ -1,5 +1,5 @@
-CMakeFiles/server.dir/src/server/server.cpp.o: \
- /home/zxc/ChatRoom/ChatApp/src/server/server.cpp \
+CMakeFiles/server.dir/src/server/serv_main.cpp.o: \
+ /home/zxc/ChatRoom/ChatApp/src/server/serv_main.cpp \
  /usr/include/stdc-predef.h /home/zxc/ChatRoom/ChatApp/include/head.hpp \
  /usr/include/c++/13/iostream /usr/include/c++/13/bits/requires_hosted.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \

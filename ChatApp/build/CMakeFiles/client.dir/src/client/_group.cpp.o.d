@@ -1,5 +1,5 @@
-CMakeFiles/server.dir/src/server/server.cpp.o: \
- /home/zxc/ChatRoom/ChatApp/src/server/server.cpp \
+CMakeFiles/client.dir/src/client/_group.cpp.o: \
+ /home/zxc/ChatRoom/ChatApp/src/client/_group.cpp \
  /usr/include/stdc-predef.h /home/zxc/ChatRoom/ChatApp/include/head.hpp \
  /usr/include/c++/13/iostream /usr/include/c++/13/bits/requires_hosted.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
@@ -303,4 +303,4 @@ CMakeFiles/server.dir/src/server/server.cpp.o: \
  /usr/include/hiredis/hiredis.h /usr/include/hiredis/read.h \
  /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/hiredis/sds.h \
  /usr/include/hiredis/alloc.h \
- /home/zxc/ChatRoom/ChatApp/include/serv_main.hpp
+ /home/zxc/ChatRoom/ChatApp/include/_main.hpp
