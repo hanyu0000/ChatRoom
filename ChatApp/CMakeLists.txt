@@ -13,12 +13,14 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 # 添加客户端源文件
 set(CLIENT_SOURCES
     src/client/client.cpp
+    src/client/_group.cpp
+    src/client/_friend.cpp
     src/client/thread_pool.cpp
 )
 # 添加服务器源文件
 set(SERVER_SOURCES
     src/server/server.cpp
-    src/server/t_main.cpp
+    src/server/serv_main.cpp
 )
 # 添加客户端可执行文件
 add_executable(client ${CLIENT_SOURCES})
