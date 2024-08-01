@@ -11,6 +11,7 @@ public:
     void dologin(int fd);
     void doregister(int fd);
     void dologout(int fd);
+    void exit(int fd);
 
 private:
     bool _running;
@@ -25,6 +26,7 @@ void TUI::menu()
     cout << "*           1.登录              *" << endl;
     cout << "*           2.注册              *" << endl;
     cout << "*           3.注销              *" << endl;
+    cout << "*        4.停留此页面           *" << endl;
     cout << "*                               *" << endl;
     cout << "********************************" << endl;
 }
@@ -35,8 +37,7 @@ void TUI::dologin(int fd)
     string name;
     string pwd;
     cout << "请输入您的登录名:" << endl;
-    // 忽略之前输入留下的换行符
-    cin.ignore();
+    cin.ignore(); // 忽略之前输入留下的换行符
     getline(cin, name);
     cout << "请输入您的密码:" << endl;
     getline(cin, pwd);
@@ -143,6 +144,10 @@ void TUI::dologout(int fd)
         }
     }
 }
+void TUI::exit(int fd)
+{
+    run(fd);
+}
 int TUI::read_response(int fd, const string &name, const string &pwd)
 {
     string buf(128, '\0');
@@ -152,8 +157,8 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
             {"name", name},
             {"pwd", pwd},
         };
-    string str = u_i.dump();                      // 将 JSON 对象转换为字符串
-    if (write(fd, str.c_str(), str.size()) == -1) // 将 JSON 字符串写入文件描述符
+    string str = u_i.dump();
+    if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 
     int r = read(fd, &buf[0], buf.size() - 1);
@@ -161,7 +166,6 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
         err_("read");
     if (r == 0)
         cout << "服务器关闭连接......" << endl;
-    // 如果读取到数据，则处理响应
     if (r > 0)
     {
         buf.resize(r);
@@ -180,7 +184,7 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
     }
     return -100;
 }
-// FuncPointer 是一个指向 CGUI 成员函数的指针类型
+
 typedef void (TUI::*FuncPointer)(int fd);
 typedef struct _table
 {
@@ -192,10 +196,9 @@ table gtable[] = {
     {1, &TUI::dologin},
     {2, &TUI::doregister},
     {3, &TUI::dologout},
+    {4, &TUI::exit},
 };
-
 int g_len = sizeof(gtable) / sizeof(gtable[0]);
-
 void TUI::run(int fd)
 {
     int choice;
@@ -257,7 +260,7 @@ int main(int argc, char *argv[])
     {
         cout << " -------------------------------------------------" << endl;
         cout << " -------------------------------------------------" << endl;
-        cout << " -------------欢迎" << name << "来到聊天室！！！--------------" << endl;
+        cout << " ------------欢迎" << name << ":" << fd << "来到聊天室！！！------------" << endl;
         cout << " -------------------------------------------------" << endl;
         cout << " -------------------------------------------------" << endl;
 
@@ -268,9 +271,9 @@ int main(int argc, char *argv[])
             cout << "请输入你的选项： " << endl;
             cin >> in;
             if (in == '1')
-                _friend(fd, name);
+                _friend(fd);
             else if (in == '2')
-                _group(fd, name);
+                _group(fd);
             else
                 cout << "输入错误，请输入正确选项" << endl;
         }
