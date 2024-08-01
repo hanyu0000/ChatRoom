@@ -283,30 +283,6 @@ src/client/thread_pool.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/thread_pool.cpp.s
 .PHONY : src/client/thread_pool.cpp.s
 
-src/server/serv_main.o: src/server/serv_main.cpp.o
-.PHONY : src/server/serv_main.o
-
-# target to build an object file
-src/server/serv_main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.o
-.PHONY : src/server/serv_main.cpp.o
-
-src/server/serv_main.i: src/server/serv_main.cpp.i
-.PHONY : src/server/serv_main.i
-
-# target to preprocess a source file
-src/server/serv_main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.i
-.PHONY : src/server/serv_main.cpp.i
-
-src/server/serv_main.s: src/server/serv_main.cpp.s
-.PHONY : src/server/serv_main.s
-
-# target to generate assembly for a file
-src/server/serv_main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.s
-.PHONY : src/server/serv_main.cpp.s
-
 src/server/server.o: src/server/server.cpp.o
 .PHONY : src/server/server.o
 
@@ -357,9 +333,6 @@ help:
 	@echo "... src/client/thread_pool.o"
 	@echo "... src/client/thread_pool.i"
 	@echo "... src/client/thread_pool.s"
-	@echo "... src/server/serv_main.o"
-	@echo "... src/server/serv_main.i"
-	@echo "... src/server/serv_main.s"
 	@echo "... src/server/server.o"
 	@echo "... src/server/server.i"
 	@echo "... src/server/server.s"

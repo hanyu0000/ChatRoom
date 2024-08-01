@@ -22,7 +22,7 @@ void GROU::run()
 {
     meun();
 }
-void _group(int fd,const string &name)
+void _group(int fd)
 {
     GROU grop;
     grop.run();

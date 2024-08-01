@@ -6,17 +6,16 @@ class FRI
 public:
     FRI() : _running(true) {}
 
-    void run(int fd, const string &name);
+    void run(int fd);
     void menu();
-    void f_chat(int fd, const string &name);
-    void f_block(int fd, const string &name);
-    void f_add(int fd, const string &name);
-    void f_remove(int fd, const string &name);
-    void f_showlist(int fd, const string &name);
+    void f_chat(int fd);
+    void f_block(int fd);
+    void f_add(int fd);
+    void f_remove(int fd);
+    void f_showlist(int fd);
 
 private:
     bool _running;
-    void read_response(int fd, const string &name);
 };
 void FRI::menu()
 {
@@ -29,17 +28,18 @@ void FRI::menu()
     cout << "**********************************" << endl;
 }
 
-void FRI::f_chat(int fd, const string &name)
+void FRI::f_chat(int fd)
+{
+    
+    return;
+}
+void FRI::f_block(int fd)
 {
     return;
 }
-void FRI::f_block(int fd, const string &name)
+void FRI::f_add(int fd)
 {
-    return;
-}
-void FRI::f_add(int fd, const string &name)
-{
-    cout << "---------------欢迎 " << name << " 添加好友---------------" << endl;
+    cout << "---------------欢迎添加好友---------------" << endl;
     string fri_name;
     cout << "请输入您的好友名称:" << endl;
     cin.ignore();
@@ -54,41 +54,56 @@ void FRI::f_add(int fd, const string &name)
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 
-    string buf(128, '\0');
-    int r = read(fd, &buf[0], buf.size() - 1);
+    string a(128, '\0');
+    int r = read(fd, &a[0], a.size() - 1);
     if (r == -1)
         err_("read");
     if (r == 0)
         cout << "服务器关闭连接......" << endl;
     if (r > 0)
     {
-        buf.resize(r);
-        if (buf == "OK")
+        a.resize(r);
+        if (a == "OK")
         {
-            cout << "该用户已经注册！可以发送好友申请" << endl;
-            getchar();
+            cout << "该用户已经注册！正在发送好友申请..." << endl;
+            json new_ui =
+                {
+                    {"----------manage----------", "manage"},
+                    {"----------charge----------", "friends"},
+                    {"------choice------", "add"},
+                    {"name", fri_name},
+                };
+
+            string str = new_ui.dump();
+            if (write(fd, str.c_str(), str.size()) == -1)
+                err_("write");
+
+            string b(128, '\0');
+            int r = read(fd, &b[0], b.size() - 1);
+            if (r == -1)
+                err_("read");
+            if (r > 0)
+            {
+                b.resize(r);
+                cout << b << endl;
+                getchar();
+            }
         }
-        else if (buf == "NO")
-        {
+        else if (a == "NO")
             cout << "该用户还未注册，请输入正确用户名" << endl;
-        }
     }
 }
 
-void FRI::f_remove(int fd, const string &name)
+void FRI::f_remove(int fd)
 {
     return;
 }
-void FRI::f_showlist(int fd, const string &name)
-{
-    return;
-}
-void FRI::read_response(int fd, const string &name)
+void FRI::f_showlist(int fd)
 {
     return;
 }
 
-typedef void (FRI::*Pointer)(int fd, const string &name);
+typedef void (FRI::*Pointer)(int fd);
 typedef struct _table
 {
     int choice;
@@ -105,7 +120,7 @@ tab gtab[] = {
 
 int fri_len = sizeof(gtab) / sizeof(gtab[0]);
 
-void FRI::run(int fd, const string &name)
+void FRI::run(int fd)
 {
     int choice;
     while (_running)
@@ -119,7 +134,7 @@ void FRI::run(int fd, const string &name)
             {
                 if (choice == gtab[i].choice)
                 {
-                    (this->*gtab[i].p)(fd, name); // 解引用成员函数指针,调用该成员函数
+                    (this->*gtab[i].p)(fd); // 解引用成员函数指针,调用该成员函数
                     flag = true;
                     break;
                 }
@@ -135,8 +150,8 @@ void FRI::run(int fd, const string &name)
         }
     }
 }
-void _friend(int fd, const string &name)
+void _friend(int fd)
 {
     FRI fri;
-    fri.run(fd, name);
+    fri.run(fd);
 }
