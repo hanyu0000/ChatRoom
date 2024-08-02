@@ -233,7 +233,7 @@ int main()
                                 cout << response << endl;
                             }
                             // 判断好友是否存在
-                            else if (request.contains("-----firends_exit-----"))
+                            else if (request.contains("---------name.exit-----------"))
                             {
                                 string name = request["name"].get<string>();
                                 bool success = redisServer.friends_exit(name);
@@ -249,7 +249,7 @@ int main()
                                 string name = request["name"].get<string>();
                                 string pwd = request["pwd"].get<string>();
                                 bool registered = redisServer.isUser(name, pwd);
-                               
+
                                 fd_user(fd, name);
 
                                 string response = registered ? "IS" : "NO";
@@ -273,42 +273,30 @@ int main()
 }
 void serv_main(int my_fd, const json &request, map<int, string> &client_map)
 {
-    cout << "处理来自 " << my_fd << " 的请求: " << request.dump(4) << endl;
-    for (const auto &pair : client_map)
-        cout << "Username: " << pair.second << ", FD: " << pair.first << endl;
+    cout << "处理来自 " << my_fd << " 的请求: " << request.dump(3) << endl;
     try
     {
-        if (request.contains("----------charge----------") && request["----------charge----------"].get<string>() == "friends")
+        cout << "ggg"<<endl;
+        if (request.contains("------choice------") && request["------choice------"].get<string>() == "add-friend")
         {
-            if (request.contains("------choice------") && request["------choice------"].get<string>() == "add")
-            {
-                string f_name = request["name"].get<string>();
-                string my_name = get_name(my_fd, client_map);
+            string f_name = request["name"].get<string>();
+            string my_name = get_name(my_fd, client_map);
 
-                if (my_name == "NO")
-                    cout << "获取用户名错误" << endl;
+            if (my_name == "NO")
+                cout << "获取用户名错误" << endl;
 
-                int f_fd = get_fd(f_name, client_map);
-
-                json response;
-                if (f_fd == -1)
-                    response["message"] = "该用户未上线，已发送好友申请给用户";
-                else
-                    response["message"] = "该用户在线，已发送好友申请给用户";
-                string response_str = response.dump();
-
-                json message; // 发送消息到好友客户端
-                message["message"] = f_name + ":你有一个来自新朋友的好友申请： " + my_name;
-                string message_str = message.dump();
-                if (send(f_fd, message_str.c_str(), message_str.size(), 0) == -1)
-                    err_("send");
-                else if (send(my_fd, response_str.c_str(), response_str.size(), 0) == -1)
-                    err_("send");
-            }
-            else if (request.contains("------choice------") && request["------choice------"].get<string>() == "group")
-            {
-                // 群管理的逻辑
-            }
+            int f_fd = get_fd(f_name, client_map);
+            // 发送消息到好友客户端
+            json message = f_name + ":你有一个来自新朋友的好友申请:" + my_name;
+            string message_str = message.dump();
+            cout << f_fd << endl;
+            if (send(f_fd, message_str.c_str(), message_str.size(), 0) == -1)
+                err_("send");
+            cout << "ok" << endl;
+        }
+        else if (request.contains("------choice------") && request["------choice------"].get<string>() == "group")
+        {
+            // 群管理的逻辑
         }
     }
     catch (const json::exception &e)
