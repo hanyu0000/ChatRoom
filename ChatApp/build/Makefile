@@ -187,53 +187,53 @@ server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
 .PHONY : server/fast
 
-src/client/_friend.o: src/client/_friend.cpp.o
-.PHONY : src/client/_friend.o
+src/client/TUI.o: src/client/TUI.cpp.o
+.PHONY : src/client/TUI.o
 
 # target to build an object file
-src/client/_friend.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_friend.cpp.o
-.PHONY : src/client/_friend.cpp.o
+src/client/TUI.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/TUI.cpp.o
+.PHONY : src/client/TUI.cpp.o
 
-src/client/_friend.i: src/client/_friend.cpp.i
-.PHONY : src/client/_friend.i
+src/client/TUI.i: src/client/TUI.cpp.i
+.PHONY : src/client/TUI.i
 
 # target to preprocess a source file
-src/client/_friend.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_friend.cpp.i
-.PHONY : src/client/_friend.cpp.i
+src/client/TUI.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/TUI.cpp.i
+.PHONY : src/client/TUI.cpp.i
 
-src/client/_friend.s: src/client/_friend.cpp.s
-.PHONY : src/client/_friend.s
+src/client/TUI.s: src/client/TUI.cpp.s
+.PHONY : src/client/TUI.s
 
 # target to generate assembly for a file
-src/client/_friend.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_friend.cpp.s
-.PHONY : src/client/_friend.cpp.s
+src/client/TUI.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/TUI.cpp.s
+.PHONY : src/client/TUI.cpp.s
 
-src/client/_group.o: src/client/_group.cpp.o
-.PHONY : src/client/_group.o
+src/client/ThreadPool.o: src/client/ThreadPool.cpp.o
+.PHONY : src/client/ThreadPool.o
 
 # target to build an object file
-src/client/_group.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_group.cpp.o
-.PHONY : src/client/_group.cpp.o
+src/client/ThreadPool.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/ThreadPool.cpp.o
+.PHONY : src/client/ThreadPool.cpp.o
 
-src/client/_group.i: src/client/_group.cpp.i
-.PHONY : src/client/_group.i
+src/client/ThreadPool.i: src/client/ThreadPool.cpp.i
+.PHONY : src/client/ThreadPool.i
 
 # target to preprocess a source file
-src/client/_group.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_group.cpp.i
-.PHONY : src/client/_group.cpp.i
+src/client/ThreadPool.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/ThreadPool.cpp.i
+.PHONY : src/client/ThreadPool.cpp.i
 
-src/client/_group.s: src/client/_group.cpp.s
-.PHONY : src/client/_group.s
+src/client/ThreadPool.s: src/client/ThreadPool.cpp.s
+.PHONY : src/client/ThreadPool.s
 
 # target to generate assembly for a file
-src/client/_group.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/_group.cpp.s
-.PHONY : src/client/_group.cpp.s
+src/client/ThreadPool.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/ThreadPool.cpp.s
+.PHONY : src/client/ThreadPool.cpp.s
 
 src/client/client.o: src/client/client.cpp.o
 .PHONY : src/client/client.o
@@ -258,30 +258,6 @@ src/client/client.s: src/client/client.cpp.s
 src/client/client.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/client.cpp.s
 .PHONY : src/client/client.cpp.s
-
-src/client/thread_pool.o: src/client/thread_pool.cpp.o
-.PHONY : src/client/thread_pool.o
-
-# target to build an object file
-src/client/thread_pool.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/thread_pool.cpp.o
-.PHONY : src/client/thread_pool.cpp.o
-
-src/client/thread_pool.i: src/client/thread_pool.cpp.i
-.PHONY : src/client/thread_pool.i
-
-# target to preprocess a source file
-src/client/thread_pool.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/thread_pool.cpp.i
-.PHONY : src/client/thread_pool.cpp.i
-
-src/client/thread_pool.s: src/client/thread_pool.cpp.s
-.PHONY : src/client/thread_pool.s
-
-# target to generate assembly for a file
-src/client/thread_pool.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/thread_pool.cpp.s
-.PHONY : src/client/thread_pool.cpp.s
 
 src/server/server.o: src/server/server.cpp.o
 .PHONY : src/server/server.o
@@ -321,18 +297,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... client"
 	@echo "... server"
-	@echo "... src/client/_friend.o"
-	@echo "... src/client/_friend.i"
-	@echo "... src/client/_friend.s"
-	@echo "... src/client/_group.o"
-	@echo "... src/client/_group.i"
-	@echo "... src/client/_group.s"
+	@echo "... src/client/TUI.o"
+	@echo "... src/client/TUI.i"
+	@echo "... src/client/TUI.s"
+	@echo "... src/client/ThreadPool.o"
+	@echo "... src/client/ThreadPool.i"
+	@echo "... src/client/ThreadPool.s"
 	@echo "... src/client/client.o"
 	@echo "... src/client/client.i"
 	@echo "... src/client/client.s"
-	@echo "... src/client/thread_pool.o"
-	@echo "... src/client/thread_pool.i"
-	@echo "... src/client/thread_pool.s"
 	@echo "... src/server/server.o"
 	@echo "... src/server/server.i"
 	@echo "... src/server/server.s"
