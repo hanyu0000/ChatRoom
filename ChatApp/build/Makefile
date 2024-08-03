@@ -259,6 +259,30 @@ src/client/manage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/manage.cpp.s
 .PHONY : src/client/manage.cpp.s
 
+src/server/RedisServer.o: src/server/RedisServer.cpp.o
+.PHONY : src/server/RedisServer.o
+
+# target to build an object file
+src/server/RedisServer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/RedisServer.cpp.o
+.PHONY : src/server/RedisServer.cpp.o
+
+src/server/RedisServer.i: src/server/RedisServer.cpp.i
+.PHONY : src/server/RedisServer.i
+
+# target to preprocess a source file
+src/server/RedisServer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/RedisServer.cpp.i
+.PHONY : src/server/RedisServer.cpp.i
+
+src/server/RedisServer.s: src/server/RedisServer.cpp.s
+.PHONY : src/server/RedisServer.s
+
+# target to generate assembly for a file
+src/server/RedisServer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/RedisServer.cpp.s
+.PHONY : src/server/RedisServer.cpp.s
+
 src/server/serv_main.o: src/server/serv_main.cpp.o
 .PHONY : src/server/serv_main.o
 
@@ -330,6 +354,9 @@ help:
 	@echo "... src/client/manage.o"
 	@echo "... src/client/manage.i"
 	@echo "... src/client/manage.s"
+	@echo "... src/server/RedisServer.o"
+	@echo "... src/server/RedisServer.i"
+	@echo "... src/server/RedisServer.s"
 	@echo "... src/server/serv_main.o"
 	@echo "... src/server/serv_main.i"
 	@echo "... src/server/serv_main.s"

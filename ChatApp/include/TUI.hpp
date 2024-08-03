@@ -26,6 +26,7 @@ public:
     void menu();
     void f_chat(int fd);
     void f_block(int fd);
+    void f_unblock(int fd);
     void f_add(int fd);
     void f_delete(int fd);
     void f_showlist(int fd);

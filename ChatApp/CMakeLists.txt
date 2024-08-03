@@ -19,6 +19,7 @@ set(CLIENT_SOURCES
 # 添加服务器源文件
 set(SERVER_SOURCES
     src/server/server.cpp
+    src/server/RedisServer.cpp
     src/server/serv_main.cpp
 )
 # 添加客户端可执行文件

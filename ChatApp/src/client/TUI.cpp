@@ -205,9 +205,9 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
     if (r > 0)
     {
         buf.resize(r);
-        if (buf == "IS")
+        if (buf == "IS USER")
             return 1;
-        else if (buf == "NO")
+        else if (buf == "NO USER")
         {
             cout << "用户还未注册，请先注册" << endl;
             return 404;
