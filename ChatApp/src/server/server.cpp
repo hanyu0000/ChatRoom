@@ -117,8 +117,10 @@ int main()
                         {
                             json request = json::parse(buf);
                             // 好友管理，群管理
-                            if (request.contains("----------manage----------"))
+                            if (request.contains("<manage>"))
+                            {
                                 serv_main(fd, request, client_map, redisServer); // 业务处理
+                            }
                             // 判断用户是否注册
                             else if (request.contains("---charge_user---"))
                             {
@@ -128,7 +130,7 @@ int main()
 
                                 fd_user(fd, name);
 
-                                string response = registered ? "IS" : "NO";
+                                string response = registered ? "IS USER" : "NO USER";
                                 if (send(fd, response.c_str(), response.size(), 0) == -1)
                                     err_("send");
                                 cout << response << endl;
