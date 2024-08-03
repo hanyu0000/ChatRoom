@@ -2,6 +2,7 @@
 #define USER_TO_FD_HPP
 #include <iostream>
 #include <map>
+#include <set>
 #include <mutex>
 #include <queue>
 #include <atomic>

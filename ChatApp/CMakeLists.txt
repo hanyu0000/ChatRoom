@@ -14,11 +14,12 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(CLIENT_SOURCES
     src/client/client.cpp
     src/client/TUI.cpp
-    src/client/ThreadPool.cpp
+    src/client/manage.cpp
 )
 # 添加服务器源文件
 set(SERVER_SOURCES
     src/server/server.cpp
+    src/server/serv_main.cpp
 )
 # 添加客户端可执行文件
 add_executable(client ${CLIENT_SOURCES})

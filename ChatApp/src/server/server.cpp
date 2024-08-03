@@ -1,4 +1,5 @@
 #include "head.hpp"
+#include "serv_main.hpp"
 
 // 维护活跃客户端的文件描述符和用户名
 map<int, string> client_map;
@@ -7,97 +8,6 @@ void fd_user(int fd, string &name)
     client_map[fd] = name;
     cout << "用户:" << name << "  fd:" << fd << endl;
 }
-string get_name(int fd, const map<int, string> &client_map);
-int get_fd(const string &username, const map<int, string> &client_map);
-void serv_main(int my_fd, const json &request, map<int, string> &client_map);
-
-class RedisServer
-{
-public:
-    RedisServer(const string &hostname, int port)
-    {
-        context = redisConnect(hostname.c_str(), port);
-        if (context == nullptr || context->err)
-        {
-            cerr << "Redis 连接失败" << endl;
-            if (context)
-                redisFree(context);
-            throw runtime_error("Redis 连接失败");
-        }
-        cout << "redis连接成功" << endl;
-    }
-
-    ~RedisServer()
-    {
-        if (context)
-            redisFree(context);
-    }
-
-    // 存储用户信息
-    bool setPassword(const string &username, const string &password)
-    {
-        redisReply *reply = (redisReply *)redisCommand(context, "SET %s %s", username.c_str(), password.c_str());
-        if (reply == nullptr)
-        {
-            cerr << "Redis SET 命令失败" << endl;
-            return false;
-        }
-
-        bool success = (reply->type == REDIS_REPLY_STATUS && strcmp(reply->str, "OK") == 0);
-        freeReplyObject(reply);
-        return success;
-    }
-    // 判断用户是否注册
-    bool isUser(const string &username, const string &password)
-    {
-        redisReply *reply = (redisReply *)redisCommand(context, "GET %s", username.c_str());
-        if (reply == nullptr)
-        {
-            cerr << "Redis GET 命令失败" << endl;
-            return false;
-        }
-
-        bool registered = false;
-        if (reply->type == REDIS_REPLY_STRING && password == reply->str)
-            registered = true;
-
-        freeReplyObject(reply);
-        return registered;
-    }
-    // 判断用户名是否存在
-    bool friends_exit(const string &username)
-    {
-        redisReply *reply = (redisReply *)redisCommand(context, "EXISTS %s", username.c_str());
-        if (reply == nullptr)
-        {
-            cerr << "Redis EXISTS 命令失败" << endl;
-            return false;
-        }
-
-        bool registered = false;
-        if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1)
-            registered = true;
-
-        freeReplyObject(reply);
-        return registered;
-    }
-    // 删除用户信息
-    bool deleteUser(const string &username)
-    {
-        redisReply *reply = (redisReply *)redisCommand(context, "DEL %s", username.c_str());
-        if (reply == nullptr)
-        {
-            cerr << "Redis DEL 命令失败" << endl;
-            return false;
-        }
-        bool success = (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1);
-        freeReplyObject(reply);
-        return success;
-    }
-
-private:
-    redisContext *context;
-};
 
 int main()
 {
@@ -175,19 +85,18 @@ int main()
                 if (epoll_ctl(epfd, EPOLL_CTL_ADD, c_fd, &ev) == -1) // 拷贝
                     err_("epoll_ctl");
             }
-            else // 通信
-            {
+            else
+            { // 通信
                 string buf(128, '\0');
                 // 循环读数据
                 while (1)
                 {
                     int len = recv(fd, &buf[0], buf.size(), 0);
-
                     if (len == -1)
                     {
                         if (errno == EAGAIN || errno == EWOULDBLOCK)
                         {
-                            cout << "数据接受完毕......" << endl;
+                            cout << "服务端数据接受完毕......" << endl;
                             break;
                         }
                         else
@@ -207,10 +116,25 @@ int main()
                         try
                         {
                             json request = json::parse(buf);
-                            if (request.contains("----------manage----------")) // 好友管理，群管理
-                                serv_main(fd, request, client_map);             // 业务处理
+                            // 好友管理，群管理
+                            if (request.contains("----------manage----------"))
+                                serv_main(fd, request, client_map, redisServer); // 业务处理
+                            // 判断用户是否注册
+                            else if (request.contains("---charge_user---"))
+                            {
+                                string name = request["name"].get<string>();
+                                string pwd = request["pwd"].get<string>();
+                                bool registered = redisServer.isUser(name, pwd);
+
+                                fd_user(fd, name);
+
+                                string response = registered ? "IS" : "NO";
+                                if (send(fd, response.c_str(), response.size(), 0) == -1)
+                                    err_("send");
+                                cout << response << endl;
+                            }
                             // 用户信息删除
-                            else if (request.contains("xxxxx")) // 检查是否包含 "xxxxx" 键
+                            else if (request.contains("------xxxxx------"))
                             {
                                 string name = request["name"].get<string>();
                                 bool success = redisServer.deleteUser(name);
@@ -232,31 +156,19 @@ int main()
                                     err_("send");
                                 cout << response << endl;
                             }
-                            // 判断好友是否存在
-                            else if (request.contains("---------name.exit-----------"))
+                            // 判断用户是否存在
+                            else if (request.contains("---------name-exit-----------"))
                             {
                                 string name = request["name"].get<string>();
                                 bool success = redisServer.friends_exit(name);
 
-                                string response = success ? "OK" : "NO";
+                                string response = success ? "exitOK" : "exitNO";
                                 if (send(fd, response.c_str(), response.size(), 0) == -1)
                                     err_("send");
                                 cout << response << endl;
                             }
-                            // 判断用户是否注册
-                            else if (request.contains("---charge_user---"))
-                            {
-                                string name = request["name"].get<string>();
-                                string pwd = request["pwd"].get<string>();
-                                bool registered = redisServer.isUser(name, pwd);
-
-                                fd_user(fd, name);
-
-                                string response = registered ? "IS" : "NO";
-                                if (send(fd, response.c_str(), response.size(), 0) == -1)
-                                    err_("send");
-                                cout << response << endl;
-                            }
+                            else
+                                cout << "接收到不符合要求的文件!!!" << endl;
                         }
                         catch (const json::parse_error &e)
                         {
@@ -270,56 +182,4 @@ int main()
     }
     close(lfd);
     return 0;
-}
-void serv_main(int my_fd, const json &request, map<int, string> &client_map)
-{
-    cout << "处理来自 " << my_fd << " 的请求: " << request.dump(3) << endl;
-    try
-    {
-        cout << "ggg"<<endl;
-        if (request.contains("------choice------") && request["------choice------"].get<string>() == "add-friend")
-        {
-            string f_name = request["name"].get<string>();
-            string my_name = get_name(my_fd, client_map);
-
-            if (my_name == "NO")
-                cout << "获取用户名错误" << endl;
-
-            int f_fd = get_fd(f_name, client_map);
-            // 发送消息到好友客户端
-            json message = f_name + ":你有一个来自新朋友的好友申请:" + my_name;
-            string message_str = message.dump();
-            cout << f_fd << endl;
-            if (send(f_fd, message_str.c_str(), message_str.size(), 0) == -1)
-                err_("send");
-            cout << "ok" << endl;
-        }
-        else if (request.contains("------choice------") && request["------choice------"].get<string>() == "group")
-        {
-            // 群管理的逻辑
-        }
-    }
-    catch (const json::exception &e)
-    {
-        cerr << "JSON 处理错误: " << e.what() << endl;
-    }
-}
-
-string get_name(int fd, const map<int, string> &client_map)
-{
-    auto it = client_map.find(fd);
-    if (it != client_map.end())
-        return it->second;
-    else
-        return "NO";
-}
-
-int get_fd(const string &name, const map<int, string> &client_map)
-{
-    for (const auto &pair : client_map)
-    {
-        if (pair.second == name)
-            return pair.first;
-    }
-    return -1;
 }
