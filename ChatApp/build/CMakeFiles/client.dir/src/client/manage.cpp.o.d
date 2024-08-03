@@ -1,5 +1,5 @@
-CMakeFiles/client.dir/src/client/ThreadPool.cpp.o: \
- /home/zxc/ChatRoom/ChatApp/src/client/ThreadPool.cpp \
+CMakeFiles/client.dir/src/client/manage.cpp.o: \
+ /home/zxc/ChatRoom/ChatApp/src/client/manage.cpp \
  /usr/include/stdc-predef.h /home/zxc/ChatRoom/ChatApp/include/head.hpp \
  /usr/include/c++/13/iostream /usr/include/c++/13/bits/requires_hosted.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
@@ -311,5 +311,4 @@ CMakeFiles/client.dir/src/client/ThreadPool.cpp.o: \
  /usr/include/c++/13/pstl/glue_numeric_defs.h /usr/include/c++/13/any \
  /usr/include/hiredis/hiredis.h /usr/include/hiredis/read.h \
  /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/hiredis/sds.h \
- /usr/include/hiredis/alloc.h \
- /home/zxc/ChatRoom/ChatApp/include/ThreadPool.hpp
+ /usr/include/hiredis/alloc.h /home/zxc/ChatRoom/ChatApp/include/TUI.hpp

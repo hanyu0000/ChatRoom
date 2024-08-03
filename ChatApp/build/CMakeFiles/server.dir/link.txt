@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/server.dir/src/server/server.cpp.o -o server  -lhiredis 
+/usr/bin/c++ CMakeFiles/server.dir/src/server/server.cpp.o CMakeFiles/server.dir/src/server/serv_main.cpp.o -o server  -lhiredis 

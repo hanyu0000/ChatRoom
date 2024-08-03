@@ -20,18 +20,24 @@ private:
 class HHH
 {
 public:
-    HHH() : _running(true) {}
+    HHH() : running(true) {}
 
     void run(int fd);
     void menu();
     void f_chat(int fd);
     void f_block(int fd);
     void f_add(int fd);
-    void f_remove(int fd);
+    void f_delete(int fd);
     void f_showlist(int fd);
+    void g_create(int fd);
+    void g_showlist(int fd);
+    void g_join(int fd);
+    void g_showuser(int fd);
+    void g_leave(int fd);
+    void g_disband(int fd);
 
 private:
-    bool _running;
+    bool running;
 };
 
 #endif
