@@ -79,3 +79,73 @@ bool RedisServer::deleteUser(const string &username)
     freeReplyObject(reply);
     return success;
 }
+
+bool RedisServer::addFriend(const string &username, const string &friendname)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD friends:%s %s", username.c_str(), friendname.c_str());
+    bool success = reply->integer == 1;
+    freeReplyObject(reply);
+    return success;
+}
+bool RedisServer::isFriend(const string &username, const string &friendname)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SISMEMBER friends:%s %s", username.c_str(), friendname.c_str());
+    bool is_friend = reply->integer == 1;
+    freeReplyObject(reply);
+    return is_friend;
+}
+vector<string> RedisServer::getFriends(const string &username)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS friends:%s", username.c_str());
+    vector<string> friends;
+    if (reply->type == REDIS_REPLY_ARRAY)
+    {
+        for (size_t i = 0; i < reply->elements; i++)
+            friends.push_back(reply->element[i]->str);
+    }
+    freeReplyObject(reply);
+    return friends;
+}
+bool RedisServer::removeFriend(const string &username, const string &friendname)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SREM friends:%s %s", username.c_str(), friendname.c_str());
+    bool success = reply->integer == 1;
+    freeReplyObject(reply);
+    return success;
+}
+bool RedisServer::blockUser(const string &username, const string &blockname)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD blocked:%s %s", username.c_str(), blockname.c_str());
+    bool success = reply->integer == 1;
+    freeReplyObject(reply);
+    return success;
+}
+
+bool RedisServer::isBlocked(const string &username, const string &blockname)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SISMEMBER blocked:%s %s", username.c_str(), blockname.c_str());
+    bool is_blocked = reply->integer == 1;
+    freeReplyObject(reply);
+    return is_blocked;
+}
+
+vector<string> RedisServer::getBlockedUsers(const string &username)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS blocked:%s", username.c_str());
+    vector<string> blockedUsers;
+    if (reply->type == REDIS_REPLY_ARRAY)
+    {
+        for (size_t i = 0; i < reply->elements; i++)
+            blockedUsers.push_back(reply->element[i]->str);
+    }
+    freeReplyObject(reply);
+    return blockedUsers;
+}
+
+bool RedisServer::unblockUser(const string &username, const string &blockname)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SREM blocked:%s %s", username.c_str(), blockname.c_str());
+    bool success = reply->integer == 1;
+    freeReplyObject(reply);
+    return success;
+}
