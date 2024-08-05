@@ -43,6 +43,24 @@ public:
     // 删除用户信息
     bool deleteUser(const string &username);
 
+    // 存储好友关系
+    bool addFriend(const string &username, const string &friendname);
+    // 判断是否是好友
+    bool isFriend(const string &username, const string &friendname);
+    // 获取好友列表
+    vector<string> getFriends(const string &username);
+    // 删除好友
+    bool removeFriend(const string &username, const string &friendname);
+
+    // 存储屏蔽关系
+    bool blockUser(const string &username, const string &blockname);
+    // 判断是否屏蔽某用户
+    bool isBlocked(const string &username, const string &blockname);
+    // 获取屏蔽列表
+    vector<string> getBlockedUsers(const string &username);
+    // 取消屏蔽用户
+    bool unblockUser(const string &username, const string &blockname);
+
 private:
     redisContext *context;
 };

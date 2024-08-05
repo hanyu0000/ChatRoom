@@ -1,12 +1,26 @@
 #include "head.hpp"
 #include "serv_main.hpp"
-
 // 维护活跃客户端的文件描述符和用户名
 map<int, string> client_map;
 void fd_user(int fd, string &name)
 {
     client_map[fd] = name;
     cout << "用户:" << name << "  fd:" << fd << endl;
+}
+bool is_name_present(const string &name)
+{
+    for (const auto &pair : client_map)
+        if (pair.second == name)
+            return true;
+    return false;
+}
+void removebyname(const string &name)
+{
+    auto it = find_if(client_map.begin(), client_map.end(),
+                      [&name](const pair<int, string> &p)
+                      { return p.second == name; });
+    if (it != client_map.end())
+        client_map.erase(it);
 }
 
 int main()
@@ -116,10 +130,13 @@ int main()
                         try
                         {
                             json request = json::parse(buf);
-                            // 好友管理，群管理
-                            if (request.contains("<manage>"))
+                            if (request.contains("choice"))
+                                serv_main(fd, request, client_map, redisServer); // 好友管理，群管理
+                            else if (request.contains("name/fd"))
                             {
-                                serv_main(fd, request, client_map, redisServer); // 业务处理
+                                string name = request["name/fd"].get<string>();
+                                removebyname(name);
+                                cout << "----------用户: " << name << "下线----------" << endl;
                             }
                             // 判断用户是否注册
                             else if (request.contains("---charge_user---"))
@@ -127,13 +144,21 @@ int main()
                                 string name = request["name"].get<string>();
                                 string pwd = request["pwd"].get<string>();
                                 bool registered = redisServer.isUser(name, pwd);
-
-                                fd_user(fd, name);
-
-                                string response = registered ? "IS USER" : "NO USER";
-                                if (send(fd, response.c_str(), response.size(), 0) == -1)
-                                    err_("send");
-                                cout << response << endl;
+                                if (is_name_present(name)) // 用户已经登录
+                                {
+                                    string b = "loading";
+                                    if (send(fd, b.c_str(), b.size(), 0) == -1)
+                                        err_("send");
+                                    cout << b << endl;
+                                }
+                                else
+                                {
+                                    string response = registered ? "IS USER" : "NO USER";
+                                    if (send(fd, response.c_str(), response.size(), 0) == -1)
+                                        err_("send");
+                                    cout << response << endl;
+                                    fd_user(fd, name);
+                                }
                             }
                             // 用户信息删除
                             else if (request.contains("------xxxxx------"))
@@ -151,12 +176,22 @@ int main()
                             {
                                 string name = request["name"].get<string>();
                                 string pwd = request["pwd"].get<string>();
-                                bool success = redisServer.setPassword(name, pwd);
-
-                                string response = success ? "setOK" : "setNO";
-                                if (send(fd, response.c_str(), response.size(), 0) == -1)
-                                    err_("send");
-                                cout << response << endl;
+                                bool a = redisServer.friends_exit(name);
+                                string b = a ? "exitOK" : "exitNO";
+                                if (b == "exitNO") // 用户未注册
+                                {
+                                    bool success = redisServer.setPassword(name, pwd);
+                                    string response = success ? "setOK" : "setNO";
+                                    if (send(fd, response.c_str(), response.size(), 0) == -1)
+                                        err_("send");
+                                    cout << response << endl;
+                                }
+                                else
+                                {
+                                    if (send(fd, b.c_str(), b.size(), 0) == -1)
+                                        err_("send");
+                                    cout << b << endl;
+                                }
                             }
                             // 判断用户是否存在
                             else if (request.contains("---------name-exit-----------"))

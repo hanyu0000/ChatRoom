@@ -1,5 +1,35 @@
 #include "head.hpp"
 #include "TUI.hpp"
+void main_menu(int fd, string name)
+{
+    char a;
+    while (true)
+    {
+        cout << "" << endl;
+        cout << "" << endl;
+        cout << "按 < 1 > 进入管理页面             < 2 > 回到登录页面" << endl;
+        cout << "" << endl;
+        cout << "" << endl;
+        cin >> a;
+        if (a == '1')
+        {
+            HHH jjj;
+            jjj.run(fd);
+        }
+        else if (a == '2')
+        {
+            json name_json = {
+                {"name/fd", name},
+            };
+            string str = name_json.dump();
+            if (write(fd, str.c_str(), str.size()) == -1)
+                err_("write");
+            return;
+        }
+        else
+            cout << "请输入正确数字:" << endl;
+    }
+}
 
 typedef void (TUI::*FuncPointer)(int fd);
 typedef struct TUI_table
@@ -13,7 +43,8 @@ table gtable[] = {
     {3, &TUI::dologout},
 };
 int g_len = sizeof(gtable) / sizeof(gtable[0]);
-void TUI::run(int fd)
+string username;
+string TUI::run(int fd)
 {
     int choice;
     while (_running)
@@ -43,10 +74,13 @@ void TUI::run(int fd)
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // 忽略错误输入
         }
     }
+    return username;
 }
 
 void TUI::menu()
 {
+    cout << " " << endl;
+    cout << " " << endl;
     cout << "********************************" << endl;
     cout << "* 欢迎来到聊天室!请输入你的选项 *" << endl;
     cout << "*                               *" << endl;
@@ -75,12 +109,12 @@ void TUI::dologin(int fd)
     int _loginSuccess = read_response(fd, name, pwd);
     if (_loginSuccess == 404)
         return;
-
     if (_loginSuccess)
     {
         cout << " " << endl;
         cout << " " << endl;
-        cout << "登录成功!!!" << endl;
+        cout << "用户: " << name << "登录成功!!!" << endl;
+        username = name;
         _running = false;
     }
     else
@@ -124,7 +158,12 @@ void TUI::doregister(int fd)
     if (r > 0)
     {
         buf.resize(r);
-        if (buf == "setOK")
+        if (buf == "exitOK")
+        {
+            cout << "该用户已经存在!请重新输入用户名:" << endl;
+            return;
+        }
+        else if (buf == "setOK")
         {
             cout << "注册成功!" << endl;
             cout << "您可以进行登录了!" << endl;
@@ -205,11 +244,16 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
     if (r > 0)
     {
         buf.resize(r);
-        if (buf == "IS USER")
+        if (buf == "loading")
+        {
+            cout << "该用户已经登录！请输入你自己的账号:" << endl;
+            return 404;
+        }
+        else if (buf == "IS USER")
             return 1;
         else if (buf == "NO USER")
         {
-            cout << "用户还未注册，请先注册" << endl;
+            cout << "用户还未注册，请先注册:" << endl;
             return 404;
         }
     }
