@@ -38,7 +38,6 @@ public:
     void g_showuser(int fd);
     void g_leave(int fd);
     void g_disband(int fd);
-    void exit(int fd);
 
 private:
     void listen_serv(int fd);

@@ -21,7 +21,6 @@ tab gtab[] = {
     {10, &HHH::g_leave},
     {11, &HHH::g_create},
     {12, &HHH::g_disband},
-    {13, &HHH::exit},
 };
 int HHH_len = sizeof(gtab) / sizeof(gtab[0]);
 void HHH::run(int fd)
@@ -131,11 +130,6 @@ int process_response(string &response, int fd)
         if (j.contains("newfriend"))
         {
             string frind = j["newfriend"];
-            if (j.contains("already"))
-            {
-                cout << "用户: " << frind << "和你已是好友关系！" << endl;
-                return 1;
-            }
             cout << "你有一条来自 < " << frind << " > 的好友申请" << endl;
             cout << "是否同意该用户的好友申请? T or F" << endl;
             char a;
@@ -174,9 +168,9 @@ int process_response(string &response, int fd)
             }
             return 1;
         }
-        else if (j.contains("newfriendreply"))
+        else if (j.contains("reply"))
         {
-            string value = j["newfriendreply"];
+            string value = j["reply"];
             if (value == "YES")
             {
                 string f_name = j["f_name"];
@@ -211,20 +205,15 @@ int process_response(string &response, int fd)
         }
         else if (j.contains("deletefriend"))
         {
-            string reply = j["deletefriend"];
             string name = j["f_name"];
-            if (reply == "f")
-                cout << "你已将用户: " << name << "删除!" << endl;
-            else if (reply == "my")
-                cout << "用户: " << name << "已经把你删除！" << endl;
+            cout << "你已将用户: " << name << "删除!" << endl;
             return 1;
         }
         if (j.contains("chat")) // 聊天
         {
-            string f_name = j["chat"];
-            string message = j["message"];
+            string f_name = j["f_name"];
+            string message = j["chat"];
             cout << f_name << " : " << message << endl;
-
             char a;
             cout << "      1.回消息       2.退出页面" << endl;
             while (1)
@@ -239,7 +228,7 @@ int process_response(string &response, int fd)
 
                     json a =
                         {
-                            {"<choice>", "chat"},
+                            {"choice", "chat"},
                             {"name", f_name},
                             {"message", reply},
                         };
@@ -277,12 +266,34 @@ void HHH::f_chat(int fd)
     cout << " " << endl;
     json a =
         {
-            {"<choice>", "chat"},
+            {"choice", "chatlist"},
         };
     string str = a.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
-    return;
+
+    string buffer(128, '\0');
+    int r = read(fd, &buffer[0], buffer.size());
+    buffer.resize(r);
+    json j = json::parse(buffer);
+    if (j.contains("chatlist"))
+    {
+        cout << "您的好友列表:" << endl;
+        vector<string> chatlist = j["chatlist"];
+        for (const auto &name : chatlist)
+            cout << name << endl;
+    }
+    cout << "请输入你要聊天的好友:" << endl;
+    string name;
+    cin >> name;
+    json message = {
+        {"choice", "chat"},
+        {"name", name},
+        {"message", "hello!"},
+    };
+    string b = message.dump();
+    if (write(fd, b.c_str(), b.size()) == -1)
+        err_("write");
 }
 // 好友屏蔽
 void HHH::f_block(int fd)
@@ -297,7 +308,7 @@ void HHH::f_block(int fd)
 
     json a =
         {
-            {"<choice>", "blockfriend"},
+            {"choice", "blockfriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -317,7 +328,7 @@ void HHH::f_unblock(int fd)
 
     json a =
         {
-            {"<choice>", "unblockfriend"},
+            {"choice", "unblockfriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -343,7 +354,6 @@ void HHH::f_add(int fd)
     string str = a.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
-    cout << "发送好友申请成功！" << endl;
 }
 // 删除好友
 void HHH::f_delete(int fd)
@@ -358,7 +368,7 @@ void HHH::f_delete(int fd)
 
     json a =
         {
-            {"<choice>", "deletefriend"},
+            {"choice", "deletefriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -492,8 +502,4 @@ void HHH::g_disband(int fd)
     string str = a.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
-}
-void HHH::exit(int fd)
-{
-    running = false;
 }
