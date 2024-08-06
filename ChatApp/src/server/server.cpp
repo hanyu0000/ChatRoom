@@ -131,7 +131,9 @@ int main()
                         {
                             json request = json::parse(buf);
                             if (request.contains("choice"))
-                                serv_main(fd, request, client_map, redisServer); // 好友管理，群管理
+                                serv_main(fd, request, client_map, redisServer); // 好友管理
+                            else if (request.contains("ggg"))
+                                group_main(fd, request, client_map, redisServer); // 群管理
                             else if (request.contains("name/fd"))
                             {
                                 string name = request["name/fd"].get<string>();
