@@ -80,5 +80,6 @@ private:
 string get_name(int fd, const map<int, string> &client_map);
 int get_fd(const string &username, const map<int, string> &client_map);
 void serv_main(int my_fd, const json &request, map<int, string> &client_map, RedisServer &redis);
+void group_main(int my_fd, const json &request, map<int, string> &client_map, RedisServer &redis);
 
 #endif

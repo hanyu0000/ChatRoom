@@ -1,6 +1,73 @@
 #include "head.hpp"
 #include "serv_main.hpp"
 
+void group_main(int my_fd, const json &request, map<int, string> &client_map, RedisServer &redis)
+{
+    string my_name = get_name(my_fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << my_fd << " 的请求: " << request.dump(3) << endl;
+    string ggg = request["ggg"].get<string>();
+    // 用户的群聊列表
+    if (ggg == "grouplist")
+    {
+        vector<string> grouplist = redis.getUserGroupList(my_name);
+        cout << "用户 < " << my_name << " > 的群聊列表: " << endl;
+        for (const auto &grp : grouplist)
+            cout << grp << endl;
+        json to_me = {
+            {"grouplist", grouplist},
+        };
+        string message = to_me.dump();
+        if (send(my_fd, message.c_str(), message.size(), 0) == -1)
+            err_("send_f");
+        return;
+    }
+    string group = request["group"].get<string>();
+    cout << group << endl;
+    // 创建群聊
+    if (ggg == "create_group")
+    {
+        redis.createGroup(group);
+        vector<string> members = request["members"];
+        redis.addMemberToGroup(group, my_name);
+        redis.addUserToGroupList(my_name, group);
+        for (const auto &member : members)
+        {
+            cout << "添加成员: " << member << endl;
+            redis.addMemberToGroup(group, member);   // 向群聊添加成员
+            redis.addUserToGroupList(member, group); // 群聊添加至成员列表
+        }
+        return;
+    }
+    else if (ggg == "disband_group")
+    {
+        redis.deleteGroup(group); // 删除群聊
+        return;
+    }
+    else if (ggg == "userlist")
+    {
+        vector<string> userlist = redis.getGroupMembers(group);
+        cout << "群聊 < " << group << " > 的用户列表: " << endl;
+        for (const auto &grp : userlist)
+            cout << grp << endl;
+        json to_me = {
+            {"grouplist", userlist},
+        };
+        string message = to_me.dump();
+        if (send(my_fd, message.c_str(), message.size(), 0) == -1)
+            err_("send_f");
+        return;
+    }
+    else if (ggg == "leave_group")
+    {
+        redis.removeMemberFromGroup(group, my_name); // 退出群聊
+        return;
+    }
+    else if (ggg == "join_group")
+    {
+        redis.addMemberToGroup(group, my_name); // 加入群聊
+        return;
+    }
+}
 void serv_main(int my_fd, const json &request, map<int, string> &client_map, RedisServer &redis)
 {
     string my_name = get_name(my_fd, client_map);
@@ -21,6 +88,7 @@ void serv_main(int my_fd, const json &request, map<int, string> &client_map, Red
     }
 
     string f_name = request["name"].get<string>();
+    int f_fd = get_fd(f_name, client_map);
     bool userexit = redis.friends_exit(f_name);
     cout << "userexit:" << userexit << endl;
     if (!userexit) // 用户不存在
@@ -34,8 +102,6 @@ void serv_main(int my_fd, const json &request, map<int, string> &client_map, Red
             err_("发送好友不存在失败");
         return;
     }
-
-    int f_fd = get_fd(f_name, client_map);
     bool friexit = redis.isFriend(my_name, f_name);
     cout << "friexit:" << friexit << endl;
 
@@ -69,9 +135,9 @@ void serv_main(int my_fd, const json &request, map<int, string> &client_map, Red
         string message2 = to_my.dump();
         if (reply == "YES")
         {
+            cout << "同意加好友" << endl;
             redis.addFriend(my_name, f_name);
             redis.addFriend(f_name, my_name);
-            cout << "同意加好友" << endl;
             if (send(f_fd, message1.c_str(), message1.size(), 0) == -1)
                 err_("send_f");
         }
@@ -159,21 +225,6 @@ void serv_main(int my_fd, const json &request, map<int, string> &client_map, Red
         string message = a.dump();
         if (send(my_fd, message.c_str(), message.size(), 0) == -1)
             err_("删除好友失败");
-        return;
-    }
-    // 创建群聊
-    else if (choice == "create_group")
-    {
-        string group = request["group"].get<string>();
-        if (redis.createGroup(group))
-            cout << "创建群聊成功!" << endl;
-        vector<string> members = request["members"];
-        for (const auto &member : members)
-        {
-            cout << "添加成员: " << member << endl;
-            redis.addMemberToGroup(group, member);
-        }
-
         return;
     }
 }

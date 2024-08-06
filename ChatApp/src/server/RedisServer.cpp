@@ -150,138 +150,79 @@ bool RedisServer::unblockUser(const string &username, const string &blockname)
     return success;
 }
 
-// 群聊管理方法的实现
-bool RedisServer::createGroup(const string &groupName)
+ // 群聊
+bool RedisServer::createGroup(const std::string &groupName)
 {
-    redisReply *reply;
-    reply = (redisReply *)redisCommand(context, "SADD %s", groupName.c_str(), "");
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        cerr << "Error creating group: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return false;
-    }
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD groups %s", groupName.c_str());
+    bool success = (reply->integer == 1 || reply->integer == 0);
     freeReplyObject(reply);
-    return true;
+    return success;
+}
+// 删除群聊集合
+bool RedisServer::deleteGroup(const std::string &groupName)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "DEL %s", groupName.c_str());
+    bool success = (reply->type == REDIS_REPLY_INTEGER && reply->integer > 0); // DEL 命令返回删除的键的数量
+    freeReplyObject(reply);
+    return success;
 }
 
-bool RedisServer::deleteGroup(const string &groupName)
+bool RedisServer::addMemberToGroup(const std::string &groupName, const std::string &memberName)
 {
-    redisReply *reply;
-    reply = (redisReply *)redisCommand(context, "DEL %s", groupName.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        cerr << "Error deleting group: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return false;
-    }
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD %s %s", groupName.c_str(), memberName.c_str());
+    bool success = (reply->integer == 1 || reply->integer == 0);
     freeReplyObject(reply);
-    return true;
+    return success;
 }
 
-bool RedisServer::addMemberToGroup(const string &groupName, const string &memberName)
+bool RedisServer::removeMemberFromGroup(const std::string &groupName, const std::string &memberName)
 {
-    redisReply *reply;
-    reply = (redisReply *)redisCommand(context, "SADD %s %s", groupName.c_str(), memberName.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        cerr << "Error adding member to group: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return false;
-    }
+    redisReply *reply = (redisReply *)redisCommand(context, "SREM %s %s", groupName.c_str(), memberName.c_str());
+    bool success = (reply->integer == 1 || reply->integer == 0); // 1 表示成员移除成功，0 表示成员不存在
     freeReplyObject(reply);
-    return true;
+    return success;
 }
 
-bool RedisServer::removeMemberFromGroup(const string &groupName, const string &memberName)
+std::vector<std::string> RedisServer::getGroupMembers(const std::string &groupName)
 {
-    redisReply *reply;
-    reply = (redisReply *)redisCommand(context, "SREM %s %s", groupName.c_str(), memberName.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
+    std::vector<std::string> members;
+    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS %s", groupName.c_str());
+    if (reply->type == REDIS_REPLY_ARRAY)
     {
-        cerr << "Error removing member from group: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return false;
-    }
-    freeReplyObject(reply);
-    return true;
-}
-
-vector<string> RedisServer::getGroupMembers(const string &groupName)
-{
-    redisReply *reply;
-    vector<string> members;
-    reply = (redisReply *)redisCommand(context, "SMEMBERS %s", groupName.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        cerr << "Error getting group members: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return members;
-    }
-    for (size_t i = 0; i < reply->elements; ++i)
-    {
-        members.push_back(reply->element[i]->str);
+        for (size_t i = 0; i < reply->elements; ++i)
+        {
+            members.push_back(reply->element[i]->str);
+        }
     }
     freeReplyObject(reply);
     return members;
 }
 
-// 用户群聊列表管理方法的实现
-bool RedisServer::addUserToGroupList(const string &username, const string &groupName)
+bool RedisServer::addUserToGroupList(const std::string &username, const std::string &groupName)
 {
-    redisReply *reply;
-    reply = (redisReply *)redisCommand(context, "SADD %s:%s", username.c_str(), groupName.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        cerr << "Error adding user to group list: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return false;
-    }
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD user_groups:%s %s", username.c_str(), groupName.c_str());
+    bool success = (reply->integer == 1 || reply->integer == 0); // 1 表示用户添加成功，0 表示用户已在列表中
     freeReplyObject(reply);
-    return true;
+    return success;
 }
 
-bool RedisServer::removeUserFromGroupList(const string &username, const string &groupName)
+bool RedisServer::removeUserFromGroupList(const std::string &username, const std::string &groupName)
 {
-    redisReply *reply;
-    reply = (redisReply *)redisCommand(context, "SREM %s:%s", username.c_str(), groupName.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
-        cerr << "Error removing user from group list: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return false;
-    }
+    redisReply *reply = (redisReply *)redisCommand(context, "SREM user_groups:%s %s", username.c_str(), groupName.c_str());
+    bool success = (reply->integer == 1 || reply->integer == 0); // 1 表示群聊移除成功，0 表示群聊不在列表中
     freeReplyObject(reply);
-    return true;
+    return success;
 }
 
-vector<string> RedisServer::getUserGroupList(const string &username)
+std::vector<std::string> RedisServer::getUserGroupList(const std::string &username)
 {
-    redisReply *reply;
-    vector<string> groups;
-    reply = (redisReply *)redisCommand(context, "SMEMBERS %s:*", username.c_str());
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
+    std::vector<std::string> groups;
+    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS user_groups:%s", username.c_str());
+    if (reply->type == REDIS_REPLY_ARRAY)
     {
-        cerr << "Error getting user group list: " << (reply ? reply->str : "unknown error") << endl;
-        if (reply)
-            freeReplyObject(reply);
-        return groups;
-    }
-    for (size_t i = 0; i < reply->elements; ++i)
-    {
-        // 解析群聊名
-        string groupName = reply->element[i]->str;
-        size_t pos = groupName.find(':');
-        if (pos != string::npos)
+        for (size_t i = 0; i < reply->elements; ++i)
         {
-            groups.push_back(groupName.substr(pos + 1));
+            groups.push_back(reply->element[i]->str);
         }
     }
     freeReplyObject(reply);

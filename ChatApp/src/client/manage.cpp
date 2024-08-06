@@ -141,8 +141,9 @@ int process_response(string &response, int fd)
                 {
                     mas =
                         {
-                            {"choice", "newfriendreply"},
+                            {"choice", "reply"},
                             {"reply", "YES"},
+                            {"name", frind},
                         };
                     string message = mas.dump();
                     if (send(fd, message.c_str(), message.size(), 0) == -1)
@@ -154,8 +155,9 @@ int process_response(string &response, int fd)
                 {
                     mas =
                         {
-                            {"choice", "newfriendreply"},
+                            {"choice", "reply"},
                             {"reply", "NO"},
+                            {"name", frind},
                         };
                     string message = mas.dump();
                     if (send(fd, message.c_str(), message.size(), 0) == -1)
@@ -257,6 +259,62 @@ int process_response(string &response, int fd)
         cerr << "JSON 解析错误: " << e.what() << endl;
     }
     return 1;
+}
+// 查看群用户
+void HHH::g_showuser(int fd)
+{
+    cout << " " << endl;
+    cout << "-------------------查看群用户-------------------" << endl;
+    cout << " " << endl;
+    cout << "输入你要查看的群聊:" << endl;
+    string group;
+    cin >> group;
+    json a =
+        {
+            {"ggg", "userlist"},
+            {"group", group},
+        };
+    string str = a.dump();
+    if (write(fd, str.c_str(), str.size()) == -1)
+        err_("write");
+
+    string buffer(128, '\0');
+    int r = read(fd, &buffer[0], buffer.size());
+    buffer.resize(r);
+    json j = json::parse(buffer);
+    if (j.contains("userlist"))
+    {
+        cout << "群用户列表:" << endl;
+        vector<string> chatlist = j["userlist"];
+        for (const auto &name : chatlist)
+            cout << name << endl;
+    }
+}
+// 查询群聊
+void HHH::g_showlist(int fd)
+{
+    cout << " " << endl;
+    cout << "-----------------群聊列表-----------------" << endl;
+    cout << " " << endl;
+    json a =
+        {
+            {"ggg", "grouplist"},
+        };
+    string str = a.dump();
+    if (write(fd, str.c_str(), str.size()) == -1)
+        err_("write");
+
+    string buffer(128, '\0');
+    int r = read(fd, &buffer[0], buffer.size());
+    buffer.resize(r);
+    json j = json::parse(buffer);
+    if (j.contains("grouplist"))
+    {
+        cout << "您的群聊列表:" << endl;
+        vector<string> chatlist = j["grouplist"];
+        for (const auto &name : chatlist)
+            cout << name << endl;
+    }
 }
 // 好友聊天
 void HHH::f_chat(int fd)
@@ -382,84 +440,47 @@ void HHH::g_create(int fd)
     cout << " " << endl;
     cout << "-------------------创建群聊-------------------" << endl;
     cout << " " << endl;
-    vector<string> friend_names;
-    string name;
 
-    cout << "请输入好友名称：" << endl;
+    string groupName;
+    string input;
+    vector<string> Friends;
+    cout << "请输入群聊名称:" << endl;
     cin.ignore();
-    while (1)
+    getline(cin, groupName);
+    cout << "请输入要添加到群聊的好友名（多个好友用逗号分隔）:" << endl;
+    getline(cin, input);
+
+    size_t pos = 0;
+    while ((pos = input.find(',')) != string::npos)
     {
-        getline(cin, name);
-        if (name == "\r")
-            break;
-        if (!name.empty())
-            friend_names.push_back(name);
-        else
-            cout << "名称不能为空，请重新输入：" << endl;
+        string friendName = input.substr(0, pos);
+        Friends.push_back(friendName);
+        input.erase(0, pos + 1);
     }
-
-    json a =
-        {
-            {"<choice>", "create_group"},
-            {"friend_nameS", friend_names},
-        };
-    string str = a.dump();
-    if (write(fd, str.c_str(), str.size()) == -1)
-        err_("write");
+    json messageJson = {
+        {"ggg", "create_group"},
+        {"group", groupName},
+        {"members", Friends}};
+    string message = messageJson.dump();
+    if (send(fd, message.c_str(), message.size(), 0) == -1)
+        cerr << "发送消息失败" << endl;
 }
-// 查询群聊
-void HHH::g_showlist(int fd)
+// 解散群聊
+void HHH::g_disband(int fd)
 {
     cout << " " << endl;
-    cout << "-----------------群聊列表-----------------" << endl;
+    cout << "-------------------解散群聊-------------------" << endl;
     cout << " " << endl;
-
-    json a =
-        {
-            {"<choice>", "<manage>"},
-            {"show.group.list", "----"},
-        };
-    string str = a.dump();
-    if (write(fd, str.c_str(), str.size()) == -1)
-        err_("write");
-}
-// 加入群聊
-void HHH::g_join(int fd)
-{
-    cout << " " << endl;
-    cout << "-------------------加入群聊-------------------" << endl;
-    cout << " " << endl;
-    string group_name;
-    cout << "请输入群聊名称:" << endl;
+    string group;
+    cout << "请输入要解散的群聊名称:" << endl;
     cin.ignore();
-    getline(cin, group_name);
+    getline(cin, group);
 
-    json a =
-        {
-            {"<choice>", "join_group"},
-            {"group_name", group_name},
-        };
-    string str = a.dump();
-    if (write(fd, str.c_str(), str.size()) == -1)
-        err_("write");
-}
-// 查看群用户
-void HHH::g_showuser(int fd)
-{
-    cout << " " << endl;
-    cout << "-------------------查看群用户-------------------" << endl;
-    cout << " " << endl;
-    string group_name;
-    cout << "请输入群聊名称:" << endl;
-    cin.ignore();
-    getline(cin, group_name);
-
-    json a =
-        {
-            {"<choice>", "show_group_users"},
-            {"group_name", group_name},
-        };
-    string str = a.dump();
+    json Json = {
+        {"ggg", "disband_group"},
+        {"group", group},
+    };
+    string str = Json.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 }
@@ -469,37 +490,35 @@ void HHH::g_leave(int fd)
     cout << " " << endl;
     cout << "-------------------退出群聊-------------------" << endl;
     cout << " " << endl;
-    string group_name;
-    cout << "请输入群聊名称:" << endl;
+    string group;
+    cout << "请输入要退出的群聊名称:" << endl;
     cin.ignore();
-    getline(cin, group_name);
+    getline(cin, group);
 
-    json a =
-        {
-            {"<choice>", "leave_group"},
-            {"group_name", group_name},
-        };
-    string str = a.dump();
+    json Json = {
+        {"ggg", "leave_group"},
+        {"group", group},
+    };
+    string str = Json.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 }
-// 解散群聊
-void HHH::g_disband(int fd)
+// 加入群聊
+void HHH::g_join(int fd)
 {
     cout << " " << endl;
-    cout << "-------------------解散群聊-------------------" << endl;
+    cout << "-------------------加入群聊-------------------" << endl;
     cout << " " << endl;
-    string group_name;
-    cout << "请输入群聊名称:" << endl;
+    string group;
+    cout << "请输入要加入的群聊名称:" << endl;
     cin.ignore();
-    getline(cin, group_name);
+    getline(cin, group);
 
-    json a =
-        {
-            {"<choice>", "disband_group"},
-            {"group_name", group_name},
-        };
-    string str = a.dump();
+    json Json = {
+        {"ggg", "join_group"},
+        {"group", group},
+    };
+    string str = Json.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 }
