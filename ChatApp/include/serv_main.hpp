@@ -76,10 +76,27 @@ public:
 private:
     redisContext *context;
 };
-
+map<int, string> client_map;
+void fd_user(int fd, string &name);
+bool is_name_present(const string &name);
 string get_name(int fd, const map<int, string> &client_map);
 int get_fd(const string &username, const map<int, string> &client_map);
-void serv_main(int my_fd, const json &request, map<int, string> &client_map, RedisServer &redis);
-void group_main(int my_fd, const json &request, map<int, string> &client_map, RedisServer &redis);
+
+
+void doregister(int fd, json j); // 注册
+void logout(int fd, json j);     // 注销
+void isUser(int fd, json j);     // 是否注册
+void f_chatlist(int fd, json j); // 好友列表
+void f_chat(int fd, json j);     // 好友聊天
+void f_block(int fd, json j);    // 好友屏蔽
+void f_unblock(int fd, json j);  // 好友取消屏蔽
+void f_add(int fd, json j);      // 好友添加
+void f_delete(int fd, json j);   // 好友删除
+void g_showuser(int fd, json j); // 查看群用户
+void g_showlist(int fd, json j); // 查询群聊
+void g_create(int fd, json j);   // 创建群聊
+void g_disband(int fd, json j);  // 删除群聊
+void g_leave(int fd, json j);    // 退出群聊
+void g_join(int fd, json j);     // 加入群聊
 
 #endif

@@ -141,7 +141,7 @@ void TUI::doregister(int fd)
 
     json u_i =
         {
-            {"------sssss------", "------sssss------"},
+            {"type", "register"},
             {"name", name},
             {"pwd", pwd},
         };
@@ -149,31 +149,50 @@ void TUI::doregister(int fd)
     if (write(fd, str.c_str(), str.size()) == -1) // 将 JSON 字符串写入文件描述符
         err_("write");
 
-    string buf(128, '\0');
-    int r = read(fd, &buf[0], buf.size() - 1);
-    if (r == -1)
-        err_("read");
-    if (r == 0)
-        cout << "服务器关闭连接......" << endl;
+    char buffer[1024];
+    int r = read(fd, buffer, sizeof(buffer) - 1);
     if (r > 0)
     {
-        buf.resize(r);
-        if (buf == "exitOK")
+        buffer[r] = '\0';
+        string j(buffer);
+        try
         {
-            cout << "该用户已经存在!请重新输入用户名:" << endl;
-            return;
+            json response = json::parse(j);
+            if (response.contains("register"))
+            {
+                string reply = response["register"];
+                if (reply == "exitOK")
+                {
+                    cout << "该用户已经存在!请重新输入用户名:" << endl;
+                    return;
+                }
+                else if (reply == "setOK")
+                {
+                    cout << "注册成功!" << endl;
+                    cout << "您可以进行登录了!" << endl;
+                    return;
+                }
+                else if (reply == "setNO")
+                {
+                    cout << "注册失败，请检查用户名或密码并重试!" << endl;
+                    return;
+                }
+            }
         }
-        else if (buf == "setOK")
+        catch (const json::parse_error &e)
         {
-            cout << "注册成功!" << endl;
-            cout << "您可以进行登录了!" << endl;
-            return;
+            cerr << "JSON 解析失败: " << e.what() << endl;
         }
-        else if (buf == "setNO")
-        {
-            cout << "注册失败，请检查用户名或密码并重试!" << endl;
-            return;
-        }
+    }
+    else if (r == 0)
+    {
+        cout << "服务器关闭连接......" << endl;
+    }
+    else
+    {
+        perror("read");
+        close(fd);
+        exit(1);
     }
 }
 // 注销
@@ -201,23 +220,43 @@ void TUI::dologout(int fd)
         {
             json u_i =
                 {
-                    {"------xxxxx------", "------xxxxx------"},
+                    {"type", "logout"},
                     {"name", name},
                     {"pwd", pwd},
                 };
-
             string str = u_i.dump();                      // 将 JSON 对象转换为字符串
             if (write(fd, str.c_str(), str.size()) == -1) // 将 JSON 字符串写入文件描述符
                 err_("write");
 
-            string buf(128, '\0');
-            int r = read(fd, &buf[0], buf.size() - 1);
-            if (r == -1)
-                err_("read");
-            if (r > 0) // 如果读取到数据，则处理响应
+            char buffer[1024];
+            int r = read(fd, buffer, sizeof(buffer) - 1);
+            if (r > 0)
             {
-                buf[r] = '\0';
-                cout << "从服务端接收到: " << buf << endl;
+                buffer[r] = '\0';
+                string j(buffer);
+                try
+                {
+                    json response = json::parse(j);
+                    if (response.contains("logout"))
+                    {
+                        string reply = response["logout"];
+                        cout << "从服务端接收到: " << reply << endl;
+                    }
+                }
+                catch (const json::parse_error &e)
+                {
+                    cerr << "JSON 解析失败: " << e.what() << endl;
+                }
+            }
+            else if (r == 0)
+            {
+                cout << "服务器关闭连接......" << endl;
+            }
+            else
+            {
+                perror("read");
+                close(fd);
+                exit(1);
             }
         }
     }
@@ -225,10 +264,10 @@ void TUI::dologout(int fd)
 
 int TUI::read_response(int fd, const string &name, const string &pwd)
 {
-    string buf(128, '\0');
+    string buf;
     json u_i =
         {
-            {"---charge_user---", "---charge_user---"},
+            {"type", "isUser"},
             {"name", name},
             {"pwd", pwd},
         };
@@ -236,26 +275,46 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 
-    int r = read(fd, &buf[0], buf.size() - 1);
-    if (r == -1)
-        err_("read");
-    if (r == 0)
-        cout << "服务器关闭连接......" << endl;
+    char buffer[1024];
+    int r = read(fd, buffer, sizeof(buffer) - 1);
     if (r > 0)
     {
-        buf.resize(r);
-        if (buf == "loading")
+        buffer[r] = '\0';
+        string j(buffer);
+        try
         {
-            cout << "该用户已经登录！请输入你自己的账号:" << endl;
-            return 404;
+            json response = json::parse(j);
+            if (response.contains("isUser"))
+            {
+                string reply = response["isUser"];
+                if (reply == "loading")
+                {
+                    cout << "该用户已经登录！请输入你自己的账号:" << endl;
+                    return 404;
+                }
+                else if (reply == "IS USER")
+                    return 1;
+                else if (reply == "NO USER")
+                {
+                    cout << "用户还未注册，请先注册:" << endl;
+                    return 404;
+                }
+            }
         }
-        else if (buf == "IS USER")
-            return 1;
-        else if (buf == "NO USER")
+        catch (const json::parse_error &e)
         {
-            cout << "用户还未注册，请先注册:" << endl;
-            return 404;
+            cerr << "JSON 解析失败: " << e.what() << endl;
         }
+    }
+    else if (r == 0)
+    {
+        cout << "服务器关闭连接......" << endl;
+    }
+    else
+    {
+        perror("read");
+        close(fd);
+        exit(1);
     }
     return -100;
 }

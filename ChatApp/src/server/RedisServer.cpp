@@ -2,7 +2,7 @@
 
 RedisServer::RedisServer(const string &hostname, int port)
 {
-    context = redisConnect(hostname.c_str(), port);
+    context = redisConnect("127.0.0.1", 6379);
     if (context == nullptr || context->err)
     {
         cerr << "Redis 连接失败" << endl;

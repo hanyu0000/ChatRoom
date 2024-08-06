@@ -1,10 +1,8 @@
 #include "head.hpp"
 #include "TUI.hpp"
-void signal_handler(int signal) {}
 
 int main(int argc, char *argv[])
 {
-    // signal(SIGINT, signal_handler);
     if (argc != 2)
     {
         cerr << "Usage: " << argv[0] << " <server-ip>" << endl;
@@ -22,9 +20,7 @@ int main(int argc, char *argv[])
 
     if (connect(fd, (struct sockaddr *)&serv, sizeof(serv)) == -1)
         err_("connect");
-
-    // 三次握手成功
-
+        
     while (1)
     {
         TUI tui;

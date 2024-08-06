@@ -141,7 +141,7 @@ int process_response(string &response, int fd)
                 {
                     mas =
                         {
-                            {"choice", "reply"},
+                            {"type", "reply"},
                             {"reply", "YES"},
                             {"name", frind},
                         };
@@ -155,7 +155,7 @@ int process_response(string &response, int fd)
                 {
                     mas =
                         {
-                            {"choice", "reply"},
+                            {"type", "reply"},
                             {"reply", "NO"},
                             {"name", frind},
                         };
@@ -230,7 +230,7 @@ int process_response(string &response, int fd)
 
                     json a =
                         {
-                            {"choice", "chat"},
+                            {"type", "chat"},
                             {"name", f_name},
                             {"message", reply},
                         };
@@ -271,14 +271,14 @@ void HHH::g_showuser(int fd)
     cin >> group;
     json a =
         {
-            {"ggg", "userlist"},
+            {"type", "userlist"},
             {"group", group},
         };
     string str = a.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 
-    string buffer(128, '\0');
+    string buffer;
     int r = read(fd, &buffer[0], buffer.size());
     buffer.resize(r);
     json j = json::parse(buffer);
@@ -289,6 +289,9 @@ void HHH::g_showuser(int fd)
         for (const auto &name : chatlist)
             cout << name << endl;
     }
+    cout << "是否退出页面:" << endl;
+    string name;
+    cin >> name;
 }
 // 查询群聊
 void HHH::g_showlist(int fd)
@@ -298,13 +301,13 @@ void HHH::g_showlist(int fd)
     cout << " " << endl;
     json a =
         {
-            {"ggg", "grouplist"},
+            {"type", "grouplist"},
         };
     string str = a.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 
-    string buffer(128, '\0');
+    string buffer;
     int r = read(fd, &buffer[0], buffer.size());
     buffer.resize(r);
     json j = json::parse(buffer);
@@ -315,6 +318,9 @@ void HHH::g_showlist(int fd)
         for (const auto &name : chatlist)
             cout << name << endl;
     }
+    cout << "是否退出页面:" << endl;
+    string name;
+    cin >> name;
 }
 // 好友聊天
 void HHH::f_chat(int fd)
@@ -324,13 +330,13 @@ void HHH::f_chat(int fd)
     cout << " " << endl;
     json a =
         {
-            {"choice", "chatlist"},
+            {"type", "chatlist"},
         };
     string str = a.dump();
     if (write(fd, str.c_str(), str.size()) == -1)
         err_("write");
 
-    string buffer(128, '\0');
+    string buffer;
     int r = read(fd, &buffer[0], buffer.size());
     buffer.resize(r);
     json j = json::parse(buffer);
@@ -341,11 +347,12 @@ void HHH::f_chat(int fd)
         for (const auto &name : chatlist)
             cout << name << endl;
     }
+    
     cout << "请输入你要聊天的好友:" << endl;
     string name;
     cin >> name;
     json message = {
-        {"choice", "chat"},
+        {"type", "chat"},
         {"name", name},
         {"message", "hello!"},
     };
@@ -366,7 +373,7 @@ void HHH::f_block(int fd)
 
     json a =
         {
-            {"choice", "blockfriend"},
+            {"type", "blockfriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -386,7 +393,7 @@ void HHH::f_unblock(int fd)
 
     json a =
         {
-            {"choice", "unblockfriend"},
+            {"type", "unblockfriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -406,7 +413,7 @@ void HHH::f_add(int fd)
 
     json a =
         {
-            {"choice", "addfriend"},
+            {"type", "addfriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -426,7 +433,7 @@ void HHH::f_delete(int fd)
 
     json a =
         {
-            {"choice", "deletefriend"},
+            {"type", "deletefriend"},
             {"name", name},
         };
     string str = a.dump();
@@ -458,7 +465,7 @@ void HHH::g_create(int fd)
         input.erase(0, pos + 1);
     }
     json messageJson = {
-        {"ggg", "create_group"},
+        {"type", "create_group"},
         {"group", groupName},
         {"members", Friends}};
     string message = messageJson.dump();
@@ -477,7 +484,7 @@ void HHH::g_disband(int fd)
     getline(cin, group);
 
     json Json = {
-        {"ggg", "disband_group"},
+        {"type", "disband_group"},
         {"group", group},
     };
     string str = Json.dump();
@@ -496,7 +503,7 @@ void HHH::g_leave(int fd)
     getline(cin, group);
 
     json Json = {
-        {"ggg", "leave_group"},
+        {"type", "leave_group"},
         {"group", group},
     };
     string str = Json.dump();
@@ -515,7 +522,7 @@ void HHH::g_join(int fd)
     getline(cin, group);
 
     json Json = {
-        {"ggg", "join_group"},
+        {"type", "join_group"},
         {"group", group},
     };
     string str = Json.dump();
