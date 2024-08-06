@@ -61,6 +61,18 @@ public:
     // 取消屏蔽用户
     bool unblockUser(const string &username, const string &blockname);
 
+    // 群聊管理
+    bool createGroup(const string &groupName);
+    bool deleteGroup(const string &groupName);
+    bool addMemberToGroup(const string &groupName, const string &memberName);
+    bool removeMemberFromGroup(const string &groupName, const string &memberName);
+    vector<string> getGroupMembers(const string &groupName);
+
+    // 用户群聊列表管理
+    bool addUserToGroupList(const string &username, const string &groupName);
+    bool removeUserFromGroupList(const string &username, const string &groupName);
+    vector<string> getUserGroupList(const string &username);
+
 private:
     redisContext *context;
 };

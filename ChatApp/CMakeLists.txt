@@ -10,6 +10,7 @@ pkg_check_modules(HIREDIS REQUIRED hiredis)
 include_directories(${HIREDIS_INCLUDE_DIRS})
 # 包含项目头文件目录
 include_directories(${PROJECT_SOURCE_DIR}/include)
+set(CMAKE_BUILD_TYPE Debug)
 # 添加客户端源文件
 set(CLIENT_SOURCES
     src/client/client.cpp
