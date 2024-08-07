@@ -97,35 +97,51 @@ CMakeFiles/server.dir/src/server/RedisServer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/RedisServer.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/server/RedisServer.cpp -o CMakeFiles/server.dir/src/server/RedisServer.cpp.s
 
-CMakeFiles/server.dir/src/server/serv_main.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/server/serv_main.cpp.o: /home/zxc/ChatRoom/ChatApp/src/server/serv_main.cpp
-CMakeFiles/server.dir/src/server/serv_main.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/server/serv_main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server/serv_main.cpp.o -MF CMakeFiles/server.dir/src/server/serv_main.cpp.o.d -o CMakeFiles/server.dir/src/server/serv_main.cpp.o -c /home/zxc/ChatRoom/ChatApp/src/server/serv_main.cpp
+CMakeFiles/server.dir/src/server/task.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/server/task.cpp.o: /home/zxc/ChatRoom/ChatApp/src/server/task.cpp
+CMakeFiles/server.dir/src/server/task.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/server/task.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server/task.cpp.o -MF CMakeFiles/server.dir/src/server/task.cpp.o.d -o CMakeFiles/server.dir/src/server/task.cpp.o -c /home/zxc/ChatRoom/ChatApp/src/server/task.cpp
 
-CMakeFiles/server.dir/src/server/serv_main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/serv_main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxc/ChatRoom/ChatApp/src/server/serv_main.cpp > CMakeFiles/server.dir/src/server/serv_main.cpp.i
+CMakeFiles/server.dir/src/server/task.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/task.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxc/ChatRoom/ChatApp/src/server/task.cpp > CMakeFiles/server.dir/src/server/task.cpp.i
 
-CMakeFiles/server.dir/src/server/serv_main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/serv_main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/server/serv_main.cpp -o CMakeFiles/server.dir/src/server/serv_main.cpp.s
+CMakeFiles/server.dir/src/server/task.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/task.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/server/task.cpp -o CMakeFiles/server.dir/src/server/task.cpp.s
+
+CMakeFiles/server.dir/src/server/ThreadPool.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/server/ThreadPool.cpp.o: /home/zxc/ChatRoom/ChatApp/src/server/ThreadPool.cpp
+CMakeFiles/server.dir/src/server/ThreadPool.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/server.dir/src/server/ThreadPool.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/server/ThreadPool.cpp.o -MF CMakeFiles/server.dir/src/server/ThreadPool.cpp.o.d -o CMakeFiles/server.dir/src/server/ThreadPool.cpp.o -c /home/zxc/ChatRoom/ChatApp/src/server/ThreadPool.cpp
+
+CMakeFiles/server.dir/src/server/ThreadPool.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/server.dir/src/server/ThreadPool.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/zxc/ChatRoom/ChatApp/src/server/ThreadPool.cpp > CMakeFiles/server.dir/src/server/ThreadPool.cpp.i
+
+CMakeFiles/server.dir/src/server/ThreadPool.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/server/ThreadPool.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxc/ChatRoom/ChatApp/src/server/ThreadPool.cpp -o CMakeFiles/server.dir/src/server/ThreadPool.cpp.s
 
 # Object files for target server
 server_OBJECTS = \
 "CMakeFiles/server.dir/src/server/server.cpp.o" \
 "CMakeFiles/server.dir/src/server/RedisServer.cpp.o" \
-"CMakeFiles/server.dir/src/server/serv_main.cpp.o"
+"CMakeFiles/server.dir/src/server/task.cpp.o" \
+"CMakeFiles/server.dir/src/server/ThreadPool.cpp.o"
 
 # External object files for target server
 server_EXTERNAL_OBJECTS =
 
 server: CMakeFiles/server.dir/src/server/server.cpp.o
 server: CMakeFiles/server.dir/src/server/RedisServer.cpp.o
-server: CMakeFiles/server.dir/src/server/serv_main.cpp.o
+server: CMakeFiles/server.dir/src/server/task.cpp.o
+server: CMakeFiles/server.dir/src/server/ThreadPool.cpp.o
 server: CMakeFiles/server.dir/build.make
 server: CMakeFiles/server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

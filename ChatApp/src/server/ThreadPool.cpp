@@ -1,137 +1,110 @@
 #include "ThreadPool.hpp"
 #include <iostream>
 
-ThreadPool::ThreadPool(int min, int max) : m_maxThreads(max),
-                                           m_minThreads(min), m_stop(false), m_exitNumber(0)
+ThreadPool::ThreadPool(int min, int max) : maxThreads(max),
+                                           minThreads(min), stop(false), exitNumber(0)
 {
-    // m_idleThreads = m_curThreads = max / 2;
-    m_idleThreads = m_curThreads = min;
-    cout << "线程数量: " << m_curThreads << endl;
-    m_manager = new thread(&ThreadPool::manager, this);
-    for (int i = 0; i < m_curThreads; ++i)
+    // idleThreads = curThreads = max / 2;
+    idleThreads = curThreads = min;
+    manager = new thread(&ThreadPool::manager, this);//创建管理线程
+    for (int i = 0; i < curThreads; ++i)
     {
-        thread t(&ThreadPool::worker, this);
-        m_workers.insert(make_pair(t.get_id(), move(t)));
+        thread t(&ThreadPool::worker, this);//创建工作线程
+        workers.insert(make_pair(t.get_id(), move(t)));//将工作线程放进线程池
     }
 }
 
 ThreadPool::~ThreadPool()
 {
-    m_stop = true;
-    m_condition.notify_all();
-    for (auto &it : m_workers)
+    stop = true;//释放资源
+    condition.notify_all();
+    for (auto &it : workers)
     {
         thread &t = it.second;
         if (t.joinable())
-        {
-            cout << "线程 " << t.get_id() << " 将要退出了..." << endl;
             t.join();
-        }
     }
-    if (m_manager->joinable())
+    if (manager->joinable())
     {
-        m_manager->join();
+        manager->join();
     }
-    delete m_manager;
+    delete manager;
 }
 
 void ThreadPool::addTask(function<void()> f)
 {
     {
-        lock_guard<mutex> locker(m_queueMutex);
-        m_tasks.emplace(f);
+        lock_guard<mutex> locker(queueMutex);
+        tasks.emplace(f);//添加任务到任务队列
     }
-    m_condition.notify_one();
+    condition.notify_one();//通知线程有新任务
 }
 
-void ThreadPool::manager()
+void ThreadPool::my_manager()
 {
-    while (!m_stop.load())
+    while (!stop.load())
     {
-        this_thread::sleep_for(chrono::seconds(2));
-        int idle = m_idleThreads.load();
-        int current = m_curThreads.load();
-        if (idle > current / 2 && current > m_minThreads)
+        this_thread::sleep_for(chrono::seconds(2));//每2秒检查
+        int idle = idleThreads.load();
+        int current = curThreads.load();
+        if (idle > current / 2 && current > minThreads)
         {
-            m_exitNumber.store(2);
-            m_condition.notify_all();
-            unique_lock<mutex> lck(m_idsMutex);
-            for (const auto &id : m_ids)
+            exitNumber.store(2);
+            condition.notify_all();
+            unique_lock<mutex> lck(idsMutex);
+            for (const auto &id : ids)
             {
-                auto it = m_workers.find(id);
-                if (it != m_workers.end())
+                auto it = workers.find(id);
+                if (it != workers.end())
                 {
-                    cout << "线程 " << (*it).first << "被销毁了...." << endl;
                     (*it).second.join();
-                    m_workers.erase(it);
+                    workers.erase(it);
                 }
             }
-            m_ids.clear();
+            ids.clear();
         }
-        else if (idle == 0 && current < m_maxThreads)
+        else if (idle == 0 && current < maxThreads)
         {
             thread t(&ThreadPool::worker, this);
-            cout << "添加了一个线程, id: " << t.get_id() << endl;
-            m_workers.insert(make_pair(t.get_id(), move(t)));
-            m_curThreads++;
-            m_idleThreads++;
+            workers.insert(make_pair(t.get_id(), move(t)));
+            curThreads++;
+            idleThreads++;
         }
     }
 }
 
 void ThreadPool::worker()
 {
-    while (!m_stop.load())
+    while (!stop.load())
     {
         function<void()> task = nullptr;
         {
-            unique_lock<mutex> locker(m_queueMutex);
-            while (!m_stop && m_tasks.empty())
+            unique_lock<mutex> locker(queueMutex);
+            while (!stop && tasks.empty())
             {
-                m_condition.wait(locker);
-                if (m_exitNumber.load() > 0)
+                condition.wait(locker);
+                if (exitNumber.load() > 0)
                 {
-                    cout << "线程任务结束, ID: " << this_thread::get_id() << endl;
-                    m_exitNumber--;
-                    m_curThreads--;
-                    unique_lock<mutex> lck(m_idsMutex);
-                    m_ids.emplace_back(this_thread::get_id());
+                    exitNumber--;
+                    curThreads--;
+                    unique_lock<mutex> lck(idsMutex);
+                    ids.emplace_back(this_thread::get_id());
                     return;
                 }
             }
 
-            if (!m_tasks.empty())
+            if (!tasks.empty())
             {
-                cout << "取出一个任务..." << endl;
-                task = move(m_tasks.front());
-                m_tasks.pop();
+                task = move(tasks.front());
+                tasks.pop();
             }
         }
 
         if (task)
         {
-            m_idleThreads--;
+            idleThreads--;
             task();
-            m_idleThreads++;
+            idleThreads++;
         }
     }
-}
-
-void calc(int x, int y)
-{
-    int res = x + y;
-    cout << "res = " << res << endl;
-    this_thread::sleep_for(chrono::seconds(2));
-}
-
-int main()
-{
-    ThreadPool pool(4);
-    for (int i = 0; i < 10; ++i)
-    {
-        auto func = bind(calc, i, i * 2);
-        pool.addTask(func);
-    }
-    getchar();
-    return 0;
 }

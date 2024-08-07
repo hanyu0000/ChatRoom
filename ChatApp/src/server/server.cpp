@@ -1,7 +1,9 @@
 #include "head.hpp"
 #include "ThreadPool.hpp"
-#include "serv_main.hpp"
+#include "task.hpp"
+map<int, string> client_map;
 void handleClientMessage(int fd, const json &j);
+void process_client_messages(int fd);
 
 void runServer(int port)
 {
@@ -44,8 +46,6 @@ void runServer(int port)
     struct epoll_event evs[1024];
     int size = sizeof(evs) / sizeof(struct epoll_event);
 
-    ThreadPool pool(4, 10);
-
     // 握手成功
     while (1)
     {
@@ -57,76 +57,29 @@ void runServer(int port)
             // 取出当前的文件描述符
             int fd = evs[i].data.fd;
             // 判断文件描述符是否用于监听
-            if (fd == lfd)
+            if (evs[i].events & EPOLLIN)
             {
-                while (1)
+                if (fd == lfd)
                 {
                     // 建立新的连接
                     int c_fd = accept(fd, nullptr, nullptr);
                     if (c_fd == -1)
-                    {
-                        if (errno == EAGAIN || errno == EWOULDBLOCK)
-                            break;
-                        else
-                            perror("accept");
-                    }
+                        err_("accept");
+
                     cout << "新连接建立,文件描述符为: " << c_fd << endl;
                     // 文件描述符修改为非阻塞
-                    int flags = fcntl(fd, F_GETFL, 0);
-                    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-
-                    // 将客户端的socket加入epoll模型中
+                    int flag = fcntl(c_fd, F_GETFL);
+                    flag |= O_NONBLOCK;
+                    fcntl(c_fd, F_SETFL, flag);
+                    // 新得到的文件描述符添加到epoll模型中
                     struct epoll_event ev;
                     ev.events = EPOLLIN | EPOLLET;
                     ev.data.fd = c_fd;
-
-                    if (epoll_ctl(epfd, EPOLL_CTL_ADD, c_fd, &ev) == -1)
-                        perror("epoll_ctl");
+                    if (epoll_ctl(epfd, EPOLL_CTL_ADD, c_fd, &ev) == -1) // 拷贝
+                        err_("epoll_ctl");
                 }
-            }
-            else
-            {
-                // 从树上去除该套接字
-                struct epoll_event temp;
-                temp.data.fd = fd;
-                temp.events = EPOLLIN || EPOLLET;
-                epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &temp);
-
-                char buffer[1024];
-                memset(buffer, 0, 1024);
-                int r = read(fd, buffer, sizeof(buffer));
-                if (r == -1)
-                {
-                    if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    {
-                        cout << "服务端数据接受完毕......" << endl;
-                        break;
-                    }
-                    else
-                        err_("recv");
-                }
-                else if (r == 0)
-                {
-                    cout << "----------用户fd: " << fd << "下线----------" << endl;
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr); // 将这个文件描述符从epoll模型中删除
-                    client_map.erase(fd);                        // 从客户端映射中删除
-                    close(fd);
-                    break;
-                }
-                if (r > 0)
-                {
-                    string message(buffer, r);
-                    try
-                    {
-                        auto j = json::parse(message);
-                        pool.addTask([fd, j]
-                                     { handleClientMessage(fd, j); });
-                    }
-                    catch (const json::parse_error &e)
-                    {
-                        cerr << "JSON 解析失败: " << e.what() << endl;
-                    }
-                }
+                else
+                    process_client_messages(fd);
             }
         }
     }
@@ -137,6 +90,61 @@ int main()
 {
     runServer(8080);
     return 0;
+}
+
+void process_client_messages(int fd)
+{
+    ThreadPool pool(4, 10);
+
+    // 读取消息头，获取消息长度
+    uint32_t msg_len = 0;
+    int ret = Util::readn(fd, sizeof(uint32_t), (char *)&msg_len);
+    if (ret != sizeof(uint32_t))
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            cout << "服务端数据接受完毕......" << endl;
+        else
+            cerr << "recv 错误: " << strerror(errno) << endl;
+        return;
+    }
+
+    msg_len = ntohl(msg_len); // 将消息长度从网络字节序转换为主机字节序
+
+    // 根据消息长度分配缓冲区并读取消息体
+    char *buffer = new char[msg_len + 1];
+    memset(buffer, 0, msg_len + 1);
+    ret = Util::readn(fd, msg_len, buffer);
+    if (ret != msg_len)
+    {
+        if (ret == 0)
+        {
+            cout << "----------用户fd: " << fd << "下线----------" << endl;
+            epoll_ctl(fd, EPOLL_CTL_DEL, fd, nullptr); // 从epoll模型中删除文件描述符
+            client_map.erase(fd);                      // 从客户端映射中删除
+            close(fd);
+        }
+        else
+            cerr << "读取消息体时出错: " << strerror(errno) << endl;
+        delete[] buffer;
+        return;
+    }
+
+    // 处理消息
+    string message(buffer, ret);
+    delete[] buffer;
+    try
+    {
+        auto j = json::parse(message);
+        // bind()方法会创建一个新函数，称为绑定函数，当调用这个绑定函数时，绑定函数会以创建它时传入
+        // bind()方法的第一个参数作为 this，传入 bind() 方法的第二个
+        // 以及以后的参数加上绑定函数运行时本身的参数按照顺序作为原函数的参数来调用原函数。
+        auto task = bind(handleClientMessage, fd, j);
+        pool.addTask(task);
+    }
+    catch (const json::parse_error &e)
+    {
+        cerr << "JSON 解析失败: " << e.what() << endl;
+    }
 }
 
 void handleClientMessage(int fd, const json &j)
@@ -175,6 +183,10 @@ void handleClientMessage(int fd, const json &j)
     {
         f_add(fd, j); // 好友添加
     }
+    else if (msg_type == "addfriendreply")
+    {
+        f_addreply(fd, j);
+    }
     else if (msg_type == "deletefriend")
     {
         f_delete(fd, j); // 好友删除
@@ -204,7 +216,6 @@ void handleClientMessage(int fd, const json &j)
         g_join(fd, j); // 加入群聊
     }
 }
-
 void fd_user(int fd, string &name)
 {
     client_map[fd] = name;

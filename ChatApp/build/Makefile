@@ -187,6 +187,30 @@ server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
 .PHONY : server/fast
 
+src/client/HHH.o: src/client/HHH.cpp.o
+.PHONY : src/client/HHH.o
+
+# target to build an object file
+src/client/HHH.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/HHH.cpp.o
+.PHONY : src/client/HHH.cpp.o
+
+src/client/HHH.i: src/client/HHH.cpp.i
+.PHONY : src/client/HHH.i
+
+# target to preprocess a source file
+src/client/HHH.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/HHH.cpp.i
+.PHONY : src/client/HHH.cpp.i
+
+src/client/HHH.s: src/client/HHH.cpp.s
+.PHONY : src/client/HHH.s
+
+# target to generate assembly for a file
+src/client/HHH.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/src/client/HHH.cpp.s
+.PHONY : src/client/HHH.cpp.s
+
 src/client/TUI.o: src/client/TUI.cpp.o
 .PHONY : src/client/TUI.o
 
@@ -283,29 +307,29 @@ src/server/RedisServer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/RedisServer.cpp.s
 .PHONY : src/server/RedisServer.cpp.s
 
-src/server/serv_main.o: src/server/serv_main.cpp.o
-.PHONY : src/server/serv_main.o
+src/server/ThreadPool.o: src/server/ThreadPool.cpp.o
+.PHONY : src/server/ThreadPool.o
 
 # target to build an object file
-src/server/serv_main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.o
-.PHONY : src/server/serv_main.cpp.o
+src/server/ThreadPool.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/ThreadPool.cpp.o
+.PHONY : src/server/ThreadPool.cpp.o
 
-src/server/serv_main.i: src/server/serv_main.cpp.i
-.PHONY : src/server/serv_main.i
+src/server/ThreadPool.i: src/server/ThreadPool.cpp.i
+.PHONY : src/server/ThreadPool.i
 
 # target to preprocess a source file
-src/server/serv_main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.i
-.PHONY : src/server/serv_main.cpp.i
+src/server/ThreadPool.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/ThreadPool.cpp.i
+.PHONY : src/server/ThreadPool.cpp.i
 
-src/server/serv_main.s: src/server/serv_main.cpp.s
-.PHONY : src/server/serv_main.s
+src/server/ThreadPool.s: src/server/ThreadPool.cpp.s
+.PHONY : src/server/ThreadPool.s
 
 # target to generate assembly for a file
-src/server/serv_main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/serv_main.cpp.s
-.PHONY : src/server/serv_main.cpp.s
+src/server/ThreadPool.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/ThreadPool.cpp.s
+.PHONY : src/server/ThreadPool.cpp.s
 
 src/server/server.o: src/server/server.cpp.o
 .PHONY : src/server/server.o
@@ -331,6 +355,30 @@ src/server/server.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/server.cpp.s
 .PHONY : src/server/server.cpp.s
 
+src/server/task.o: src/server/task.cpp.o
+.PHONY : src/server/task.o
+
+# target to build an object file
+src/server/task.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/task.cpp.o
+.PHONY : src/server/task.cpp.o
+
+src/server/task.i: src/server/task.cpp.i
+.PHONY : src/server/task.i
+
+# target to preprocess a source file
+src/server/task.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/task.cpp.i
+.PHONY : src/server/task.cpp.i
+
+src/server/task.s: src/server/task.cpp.s
+.PHONY : src/server/task.s
+
+# target to generate assembly for a file
+src/server/task.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/server/task.cpp.s
+.PHONY : src/server/task.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -345,6 +393,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... client"
 	@echo "... server"
+	@echo "... src/client/HHH.o"
+	@echo "... src/client/HHH.i"
+	@echo "... src/client/HHH.s"
 	@echo "... src/client/TUI.o"
 	@echo "... src/client/TUI.i"
 	@echo "... src/client/TUI.s"
@@ -357,12 +408,15 @@ help:
 	@echo "... src/server/RedisServer.o"
 	@echo "... src/server/RedisServer.i"
 	@echo "... src/server/RedisServer.s"
-	@echo "... src/server/serv_main.o"
-	@echo "... src/server/serv_main.i"
-	@echo "... src/server/serv_main.s"
+	@echo "... src/server/ThreadPool.o"
+	@echo "... src/server/ThreadPool.i"
+	@echo "... src/server/ThreadPool.s"
 	@echo "... src/server/server.o"
 	@echo "... src/server/server.i"
 	@echo "... src/server/server.s"
+	@echo "... src/server/task.o"
+	@echo "... src/server/task.i"
+	@echo "... src/server/task.s"
 .PHONY : help
 
 

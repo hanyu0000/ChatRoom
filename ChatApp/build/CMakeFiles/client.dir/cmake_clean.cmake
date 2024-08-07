@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/client.dir/src/client/HHH.cpp.o"
+  "CMakeFiles/client.dir/src/client/HHH.cpp.o.d"
   "CMakeFiles/client.dir/src/client/TUI.cpp.o"
   "CMakeFiles/client.dir/src/client/TUI.cpp.o.d"
   "CMakeFiles/client.dir/src/client/client.cpp.o"
