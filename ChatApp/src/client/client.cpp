@@ -1,8 +1,9 @@
 #include "head.hpp"
 #include "TUI.hpp"
-
+#include "HHH.hpp"
 int main(int argc, char *argv[])
 {
+    signal(SIGTSTP, SIG_IGN); // 忽略Ctrl+Z
     if (argc != 2)
     {
         cerr << "Usage: " << argv[0] << " <server-ip>" << endl;
@@ -20,12 +21,11 @@ int main(int argc, char *argv[])
 
     if (connect(fd, (struct sockaddr *)&serv, sizeof(serv)) == -1)
         err_("connect");
-        
+
     while (1)
     {
         TUI tui;
-        string name = tui.run(fd);
-
+        tui.run(fd);
         cout << "" << endl;
         cout << "" << endl;
         cout << " ---------------------------------------------------" << endl;
@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
         cout << " ---------------------------------------------------" << endl;
         cout << "" << endl;
         cout << "" << endl;
-
-        main_menu(fd, name);
+        HHH mnue;
+        mnue.run(fd);
     }
     close(fd);
     return 0;

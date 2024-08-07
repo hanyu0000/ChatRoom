@@ -14,14 +14,16 @@ set(CMAKE_BUILD_TYPE Debug)
 # 添加客户端源文件
 set(CLIENT_SOURCES
     src/client/client.cpp
-    src/client/TUI.cpp
+    src/client/HHH.cpp
     src/client/manage.cpp
+    src/client/TUI.cpp
 )
 # 添加服务器源文件
 set(SERVER_SOURCES
     src/server/server.cpp
     src/server/RedisServer.cpp
-    src/server/serv_main.cpp
+    src/server/task.cpp
+    src/server/ThreadPool.cpp
 )
 # 添加客户端可执行文件
 add_executable(client ${CLIENT_SOURCES})
