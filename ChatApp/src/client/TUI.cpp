@@ -81,16 +81,21 @@ void TUI::dologin(int fd)
         return;
     if (login)
     {
+        json u_i =
+            {
+                {"type", "login"},
+                {"name", name}};
+        string str = u_i.dump();
+        if (Util::send_msg(fd, str) == -1)
+            err_("send_msg");
+
         cout << " " << endl;
         cout << "用户: " << name << "登录成功!!!" << endl;
         _running = false;
         system("clear");
     }
     else
-    {
         cout << "用户名或密码错误！请重新输入！" << endl;
-        return;
-    }
 }
 // 注册页面
 void TUI::doregister(int fd)
@@ -112,8 +117,7 @@ void TUI::doregister(int fd)
         {
             {"type", "register"},
             {"name", name},
-            {"pwd", pwd}
-        };
+            {"pwd", pwd}};
     string str = u_i.dump();
     if (Util::send_msg(fd, str) == -1)
         err_("send_msg");
@@ -128,21 +132,14 @@ void TUI::doregister(int fd)
         {
             string reply = response["register"];
             if (reply == "exitOK")
-            {
                 cout << "该用户已经存在!请重新输入用户名:" << endl;
-                return;
-            }
             else if (reply == "setOK")
             {
                 cout << "注册成功!" << endl;
-                cout << "您可以进行登录了!" << endl;
-                return;
+                cout << "可以进直接登录" << endl;
             }
             else if (reply == "setNO")
-            {
                 cout << "注册失败，请检查用户名或密码并重试!" << endl;
-                return;
-            }
         }
     }
     catch (const json::parse_error &e)
@@ -177,8 +174,7 @@ void TUI::dologout(int fd)
                 {
                     {"type", "logout"},
                     {"name", name},
-                    {"pwd", pwd}
-                };
+                    {"pwd", pwd}};
             string str = u_i.dump();
             if (Util::send_msg(fd, str) == -1)
                 err_("send_msg");
@@ -209,8 +205,7 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
         {
             {"type", "isUser"},
             {"name", name},
-            {"pwd", pwd}
-        };
+            {"pwd", pwd}};
     string str = u_i.dump();
     if (Util::send_msg(fd, str) == -1)
         err_("send_msg");

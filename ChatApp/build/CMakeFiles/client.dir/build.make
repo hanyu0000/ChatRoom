@@ -140,6 +140,8 @@ client: CMakeFiles/client.dir/src/client/HHH.cpp.o
 client: CMakeFiles/client.dir/src/client/manage.cpp.o
 client: CMakeFiles/client.dir/src/client/TUI.cpp.o
 client: CMakeFiles/client.dir/build.make
+client: /usr/lib/x86_64-linux-gnu/libcurses.so
+client: /usr/lib/x86_64-linux-gnu/libform.so
 client: CMakeFiles/client.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/zxc/ChatRoom/ChatApp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable client"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/client.dir/link.txt --verbose=$(VERBOSE)

@@ -22,22 +22,22 @@ tab gtab[] = {
     {13, &HHH::g_add_manager},
     {14, &HHH::g_delete_manager},
     {15, &HHH::g_delete_people},
-    {16, &HHH::message},
+    {16, &HHH::file_pass},
 };
 void HHH::menu()
 {
     cout << "" << endl;
     cout << "" << endl;
     cout << "----------------------------------------------------" << endl;
-    cout << "           16.消息列表         0.好友聊天          " << endl;
-    cout << "           1.好友申请         2.好友聊天          " << endl;
-    cout << "           3.添加好友         4.删除好友          " << endl;
-    cout << "           5.屏蔽好友         6.取消屏蔽好友           " << endl;
-    cout << "           7.查询群聊         8.查看群用户           " << endl;
-    cout << "           9.加入群聊         10.退出群聊          " << endl;
-    cout << "           11.创建群聊        12.解散群聊         " << endl;
-    cout << "           13.设置管理员      14.删除管理员          " << endl;
-    cout << "           15.移除群用户                          " << endl;
+    cout << "           1.新好友消息        2.好友聊天          " << endl;
+    cout << "           3.好友申请          4.删除好友          " << endl;
+    cout << "           5.屏蔽好友          6.取消屏蔽好友        " << endl;
+    cout << "           7.查询群聊          8.查看群用户           " << endl;
+    cout << "           9.加入群聊          10.退出群聊          " << endl;
+    cout << "           11.创建群聊         12.解散群聊         " << endl;
+    cout << "           13.设置管理员       14.删除管理员          " << endl;
+    cout << "           15.移除群用户       16.文件传输              " << endl;
+    cout << "                   17.群聊             " << endl;
     cout << "----------------------------------------------------" << endl;
     cout << "" << endl;
     cout << "" << endl;

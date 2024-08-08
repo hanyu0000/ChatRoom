@@ -9,9 +9,11 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/asm-generic/bitsperlong.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/int-ll64.h \
   /usr/include/asm-generic/posix_types.h \
   /usr/include/asm-generic/socket.h \
   /usr/include/asm-generic/sockios.h \
+  /usr/include/asm-generic/types.h \
   /usr/include/assert.h \
   /usr/include/c++/13/algorithm \
   /usr/include/c++/13/any \
@@ -223,6 +225,7 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/c++/13/vector \
   /usr/include/c++/13/version \
   /usr/include/ctype.h \
+  /usr/include/curses.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
   /usr/include/fcntl.h \
@@ -237,9 +240,12 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/linux/errno.h \
   /usr/include/linux/falloc.h \
   /usr/include/linux/posix_types.h \
+  /usr/include/linux/stat.h \
   /usr/include/linux/stddef.h \
+  /usr/include/linux/types.h \
   /usr/include/locale.h \
   /usr/include/math.h \
+  /usr/include/ncurses_dll.h \
   /usr/include/netinet/in.h \
   /usr/include/nlohmann/adl_serializer.hpp \
   /usr/include/nlohmann/byte_container_with_subtype.hpp \
@@ -296,6 +302,7 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/string.h \
   /usr/include/strings.h \
   /usr/include/time.h \
+  /usr/include/unctrl.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
@@ -305,6 +312,7 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
   /usr/include/x86_64-linux-gnu/asm/socket.h \
   /usr/include/x86_64-linux-gnu/asm/sockios.h \
+  /usr/include/x86_64-linux-gnu/asm/types.h \
   /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
   /usr/include/x86_64-linux-gnu/bits/confname.h \
@@ -357,6 +365,8 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/bits/socket_type.h \
   /usr/include/x86_64-linux-gnu/bits/ss_flags.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/statx.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
@@ -399,6 +409,8 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
@@ -435,8 +447,10 @@ CMakeFiles/client.dir/src/client/HHH.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/sys/epoll.h \
   /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/sys/sendfile.h \
   /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
   /usr/include/x86_64-linux-gnu/sys/ucontext.h \
@@ -454,9 +468,11 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/asm-generic/bitsperlong.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/int-ll64.h \
   /usr/include/asm-generic/posix_types.h \
   /usr/include/asm-generic/socket.h \
   /usr/include/asm-generic/sockios.h \
+  /usr/include/asm-generic/types.h \
   /usr/include/assert.h \
   /usr/include/c++/13/algorithm \
   /usr/include/c++/13/any \
@@ -668,6 +684,7 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/c++/13/vector \
   /usr/include/c++/13/version \
   /usr/include/ctype.h \
+  /usr/include/curses.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
   /usr/include/fcntl.h \
@@ -682,9 +699,12 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/linux/errno.h \
   /usr/include/linux/falloc.h \
   /usr/include/linux/posix_types.h \
+  /usr/include/linux/stat.h \
   /usr/include/linux/stddef.h \
+  /usr/include/linux/types.h \
   /usr/include/locale.h \
   /usr/include/math.h \
+  /usr/include/ncurses_dll.h \
   /usr/include/netinet/in.h \
   /usr/include/nlohmann/adl_serializer.hpp \
   /usr/include/nlohmann/byte_container_with_subtype.hpp \
@@ -741,6 +761,7 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/string.h \
   /usr/include/strings.h \
   /usr/include/time.h \
+  /usr/include/unctrl.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
@@ -750,6 +771,7 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
   /usr/include/x86_64-linux-gnu/asm/socket.h \
   /usr/include/x86_64-linux-gnu/asm/sockios.h \
+  /usr/include/x86_64-linux-gnu/asm/types.h \
   /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
   /usr/include/x86_64-linux-gnu/bits/confname.h \
@@ -802,6 +824,8 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/bits/socket_type.h \
   /usr/include/x86_64-linux-gnu/bits/ss_flags.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/statx.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
@@ -844,6 +868,8 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
@@ -880,8 +906,10 @@ CMakeFiles/client.dir/src/client/TUI.cpp.o: /home/zxc/ChatRoom/ChatApp/src/clien
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/sys/epoll.h \
   /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/sys/sendfile.h \
   /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
   /usr/include/x86_64-linux-gnu/sys/ucontext.h \
@@ -900,9 +928,11 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/asm-generic/bitsperlong.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/int-ll64.h \
   /usr/include/asm-generic/posix_types.h \
   /usr/include/asm-generic/socket.h \
   /usr/include/asm-generic/sockios.h \
+  /usr/include/asm-generic/types.h \
   /usr/include/assert.h \
   /usr/include/c++/13/algorithm \
   /usr/include/c++/13/any \
@@ -1114,6 +1144,7 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/c++/13/vector \
   /usr/include/c++/13/version \
   /usr/include/ctype.h \
+  /usr/include/curses.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
   /usr/include/fcntl.h \
@@ -1128,9 +1159,12 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/linux/errno.h \
   /usr/include/linux/falloc.h \
   /usr/include/linux/posix_types.h \
+  /usr/include/linux/stat.h \
   /usr/include/linux/stddef.h \
+  /usr/include/linux/types.h \
   /usr/include/locale.h \
   /usr/include/math.h \
+  /usr/include/ncurses_dll.h \
   /usr/include/netinet/in.h \
   /usr/include/nlohmann/adl_serializer.hpp \
   /usr/include/nlohmann/byte_container_with_subtype.hpp \
@@ -1187,6 +1221,7 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/string.h \
   /usr/include/strings.h \
   /usr/include/time.h \
+  /usr/include/unctrl.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
@@ -1196,6 +1231,7 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
   /usr/include/x86_64-linux-gnu/asm/socket.h \
   /usr/include/x86_64-linux-gnu/asm/sockios.h \
+  /usr/include/x86_64-linux-gnu/asm/types.h \
   /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
   /usr/include/x86_64-linux-gnu/bits/confname.h \
@@ -1248,6 +1284,8 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/bits/socket_type.h \
   /usr/include/x86_64-linux-gnu/bits/ss_flags.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/statx.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
@@ -1290,6 +1328,8 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
@@ -1326,8 +1366,10 @@ CMakeFiles/client.dir/src/client/client.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/sys/epoll.h \
   /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/sys/sendfile.h \
   /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
   /usr/include/x86_64-linux-gnu/sys/ucontext.h \
@@ -1345,9 +1387,11 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/asm-generic/bitsperlong.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/int-ll64.h \
   /usr/include/asm-generic/posix_types.h \
   /usr/include/asm-generic/socket.h \
   /usr/include/asm-generic/sockios.h \
+  /usr/include/asm-generic/types.h \
   /usr/include/assert.h \
   /usr/include/c++/13/algorithm \
   /usr/include/c++/13/any \
@@ -1559,6 +1603,7 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/c++/13/vector \
   /usr/include/c++/13/version \
   /usr/include/ctype.h \
+  /usr/include/curses.h \
   /usr/include/endian.h \
   /usr/include/errno.h \
   /usr/include/fcntl.h \
@@ -1573,9 +1618,12 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/linux/errno.h \
   /usr/include/linux/falloc.h \
   /usr/include/linux/posix_types.h \
+  /usr/include/linux/stat.h \
   /usr/include/linux/stddef.h \
+  /usr/include/linux/types.h \
   /usr/include/locale.h \
   /usr/include/math.h \
+  /usr/include/ncurses_dll.h \
   /usr/include/netinet/in.h \
   /usr/include/nlohmann/adl_serializer.hpp \
   /usr/include/nlohmann/byte_container_with_subtype.hpp \
@@ -1632,6 +1680,7 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/string.h \
   /usr/include/strings.h \
   /usr/include/time.h \
+  /usr/include/unctrl.h \
   /usr/include/unistd.h \
   /usr/include/wchar.h \
   /usr/include/wctype.h \
@@ -1641,6 +1690,7 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
   /usr/include/x86_64-linux-gnu/asm/socket.h \
   /usr/include/x86_64-linux-gnu/asm/sockios.h \
+  /usr/include/x86_64-linux-gnu/asm/types.h \
   /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
   /usr/include/x86_64-linux-gnu/bits/byteswap.h \
   /usr/include/x86_64-linux-gnu/bits/confname.h \
@@ -1693,6 +1743,8 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/bits/socket_type.h \
   /usr/include/x86_64-linux-gnu/bits/ss_flags.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/statx-generic.h \
+  /usr/include/x86_64-linux-gnu/bits/statx.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
@@ -1735,6 +1787,8 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_sigstack.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
@@ -1771,8 +1825,10 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/sys/epoll.h \
   /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/sys/sendfile.h \
   /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
   /usr/include/x86_64-linux-gnu/sys/ucontext.h \
@@ -1793,13 +1849,15 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/x86_64-linux-gnu/sys/types.h:
 
+/usr/include/x86_64-linux-gnu/sys/stat.h:
+
 /usr/include/x86_64-linux-gnu/sys/single_threaded.h:
+
+/usr/include/x86_64-linux-gnu/sys/sendfile.h:
 
 /usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h:
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:
 
@@ -1834,6 +1892,8 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_statx_timestamp.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:
 
@@ -1882,6 +1942,8 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-least.h:
+
+/usr/include/x86_64-linux-gnu/bits/statx-generic.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/sig_atomic_t.h:
 
@@ -1949,11 +2011,15 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/x86_64-linux-gnu/bits/byteswap.h:
 
+/usr/include/x86_64-linux-gnu/asm/types.h:
+
 /usr/include/x86_64-linux-gnu/bits/cpu-set.h:
 
 /usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
 
 /usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
+
+/usr/include/x86_64-linux-gnu/bits/statx.h:
 
 /usr/include/unistd.h:
 
@@ -1977,8 +2043,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/nlohmann/thirdparty/hedley/hedley.hpp:
 
-/usr/include/nlohmann/detail/value_t.hpp:
-
 /usr/include/nlohmann/detail/string_escape.hpp:
 
 /usr/include/nlohmann/detail/output/serializer.hpp:
@@ -2001,7 +2065,21 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/nlohmann/detail/iterators/primitive_iterator.hpp:
 
+/usr/include/x86_64-linux-gnu/bits/types/struct_statx.h:
+
 /usr/include/nlohmann/detail/iterators/json_reverse_iterator.hpp:
+
+/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+
+/usr/include/nlohmann/detail/iterators/iteration_proxy.hpp:
+
+/usr/include/nlohmann/detail/iterators/iter_impl.hpp:
+
+/usr/include/nlohmann/detail/iterators/internal_iterator.hpp:
+
+/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
+
+/usr/include/nlohmann/detail/input/position_t.hpp:
 
 /usr/include/stdint.h:
 
@@ -2065,8 +2143,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/ratio:
 
-/usr/include/c++/13/bits/this_thread_sleep.h:
-
 /usr/include/c++/13/bits/shared_ptr.h:
 
 /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
@@ -2080,8 +2156,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/nlohmann/detail/string_concat.hpp:
 
 /usr/include/c++/13/bits/requires_hosted.h:
-
-/usr/include/c++/13/bits/locale_facets.tcc:
 
 /usr/include/nlohmann/detail/iterators/iterator_traits.hpp:
 
@@ -2147,9 +2221,13 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/bits/fs_ops.h:
 
-/usr/include/nlohmann/detail/iterators/internal_iterator.hpp:
+/usr/include/c++/13/bits/this_thread_sleep.h:
 
 /usr/include/c++/13/bits/invoke.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/error_t.h:
+
+/usr/include/c++/13/bits/hashtable.h:
 
 /usr/include/c++/13/bits/stl_queue.h:
 
@@ -2166,14 +2244,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/c++/13/bits/istream.tcc:
 
 /usr/include/c++/13/bits/exception_ptr.h:
-
-/usr/include/c++/13/bits/stringfwd.h:
-
-/usr/include/c++/13/bits/locale_classes.tcc:
-
-/usr/include/c++/13/bits/uniform_int_dist.h:
-
-/usr/include/c++/13/bits/valarray_before.h:
 
 /usr/include/c++/13/backward/binders.h:
 
@@ -2207,28 +2277,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/bits/unique_ptr.h:
 
-/usr/include/c++/13/clocale:
-
-/usr/include/wchar.h:
-
-/usr/include/c++/13/bits/shared_ptr_base.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
-
-/usr/include/asm-generic/bitsperlong.h:
-
-/usr/include/c++/13/cctype:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
-
-/usr/include/c++/13/ext/atomicity.h:
-
-/usr/include/c++/13/tr1/gamma.tcc:
-
-/usr/include/x86_64-linux-gnu/bits/socket.h:
-
-/usr/include/nlohmann/detail/hash.hpp:
-
 /usr/include/asm-generic/posix_types.h:
 
 /usr/include/x86_64-linux-gnu/bits/sigcontext.h:
@@ -2249,13 +2297,13 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/bits/fs_path.h:
 
+/usr/include/nlohmann/detail/input/parser.hpp:
+
+/usr/include/c++/13/cstdio:
+
 /usr/include/nlohmann/detail/meta/detected.hpp:
 
 /usr/include/c++/13/fstream:
-
-/usr/include/c++/13/bits/allocated_ptr.h:
-
-/usr/include/c++/13/bit:
 
 /usr/include/c++/13/bits/basic_string.tcc:
 
@@ -2265,7 +2313,77 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/bits/stream_iterator.h:
 
+/usr/include/nlohmann/detail/json_custom_base_class.hpp:
+
+/usr/include/c++/13/bits/stl_raw_storage_iter.h:
+
+/usr/include/c++/13/algorithm:
+
+/usr/include/x86_64-linux-gnu/sys/socket.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
+
+/usr/include/c++/13/bits/stl_vector.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h:
+
+/usr/include/ncurses_dll.h:
+
+/usr/include/c++/13/bits/stl_tempbuf.h:
+
+/usr/include/c++/13/bits/stl_tree.h:
+
+/usr/include/c++/13/bits/codecvt.h:
+
+/usr/include/c++/13/bit:
+
+/usr/include/c++/13/bits/allocated_ptr.h:
+
+/usr/include/c++/13/clocale:
+
 /home/zxc/ChatRoom/ChatApp/include/HHH.hpp:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:
+
+/usr/include/c++/13/any:
+
+/usr/include/c++/13/array:
+
+/usr/include/unctrl.h:
+
+/usr/include/c++/13/bits/hash_bytes.h:
+
+/usr/include/x86_64-linux-gnu/sys/wait.h:
+
+/usr/include/c++/13/bits/stl_iterator_base_funcs.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/assert.h:
+
+/usr/include/c++/13/backward/auto_ptr.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
+
+/usr/include/asm-generic/types.h:
+
+/usr/include/asm-generic/bitsperlong.h:
+
+/usr/include/c++/13/cctype:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
+
+/usr/include/c++/13/ext/atomicity.h:
+
+/usr/include/c++/13/tr1/gamma.tcc:
+
+/usr/include/x86_64-linux-gnu/bits/socket.h:
+
+/usr/include/nlohmann/detail/hash.hpp:
+
+/usr/include/wchar.h:
+
+/usr/include/c++/13/bits/shared_ptr_base.h:
 
 /usr/include/c++/13/bits/alloc_traits.h:
 
@@ -2285,29 +2403,15 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/bits/chrono.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h:
+/usr/include/asm-generic/int-ll64.h:
 
-/usr/include/c++/13/any:
+/usr/include/c++/13/bits/shared_ptr_atomic.h:
 
-/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+/usr/include/c++/13/set:
 
-/usr/include/nlohmann/detail/iterators/iteration_proxy.hpp:
+/usr/include/c++/13/thread:
 
-/usr/include/c++/13/backward/auto_ptr.h:
-
-/usr/include/assert.h:
-
-/usr/include/x86_64-linux-gnu/sys/socket.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
-
-/usr/include/c++/13/bits/stl_vector.h:
-
-/usr/include/c++/13/bits/stl_tempbuf.h:
-
-/usr/include/c++/13/bits/stl_tree.h:
-
-/usr/include/c++/13/bits/codecvt.h:
+/usr/include/c++/13/bits/deque.tcc:
 
 /usr/include/asm-generic/socket.h:
 
@@ -2324,22 +2428,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/nlohmann/json_fwd.hpp:
 
 /usr/include/c++/13/bits/fstream.tcc:
-
-/usr/include/nlohmann/detail/json_custom_base_class.hpp:
-
-/usr/include/c++/13/bits/stl_raw_storage_iter.h:
-
-/usr/include/c++/13/algorithm:
-
-/usr/include/c++/13/array:
-
-/usr/include/x86_64-linux-gnu/sys/wait.h:
-
-/usr/include/c++/13/bits/stl_iterator_base_funcs.h:
-
-/usr/include/asm-generic/errno-base.h:
-
-/usr/include/c++/13/bits/hash_bytes.h:
 
 /usr/include/c++/13/bits/streambuf.tcc:
 
@@ -2374,8 +2462,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/c++/13/bits/hashtable_policy.h:
 
 /usr/include/netinet/in.h:
-
-/usr/include/c++/13/bits/deque.tcc:
 
 /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
 
@@ -2429,8 +2515,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/errno.h:
 
-/usr/include/nlohmann/detail/iterators/iter_impl.hpp:
-
 /usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h:
 
 /usr/include/c++/13/bits/forward_list.tcc:
@@ -2447,9 +2531,13 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/sstream:
 
-/usr/include/x86_64-linux-gnu/bits/types/error_t.h:
+/usr/include/c++/13/bits/stringfwd.h:
 
-/usr/include/c++/13/bits/hashtable.h:
+/usr/include/c++/13/bits/locale_classes.tcc:
+
+/usr/include/c++/13/bits/uniform_int_dist.h:
+
+/usr/include/c++/13/bits/valarray_before.h:
 
 /usr/include/c++/13/bits/unique_lock.h:
 
@@ -2545,9 +2633,9 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/functional:
 
-/usr/include/c++/13/bits/std_thread.h:
-
 /usr/include/c++/13/tr1/bessel_function.tcc:
+
+/usr/include/c++/13/bits/std_thread.h:
 
 /usr/include/c++/13/initializer_list:
 
@@ -2587,12 +2675,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/queue:
 
-/usr/include/c++/13/bits/shared_ptr_atomic.h:
-
-/usr/include/c++/13/set:
-
-/usr/include/c++/13/thread:
-
 /usr/include/c++/13/stdexcept:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
@@ -2619,6 +2701,8 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/c++/13/tr1/legendre_function.tcc:
 
+/usr/include/curses.h:
+
 /usr/include/c++/13/tr1/modified_bessel_func.tcc:
 
 /usr/include/c++/13/bits/nested_exception.h:
@@ -2630,10 +2714,6 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/c++/13/unordered_map:
 
 /usr/include/c++/13/vector:
-
-/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
-
-/usr/include/nlohmann/detail/input/position_t.hpp:
 
 /usr/include/ctype.h:
 
@@ -2663,6 +2743,14 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 
 /usr/include/linux/errno.h:
 
+/usr/include/c++/13/bits/locale_facets.tcc:
+
+/usr/include/linux/stat.h:
+
+/usr/include/nlohmann/detail/value_t.hpp:
+
+/usr/include/linux/types.h:
+
 /usr/include/c++/13/bits/basic_ios.h:
 
 /usr/include/nlohmann/detail/conversions/from_json.hpp:
@@ -2674,7 +2762,3 @@ CMakeFiles/client.dir/src/client/manage.cpp.o: /home/zxc/ChatRoom/ChatApp/src/cl
 /usr/include/nlohmann/detail/conversions/to_chars.hpp:
 
 /usr/include/nlohmann/detail/exceptions.hpp:
-
-/usr/include/c++/13/cstdio:
-
-/usr/include/nlohmann/detail/input/parser.hpp:

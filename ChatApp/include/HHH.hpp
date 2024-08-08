@@ -8,7 +8,7 @@ public:
 
     void run(int fd);
     void menu();
-    void message(int fd);
+    void message_s(int fd);
     void f_reply(int fd);
     void f_chat(int fd);
     void f_block(int fd);
@@ -28,6 +28,7 @@ public:
     void g_delete_manager(int fd);
     // 移除群用户(群主/管理员)
     void g_delete_people(int fd);
+    void file_pass(int fd);
 
 private:
     atomic<bool> running;
