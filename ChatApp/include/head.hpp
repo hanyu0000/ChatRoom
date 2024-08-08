@@ -17,13 +17,16 @@
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
+#include <ncurses.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
 #include <functional>
 #include <sys/wait.h>
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/sendfile.h>
 #include <nlohmann/json.hpp>
 #include <hiredis/hiredis.h>
 #include <condition_variable>

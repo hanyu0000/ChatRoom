@@ -104,7 +104,10 @@ void process_client_messages(int fd)
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             cout << "服务端数据接受完毕......" << endl;
         else
-            cerr << "recv 错误: " << strerror(errno) << endl;
+        {
+            cout << "用户" << fd << "下线" << endl;
+            client_map.erase(fd);
+        }
         return;
     }
 
@@ -151,7 +154,11 @@ void handleClientMessage(int fd, const json &j)
 {
     string msg_type = j["type"];
     cout << msg_type << endl;
-    if (msg_type == "register")
+    if (msg_type == "login")
+    {
+        login(fd, j); 
+    }
+    else if (msg_type == "register")
     {
         doregister(fd, j); // 注册
     }
@@ -167,9 +174,41 @@ void handleClientMessage(int fd, const json &j)
     {
         f_chatlist(fd, j); // 好友列表
     }
+    else if (msg_type == "mygrouplist")
+    {
+        my_group_list(fd, j); // 我创建的群聊列表
+    }
+    else if (msg_type == "add_manager")
+    {
+        add_manager(fd, j); // 设置管理员
+    }
+    else if (msg_type == "delete_manager")
+    {
+        delete_manager(fd, j); // 删除管理员
+    }
+    else if (msg_type == "managelist")
+    {
+        managelist(fd, j); // 管理员列表
+    }
+    else if (msg_type == "delete_people")
+    {
+        delete_people(fd, j); 
+    }
     else if (msg_type == "chat")
     {
         f_chat(fd, j); // 好友聊天
+    }
+    else if (msg_type == "file")
+    {
+        file(fd, j); // 收文件
+    }
+    else if (msg_type == "send_file")
+    {
+        send_file(fd, j); // 发文件
+    }
+    else if (msg_type == "f_chatHistry")
+    {
+        f_chatHistry(fd, j); // 聊天记录
     }
     else if (msg_type == "blockfriend")
     {
@@ -179,13 +218,17 @@ void handleClientMessage(int fd, const json &j)
     {
         f_unblock(fd, j); // 好友取消屏蔽
     }
+    else if (msg_type == "block_list")
+    {
+        block_list(fd, j); // 屏蔽列表
+    }
     else if (msg_type == "addfriend")
     {
         f_add(fd, j); // 好友添加
     }
     else if (msg_type == "addfriendreply")
     {
-        f_addreply(fd, j);
+        f_addreply(fd, j); // 好友申请回复
     }
     else if (msg_type == "deletefriend")
     {
