@@ -6,17 +6,17 @@ ThreadPool::ThreadPool(int min, int max) : maxThreads(max),
 {
     // idleThreads = curThreads = max / 2;
     idleThreads = curThreads = min;
-    manager = new thread(&ThreadPool::manager, this);//创建管理线程
+    manager = new thread(&ThreadPool::manager, this); // 创建管理线程
     for (int i = 0; i < curThreads; ++i)
     {
-        thread t(&ThreadPool::worker, this);//创建工作线程
-        workers.insert(make_pair(t.get_id(), move(t)));//将工作线程放进线程池
+        thread t(&ThreadPool::worker, this);            // 创建工作线程
+        workers.insert(make_pair(t.get_id(), move(t))); // 将工作线程放进线程池
     }
 }
 
 ThreadPool::~ThreadPool()
 {
-    stop = true;//释放资源
+    stop = true; // 释放资源
     condition.notify_all();
     for (auto &it : workers)
     {
@@ -25,9 +25,7 @@ ThreadPool::~ThreadPool()
             t.join();
     }
     if (manager->joinable())
-    {
         manager->join();
-    }
     delete manager;
 }
 
@@ -35,19 +33,21 @@ void ThreadPool::addTask(function<void()> f)
 {
     {
         lock_guard<mutex> locker(queueMutex);
-        tasks.emplace(f);//添加任务到任务队列
+        tasks.emplace(f); // 添加任务到任务队列push
+        // 调用 emplace 时，它会在容器的内存空间中直接构造对象
+        // 你传递给 emplace 的参数会被直接传递给对象的构造函数
     }
-    condition.notify_one();//通知线程有新任务
+    condition.notify_one(); // 通知线程有新任务
 }
 
 void ThreadPool::my_manager()
 {
-    while (!stop.load())
+    while (!stop.load()) // 以原子方式读取其当前值
     {
-        this_thread::sleep_for(chrono::seconds(2));//每2秒检查
+        this_thread::sleep_for(chrono::seconds(2)); // 每2秒检查
         int idle = idleThreads.load();
         int current = curThreads.load();
-        if (idle > current / 2 && current > minThreads)
+        if (idle > current / 2 && current > minThreads) //-
         {
             exitNumber.store(2);
             condition.notify_all();
@@ -63,7 +63,7 @@ void ThreadPool::my_manager()
             }
             ids.clear();
         }
-        else if (idle == 0 && current < maxThreads)
+        else if (idle == 0 && current < maxThreads) //+
         {
             thread t(&ThreadPool::worker, this);
             workers.insert(make_pair(t.get_id(), move(t)));
@@ -82,7 +82,7 @@ void ThreadPool::worker()
             unique_lock<mutex> locker(queueMutex);
             while (!stop && tasks.empty())
             {
-                condition.wait(locker);
+                condition.wait(locker); // 线程进入等待状态，由condition.notify_one()或condition.notify_all()触发
                 if (exitNumber.load() > 0)
                 {
                     exitNumber--;
@@ -93,7 +93,7 @@ void ThreadPool::worker()
                 }
             }
 
-            if (!tasks.empty())
+            if (!tasks.empty()) // 检查任务是否为空，不为空从队列取出一个任务执行
             {
                 task = move(tasks.front());
                 tasks.pop();
@@ -103,7 +103,7 @@ void ThreadPool::worker()
         if (task)
         {
             idleThreads--;
-            task();
+            task(); // 执行任务
             idleThreads++;
         }
     }

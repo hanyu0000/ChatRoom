@@ -1,7 +1,83 @@
 #include "head.hpp"
 #include "task.hpp"
-// 实例化 RedisServer 对象
-RedisServer redis;
+RedisServer redis; // 实例化 RedisServer 对象
+
+// 文件//file
+void file(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    string f_name = j["name"];
+    int f_fd = get_fd(f_name, client_map);
+    string filename = j["filename"];
+    off_t filesize = j["filesize"];
+
+    // 创建临时文件以接收数据
+    string temp_filename = "/tmp/" + filename;
+    int file_fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (file_fd == -1)
+        err_("open file fail");
+
+    off_t sum = 0;
+    ssize_t len;
+    char buffer[4096];
+    while (sum < filesize)
+    {
+        len = recv(fd, buffer, sizeof(buffer), 0);
+        if (len <= 0)
+        {
+            perror("recv");
+            break;
+        }
+        if (write(file_fd, buffer, len) != len)
+        {
+            perror("write");
+            break;
+        }
+        sum += len;
+    }
+    close(file_fd);
+    // 将文件存储到 Redis 中
+
+    // 删除临时文件
+    remove(temp_filename.c_str());
+
+    // 通知
+    json to_my = {
+        {"have_file", my_name}};
+    string message = to_my.dump();
+    if (Util::send_msg(f_fd, message) == -1)
+        err_("send_msg");
+}
+void send_file(int fd, json j)
+{
+    /* string my_name = get_name(fd, client_map);
+    string f_name = j["name"];
+    int f_fd = get_fd(f_name, client_map);
+    string filename = j["filename"];
+
+    json u_i = {
+        {"type", "file"},
+        {"filename", filename}};
+    string message = u_i.dump();
+    if (Util::send_msg(fd, message) == -1)
+        err_("send_msg");
+
+    size_t total_size = file_content.size();
+    size_t sent_size = 0;
+    ssize_t len;
+
+    while (sent_size < total_size)
+    {
+        len = send(fd, data + sent_size, total_size - sent_size, 0);
+        if (len <= 0)
+        {
+            perror("send");
+            break;
+        }
+        sent_size += len;
+    } */
+    cout << "文件发送完成！" << endl;
+}
 // 注册
 void doregister(int fd, json j)
 {
@@ -79,85 +155,214 @@ void isUser(int fd, json j)
     if (Util::send_msg(fd, str) == -1)
         err_("send_msg");
 }
-// 文件//file
-void file(int fd, json j)
+// 群聊
+void g_chat(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
-    string f_name = j["name"];
-    int f_fd = get_fd(f_name, client_map);
-    string filename = j["filename"];
-    off_t filesize = j["filesize"];
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string group = j["group"].get<string>();
 
-    // 创建临时文件以接收数据
-    string temp_filename = "/tmp/" + filename;
-    int file_fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-    if (file_fd == -1)
-        err_("open file fail");
-
-    off_t sum = 0;
-    ssize_t len;
-    char buffer[4096];
-    while (sum < filesize)
+    vector<string> Group = redis.getGroupMembers(group);
+    for (const auto &name : Group)
     {
-        len = recv(fd, buffer, sizeof(buffer), 0);
-        if (len <= 0)
-        {
-            perror("recv");
-            break;
-        }
-        if (write(file_fd, buffer, len) != len)
-        {
-            perror("write");
-            break;
-        }
-        sum += len;
-    }
-    close(file_fd);
-    // 将文件存储到 Redis 中
-    redis.store_file(my_name, f_name, temp_filename);
-    // 删除临时文件
-    remove(temp_filename.c_str());
+        cout << name << endl;
+        int f_fd = get_fd(name, client_map);
+        if (f_fd == -1 || f_fd == fd)
+            continue;
 
-    // 通知
-    json to_my = {
-        {"have_file", my_name}};
-    string message = to_my.dump();
-    if (Util::send_msg(f_fd, message) == -1)
-        err_("send_msg");
+        string reply = my_name + ':' + j["message"].get<string>(); // 消息
+        json to = {
+            {"chat", reply},
+            {"f_name", my_name}};
+        string message = to.dump();
+
+        redis.storeGroupMessage(group, reply); // 存聊天记录
+        if (Util::send_msg(f_fd, message) == -1)
+            err_("send_msg");
+    }
 }
-void send_file(int fd, json j)
+// 请求群聊天记录
+void g_chatHistry(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
-    string f_name = j["name"];
-    int f_fd = get_fd(f_name, client_map);
-    string filename = j["filename"];
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string group = j["group"].get<string>();
 
-    string file_content = redis.retrieve_file(f_name, my_name, filename);
-
-    json u_i = {
-        {"type", "file"},
-        {"filename", filename},
-        {"filesize", file_content.size()}};
-    string message = u_i.dump();
+    vector<string> g_Chat = redis.getGroupMessages(group);
+    for (const auto &message : g_Chat)
+        cout << message << endl;
+    json to_my = {
+        {"g_chatHistry", g_Chat}};
+    string message = to_my.dump();
     if (Util::send_msg(fd, message) == -1)
         err_("send_msg");
+}
+// 好友聊天
+void f_chat(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string f_name = j["name"].get<string>();
+    int f_fd = get_fd(f_name, client_map);
 
-    const char *data = file_content.data();
-    size_t total_size = file_content.size();
-    size_t sent_size = 0;
-    ssize_t len;
+    string reply = j["message"].get<string>(); // 消息
+    json to = {
+        {"chat", reply},
+        {"f_name", my_name}};
+    string message = to.dump();
 
-    while (sent_size < total_size)
+    redis.storeChatRecord(f_name, my_name, reply); // 存聊天记录
+    if (f_fd == -1)                                // 离线
     {
-        len = send(fd, data + sent_size, total_size - sent_size, 0);
-        if (len <= 0)
+        redis.storeOfflineMessage(my_name, f_name, reply);
+        return;
+    }
+    if (Util::send_msg(f_fd, message) == -1)
+        err_("send_msg");
+    cout << " 转发消息成功！ " << endl;
+}
+// 好友添加 addfriend
+void f_add(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string f_name = j["name"].get<string>();
+
+    // 判断用户是否存在
+    bool userexit = redis.friends_exit(f_name);
+    cout << "userexit:" << userexit << endl;
+    if (!userexit) // 用户不存在
+    {
+        json a =
+            {
+                {"nopeople", f_name}};
+        string str = a.dump();
+        if (Util::send_msg(fd, str) == -1)
+            err_("send_msg");
+        return;
+    }
+
+    int f_fd = get_fd(f_name, client_map);
+    // 用户离线
+    if (f_fd == -1)
+    {
+        redis.storeFriendRequest(f_name, my_name); // 存储好友申请
+        cout << "用户离线，好友申请已存储至 Redis" << endl;
+        return;
+    }
+    json b = {
+        {"newfriend", my_name}};
+    string message = b.dump();
+    if (Util::send_msg(f_fd, message) == -1)
+        err_("send_msg");
+    cout << "发送好友申请成功!" << endl;
+}
+//  请求好友申请离线消息
+void newfriend_leave(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+
+    while (1)
+    {
+        json b;
+        // 离线消息
+        string sender = redis.getAndRemoveFriendRequest(my_name);
+        if (sender == "NO")
         {
-            perror("send");
+            b = {
+                {"newfriend_leave", "NO"}};
+            string message = b.dump();
+            if (Util::send_msg(fd, message) == -1)
+                err_("send");
             break;
         }
-        sent_size += len;
+        else
+        {
+            b = {
+                {"newfriend_leave", sender}};
+            string message = b.dump();
+            if (Util::send_msg(fd, message) == -1)
+                err_("send");
+        }
     }
-    cout << "文件发送完成！" << endl;
+    cout << "发送好友申请消息成功!" << endl;
+}
+// 好友添加回复
+void f_addreply(int fd, json j)
+{
+    string f_name = get_name(fd, client_map);
+    cout << "处理来自 <" << f_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string my_name = j["name"].get<string>();
+    int my_fd = get_fd(my_name, client_map); // 发出申请
+
+    string reply = j["reply"].get<string>();
+    cout << reply << endl;
+    if (reply == "YES")
+    {
+        json to_my = {
+            {"newfriendreply", reply},
+            {"f_name", f_name}};
+        string message = to_my.dump();
+        cout << "同意加好友" << endl;
+        redis.addFriend(my_name, f_name);
+        redis.addFriend(f_name, my_name);
+        if (Util::send_msg(fd, message) == -1)
+            err_("send_msg");
+    }
+    else if (reply == "NO")
+    {
+        json to_my = {
+            {"newfriendreply", reply},
+            {"f_name", f_name}};
+        string message = to_my.dump();
+        cout << "不同意加好友" << endl;
+        if (Util::send_msg(fd, message) == -1)
+            err_("send_msg");
+    }
+}
+//  请求聊天记录
+void f_chatHistry(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string f_name = j["name"].get<string>();
+
+    vector<string> Chat = redis.getChatRecord(my_name, f_name);
+    for (const auto &message : Chat)
+        cout << message << endl;
+    json to_my = {
+        {"f_chatHistry", Chat}};
+    string message = to_my.dump();
+    if (Util::send_msg(fd, message) == -1)
+        err_("send_msg");
+}
+//  请求离线消息f_chat_leave
+void f_chat_leave(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string f_name = j["name"].get<string>();
+
+    json to;
+    // 有离线消息
+    if (redis.hasOfflineMessageFromSender(my_name, f_name))
+    {
+        vector<string> reply = redis.getOfflineMessages(my_name, f_name);
+        to = {
+            {"f_chat_leave", reply}};
+        for (const auto &message : reply)
+            cout << message << endl;
+    }
+    else
+    {
+        to = {
+            {"f_chat_leave", "NO"}};
+        cout << "没有离线消息转发成功！" << endl;
+    }
+    string message = to.dump();
+    if (Util::send_msg(fd, message) == -1)
+        err_("send");
 }
 // 屏蔽列表
 void block_list(int fd, json j)
@@ -247,30 +452,6 @@ void f_chatlist(int fd, json j)
     if (Util::send_msg(fd, message) == -1)
         err_("send_msg");
 }
-// 好友聊天
-void f_chat(int fd, json j)
-{
-    string my_name = get_name(fd, client_map);
-    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
-    string f_name = j["name"].get<string>();
-    int f_fd = get_fd(f_name, client_map);
-
-    string reply = j["message"].get<string>();
-    json to = {
-        {"chat", reply},
-        {"f_name", my_name}};
-    string message = to.dump();
-    if (Util::send_msg(f_fd, message) == -1)
-        err_("send_msg");
-    cout << " 转发消息成功！ " << endl;
-    // 存离线消息
-    redis.storeChatRecord(f_name, my_name, reply);
-}
-//  请求聊天记录
-void f_chatHistry(int fd, json j)
-{
-    return;
-}
 // 好友屏蔽
 void f_block(int fd, json j)
 {
@@ -288,69 +469,6 @@ void f_unblock(int fd, json j)
     string f_name = j["name"].get<string>();
     int f_fd = get_fd(f_name, client_map);
     redis.unblockUser(my_name, f_name); // 从屏蔽列表取出
-}
-// 好友添加 addfriend
-void f_add(int fd, json j)
-{
-    string my_name = get_name(fd, client_map);
-    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
-    string f_name = j["name"].get<string>();
-    int f_fd = get_fd(f_name, client_map);
-
-    // 判断用户是否存在
-    bool userexit = redis.friends_exit(f_name);
-    cout << "userexit:" << userexit << endl;
-    if (!userexit) // 用户不存在
-    {
-        json a =
-            {
-                {"nopeople", f_name}};
-        string str = a.dump();
-        if (Util::send_msg(fd, str) == -1)
-            err_("send_msg");
-        return;
-    }
-
-    json b = {
-        {"newfriend", my_name}};
-    string message = b.dump();
-    if (Util::send_msg(f_fd, message) == -1)
-        err_("send_msg");
-    cout << "发送好友申请成功!" << endl;
-}
-// 好友添加回复
-void f_addreply(int fd, json j)
-{
-    string f_name = get_name(fd, client_map);
-    cout << "处理来自 <" << f_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
-    string my_name = j["name"].get<string>();
-    int my_fd = get_fd(my_name, client_map); // 发出申请
-
-    string reply = j["reply"].get<string>();
-    cout << reply << endl;
-
-    if (reply == "YES")
-    {
-        json to_my = {
-            {"newfriendreply", reply},
-            {"f_name", f_name}};
-        string message = to_my.dump();
-        cout << "同意加好友" << endl;
-        redis.addFriend(my_name, f_name);
-        redis.addFriend(f_name, my_name);
-        if (Util::send_msg(fd, message) == -1)
-            err_("send_msg");
-    }
-    else if (reply == "NO")
-    {
-        json to_my = {
-            {"newfriendreply", reply},
-            {"f_name", f_name}};
-        string message = to_my.dump();
-        cout << "不同意加好友" << endl;
-        if (Util::send_msg(fd, message) == -1)
-            err_("send_msg");
-    }
 }
 // 好友删除
 void f_delete(int fd, json j)
@@ -409,31 +527,37 @@ void delete_people(int fd, json j)
     string group = j["group"].get<string>();
     string name = j["name"].get<string>();
 
+    json response;
     // 我是群主，可以删任何人
     if (redis.isGroupOwner(group, my_name))
+    {
         redis.removeMemberFromGroup(group, name);
+        response = {
+            {"type", "OK"}};
+    }
     // 我是管理员，可以删普通用户
     else if (redis.isGroupManager(group, my_name))
     {
         if (redis.isGroupOwner(group, name) || redis.isGroupManager(group, name))
         {
-            json response = {
+            response = {
                 {"type", "delete_people"}};
-            string message = response.dump();
-            if (Util::send_msg(fd, message) == -1)
-                err_("send_msg");
         }
         else
+        {
             redis.removeMemberFromGroup(group, name);
+            response = {
+                {"type", "OK"}};
+        }
     }
     else
     {
-        json response = {
+        response = {
             {"type", "delete_people"}};
-        string message = response.dump();
-        if (Util::send_msg(fd, message) == -1)
-            err_("send_msg");
     }
+    string message = response.dump();
+    if (Util::send_msg(fd, message) == -1)
+        err_("send_msg");
 }
 // 查询群聊
 void g_showlist(int fd, json j)

@@ -16,7 +16,7 @@ class ThreadPool
 public:
     ThreadPool(int min = 4, int max = thread::hardware_concurrency());
     ~ThreadPool();
-    void addTask(function<void()> f);
+    void addTask(function<void()> f); // 传入一个函数类型的任务
 
 private:
     void my_manager();
@@ -29,7 +29,7 @@ private:
     atomic<int> exitNumber;          // 需要退出的线程数
     atomic<int> idleThreads;         // 空闲线程数
     atomic<int> curThreads;          // 当前线程数
-    thread* manager;                 // 管理线程
+    thread *manager;                 // 管理线程
     map<thread::id, thread> workers; // 工作线程
     queue<function<void()>> tasks;   // 任务队列
     mutex queueMutex;                // 任务队列的互斥锁
