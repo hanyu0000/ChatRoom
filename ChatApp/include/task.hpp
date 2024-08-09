@@ -50,15 +50,13 @@ public:
 
     // 存储屏蔽关系
     bool blockUser(const string &username, const string &blockname);
-    // 获取屏蔽列表
-    vector<string> getBlockedUsers(const string &username);
     // 取消屏蔽用户
     bool unblockUser(const string &username, const string &blockname);
+    // 获取屏蔽列表
+    vector<string> getBlockedUsers(const string &username);
 
     // 我创建的群聊
     void mycreateGroup(const string &groupName, const string &creator);
-    // 我删除群聊
-    void deleteGroupByUser(const string &username, const string &groupName);
     // 获取我创建的群聊列表
     vector<string> getGroupsByUser(const string &username);
 
@@ -113,15 +111,23 @@ public:
     void storeChatRecord(const string &user1, const string &user2, const string &message);
     // 获取聊天记录
     vector<string> getChatRecord(const string &user1, const string &user2);
-    // 存储离线消息
-    void storeOfflineMessage(const string &user, const string &message);
-    // 获取离线消息
-    vector<string> retrieveOfflineMessages(const string &user);
 
-    // 存文件
-    void store_file(const string &sender, const string &receiver, const string &filename);
-    // 读文件
-    string retrieve_file(const string &sender, const string &receiver, const string &filename);
+    // 存储离线消息
+    void storeOfflineMessage(const string &sender, const string &receiver, const string &message);
+    // 获取离线消息,并清空
+    vector<string> getOfflineMessages(const string &receiver, const string &sender);
+    // 判断用户离线消息是否为空
+    bool hasOfflineMessageFromSender(const string &receiver, const string &sender);
+
+    // 存储好友申请
+    void storeFriendRequest(const string &receiver, const string &sender);
+    // 取出并处理好友申请
+    string getAndRemoveFriendRequest(const string &receiver);
+
+    // 存储群聊消息
+    void storeGroupMessage(const string &groupName, const string &message);
+    // 获取群聊记录
+    vector<string> getGroupMessages(const string &groupName);
 
 private:
     redisContext *context;
@@ -133,9 +139,12 @@ void isUser(int fd, json j);        // 是否注册
 void f_chatlist(int fd, json j);    // 好友列表
 void my_group_list(int fd, json j); // 我创建的群聊列表
 void f_chat(int fd, json j);        // 好友聊天
-void file(int fd, json j);          // 文件
-void send_file(int fd, json j);     // 收
+void g_chat(int fd, json j);
+void file(int fd, json j);      // 文件
+void send_file(int fd, json j); // 收
 void delete_people(int fd, json j);
+void f_chat_leave(int fd, json j);
+void newfriend_leave(int fd, json j);
 void add_manager(int fd, json j);    // 设置管理员
 void delete_manager(int fd, json j); // 删除管理员
 void managelist(int fd, json j);     // 管理员列表

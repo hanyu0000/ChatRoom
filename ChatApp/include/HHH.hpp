@@ -8,7 +8,7 @@ public:
 
     void run(int fd);
     void menu();
-    void message_s(int fd);
+    void g_chat(int fd);
     void f_reply(int fd);
     void f_chat(int fd);
     void f_block(int fd);

@@ -148,6 +148,10 @@ void process_client_messages(int fd)
     {
         cerr << "JSON 解析失败: " << e.what() << endl;
     }
+    catch (const json::type_error &e)
+    {
+        cerr << "JSON 解析错误: " << e.what() << endl;
+    }
 }
 
 void handleClientMessage(int fd, const json &j)
@@ -156,7 +160,7 @@ void handleClientMessage(int fd, const json &j)
     cout << msg_type << endl;
     if (msg_type == "login")
     {
-        login(fd, j); 
+        login(fd, j);
     }
     else if (msg_type == "register")
     {
@@ -186,17 +190,29 @@ void handleClientMessage(int fd, const json &j)
     {
         delete_manager(fd, j); // 删除管理员
     }
+    else if (msg_type == "newfriend_leave")
+    {
+        newfriend_leave(fd, j);
+    }
     else if (msg_type == "managelist")
     {
         managelist(fd, j); // 管理员列表
     }
     else if (msg_type == "delete_people")
     {
-        delete_people(fd, j); 
+        delete_people(fd, j);
     }
     else if (msg_type == "chat")
     {
         f_chat(fd, j); // 好友聊天
+    }
+    else if (msg_type == "g_chat")
+    {
+        g_chat(fd, j); // 群聊
+    }
+    else if (msg_type == "f_chat_leave")
+    {
+        f_chat_leave(fd, j); // 离线消息
     }
     else if (msg_type == "file")
     {

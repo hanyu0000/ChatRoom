@@ -23,6 +23,7 @@ tab gtab[] = {
     {14, &HHH::g_delete_manager},
     {15, &HHH::g_delete_people},
     {16, &HHH::file_pass},
+    {17, &HHH::g_chat},
 };
 void HHH::menu()
 {

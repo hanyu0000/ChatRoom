@@ -118,6 +118,7 @@ bool RedisServer::removeFriend(const string &username, const string &friendname)
     freeReplyObject(reply);
     return success;
 }
+
 // 屏蔽好友
 bool RedisServer::blockUser(const string &username, const string &blockname)
 {
@@ -311,8 +312,6 @@ bool RedisServer::removeUserGroupList(const string &username)
     return success;
 }
 
-
-
 // 群主加管理员
 bool RedisServer::addAdminToGroup(const string &groupName, const string &adminName)
 {
@@ -406,6 +405,35 @@ void RedisServer::storeChatRecord(const string &user1, const string &user2, cons
     }
     freeReplyObject(reply2);
 }
+// 获取聊天记录
+vector<string> RedisServer::getChatRecord(const string &user1, const string &user2)
+{
+    vector<string> messages;
+
+    // 使用两个键获取聊天记录
+    string key1 = "chat:" + user1 + ":" + user2;
+    // string key2 = "chat:" + user2 + ":" + user1;
+    //  从 Redis 中获取消息
+    redisReply *reply1 = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key1.c_str());
+    if (reply1 != nullptr)
+    {
+        for (size_t i = 0; i < reply1->elements; ++i)
+            messages.push_back(reply1->element[i]->str);
+        freeReplyObject(reply1);
+    }
+    else
+        cerr << "Redis 命令失败: LRANGE " << key1 << endl;
+    /* redisReply *reply2 = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key2.c_str());
+    if (reply2 != nullptr)
+    {
+        for (size_t i = 0; i < reply2->elements; ++i)
+            messages.push_back(reply2->element[i]->str);
+        freeReplyObject(reply2);
+    }
+    else
+        cerr << "Redis 命令失败: LRANGE " << key2 << endl; */
+    return messages;
+}
 // 删除用户创建的所有聊天记录
 bool RedisServer::removeChatRecordsByUser(const string &username)
 {
@@ -461,10 +489,76 @@ vector<string> RedisServer::getChatPartners(const string &username)
     return partners;
 }
 // 存储离线消息
-void RedisServer::storeOfflineMessage(const string &user, const string &message)
+void RedisServer::storeOfflineMessage(const string &sender, const string &receiver, const string &message)
 {
-    string key = "offline:" + user;
-    redisReply *reply = (redisReply *)redisCommand(context, "RPUSH %s %s", key.c_str(), message.c_str());
+    string key = receiver + ":offline_messages";
+    // 使用 LPUSH 将消息存储在列表中
+    string fullMessage = sender + ":" + message;
+    redisReply *reply = (redisReply *)redisCommand(context, "LPUSH %s %s", key.c_str(), fullMessage.c_str());
+    if (reply == nullptr)
+        cerr << "Redis 存储离线消息失败" << endl;
+    else
+        cout << "离线消息已存储: " << fullMessage << endl;
+    freeReplyObject(reply);
+}
+// 获取离线消息,并清空
+vector<string> RedisServer::getOfflineMessages(const string &receiver, const string &sender)
+{
+    // 键名 "receiver:offline_messages"
+    string key = receiver + ":offline_messages";
+    vector<string> messages;
+    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key.c_str());
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
+        cerr << "Redis 获取离线消息失败" << endl;
+    else
+    {
+        string senderPrefix = sender + ":";
+        for (size_t i = 0; i < reply->elements; ++i)
+        {
+            string message(reply->element[i]->str);
+            // 检查是否有来自特定发送者的消息
+            if (message.compare(0, senderPrefix.length(), senderPrefix) == 0)
+                messages.push_back(message);
+        }
+    }
+    // 删除离线消息
+    redisCommand(context, "DEL %s", key.c_str());
+    freeReplyObject(reply);
+    return messages;
+}
+// 判断用户离线消息是否为空
+bool RedisServer::hasOfflineMessageFromSender(const string &receiver, const string &sender)
+{
+    // 键名是 "receiver:offline_messages"
+    string key = receiver + ":offline_messages";
+    // 使用 LRANGE 获取列表中的所有消息
+    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key.c_str());
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
+    {
+        cerr << "Redis 检查离线消息失败" << endl;
+        freeReplyObject(reply);
+        return false;
+    }
+    // 遍历所有消息，检查是否有来自特定发送者的消息
+    bool hasMessageFromSender = false;
+    string senderPrefix = sender + ":"; // 消息前缀 "sender:"
+    for (size_t i = 0; i < reply->elements; ++i)
+    {
+        string message(reply->element[i]->str);
+        if (message.compare(0, senderPrefix.length(), senderPrefix) == 0)
+        {
+            hasMessageFromSender = true;
+            break;
+        }
+    }
+    freeReplyObject(reply);
+    return hasMessageFromSender;
+}
+// 存储好友申请
+void RedisServer::storeFriendRequest(const string &receiver, const string &sender)
+{
+    string key = "friend_requests:" + receiver;
+    redisReply *reply = (redisReply *)redisCommand(context, "RPUSH %s %s", key.c_str(), sender.c_str());
     if (reply == nullptr)
     {
         cerr << "Redis 命令失败: RPUSH" << endl;
@@ -472,97 +566,52 @@ void RedisServer::storeOfflineMessage(const string &user, const string &message)
     }
     freeReplyObject(reply);
 }
-// 获取离线消息
-vector<string> RedisServer::retrieveOfflineMessages(const string &user)
+// 取出并处理好友申请
+string RedisServer::getAndRemoveFriendRequest(const string &receiver)
+{
+    string key = "friend_requests:" + receiver;
+    redisReply *reply = (redisReply *)redisCommand(context, "LPOP %s", key.c_str());
+    string sender;
+
+    if (reply != nullptr && reply->type == REDIS_REPLY_STRING)
+        sender = reply->str;
+    else if (reply == nullptr || reply->type == REDIS_REPLY_NIL)
+        sender = "NO";
+    else
+        cerr << "Redis 命令失败: LPOP" << endl;
+
+    if (reply)
+        freeReplyObject(reply);
+    return sender;
+}
+// 存储群聊消息
+void RedisServer::storeGroupMessage(const string &groupName, const string &message)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "RPUSH %s %s", groupName.c_str(), message.c_str());
+    if (reply == nullptr || context->err)
+    {
+        cerr << "存储群聊消息失败" << endl;
+        if (reply)
+            freeReplyObject(reply);
+        throw runtime_error("存储群聊消息失败");
+    }
+    freeReplyObject(reply);
+}
+//获取群聊记录
+vector<string> RedisServer::getGroupMessages(const string &groupName)
 {
     vector<string> messages;
-    string key = "offline:" + user;
-    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key.c_str());
-    if (reply == nullptr)
+    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", groupName.c_str());
+    if (reply == nullptr || context->err)
     {
-        cerr << "Redis 命令失败: LRANGE" << endl;
-        return messages;
+        cerr << "获取群聊记录失败" << endl;
+        if (reply)
+            freeReplyObject(reply);
+        throw runtime_error("获取群聊记录失败");
     }
     for (size_t i = 0; i < reply->elements; ++i)
         messages.push_back(reply->element[i]->str);
-    // 清除离线消息
-    redisReply *delReply = (redisReply *)redisCommand(context, "DEL %s", key.c_str());
-    if (delReply == nullptr)
-        cerr << "Redis 命令失败: DEL" << endl;
-    freeReplyObject(delReply);
+
     freeReplyObject(reply);
     return messages;
-}
-// 获取聊天记录
-vector<string> RedisServer::getChatRecord(const string &user1, const string &user2)
-{
-    vector<string> messages;
-    // 使用两个键获取聊天记录
-    string key1 = "chat:" + user1 + ":" + user2;
-    string key2 = "chat:" + user2 + ":" + user1;
-    // 从 Redis 中获取消息
-    redisReply *reply1 = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key1.c_str());
-    if (reply1 != nullptr)
-    {
-        for (size_t i = 0; i < reply1->elements; ++i)
-            messages.push_back(reply1->element[i]->str);
-        freeReplyObject(reply1);
-    }
-    redisReply *reply2 = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key2.c_str());
-    if (reply2 != nullptr)
-    {
-        for (size_t i = 0; i < reply2->elements; ++i)
-            messages.push_back(reply2->element[i]->str);
-        freeReplyObject(reply2);
-    }
-    return messages;
-}
-// 存储文件
-void RedisServer::store_file(const string &sender, const string &receiver, const string &filename)
-{
-    // 读取文件内容
-    ifstream file(filename, ios::binary | ios::ate);
-    if (!file.is_open())
-    {
-        cerr << "无法打开文件: " << filename << endl;
-        return;
-    }
-    streamsize file_size = file.tellg();
-    file.seekg(0, ios::beg);
-    string file_content(file_size, '\0');
-    if (!file.read(&file_content[0], file_size))
-    {
-        cerr << "读取文件失败: " << filename << endl;
-        return;
-    }
-    file.close();
-    // 生成 Redis 键
-    string key = sender + ":" + receiver + ":" + filename;
-    // 存储文件内容到 Redis
-    redisReply *reply = (redisReply *)redisCommand(context, "SET %s %b", key.c_str(), file_content.data(), file_content.size());
-    if (reply == nullptr)
-        cerr << "Redis 命令失败" << endl;
-    else
-    {
-        if (reply->type == REDIS_REPLY_STATUS && string(reply->str) == "OK")
-            cout << "文件存储成功!" << endl;
-        else
-            cerr << "Redis 存储失败: " << reply->str << endl;
-        freeReplyObject(reply);
-    }
-}
-// 读文件
-string RedisServer::retrieve_file(const string &sender, const string &receiver, const string &filename)
-{
-    string key = sender + ":" + receiver + ":" + filename;
-    redisReply *reply = (redisReply *)redisCommand(context, "GET %s", key.c_str());
-    if (reply == nullptr || reply->type != REDIS_REPLY_STRING)
-    {
-        if (reply)
-            freeReplyObject(reply);
-        throw runtime_error("Failed to retrieve file from Redis");
-    }
-    string file_content(reply->str, reply->len);
-    freeReplyObject(reply);
-    return file_content;
 }
