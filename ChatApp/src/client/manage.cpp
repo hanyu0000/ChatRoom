@@ -99,13 +99,13 @@ void HHH::file_pass(int fd)
 void HHH::g_chat(int fd)
 {
     cout << " " << endl;
-    cout << "-------------------好友聊天-------------------" << endl;
+    cout << "-------------------群聊-------------------" << endl;
     cout << " " << endl;
-    g_showlist(fd);
-    cout << "输入你要聊天的群聊：" << endl;
 
+    g_showlist(fd);
+
+    cout << "输入你要聊天的群聊：" << endl;
     string group;
-    cin.ignore();
     getline(cin, group);
     if (group.empty())
         return;
@@ -117,11 +117,9 @@ void HHH::g_chat(int fd)
         cin >> a;
         if (a == 'Y' || a == 'y')
         {
-            // 历史消息
             json jjj = {
                 {"type", "g_chatHistry"},
-                {"group", group},
-            };
+                {"group", group}};
             string mmm = jjj.dump();
             if (Util::send_msg(fd, mmm) == -1)
                 cerr << "发送消息失败" << endl;
@@ -149,14 +147,11 @@ void HHH::g_chat(int fd)
             cout << "请输入正确选项:" << endl;
     }
     getchar();
-
-    mutex mtx;                         // 用于线程同步
-    atomic<bool> stopReceiving(false); // 用于停止接收线程
     thread recvThread;
     // 接收消息的线程函数
     auto receiveMessages = [&]()
     {
-        while (stopReceiving)
+        while (!g_stop.load())
         {
             string buffer;
             cout << buffer << endl;
@@ -168,9 +163,14 @@ void HHH::g_chat(int fd)
             try
             {
                 json j = json::parse(buffer);
-                string reply = j["g_chatHistry"];
-                if (j.contains("g_chatHistry"))
-                    cout << f_name << ": " << reply << endl;
+                string reply = j["g_chat"];
+                if (reply == "exit")
+                {
+                    g_stop.store(true);
+                    break;
+                }
+                if (j.contains("g_chat"))
+                    cout << reply << endl;
                 else
                     cerr << "收到未知格式的消息" << endl;
             }
@@ -180,18 +180,25 @@ void HHH::g_chat(int fd)
             }
         }
     };
-
     // 启动接收消息的线程
     recvThread = thread(receiveMessages);
-
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
     while (1)
     {
         getline(cin, msg);
-        if (msg == "exit" || msg == "quit")
+        if (msg == "")
+            continue;
+        if (msg == "exit")
         {
-            cout << "聊天结束。" << endl;
+            cout << "聊天结束......" << endl;
+            json message = {
+                {"type", "g_chat"},
+                {"group", group},
+                {"message", msg}};
+            string mess = message.dump();
+            if (Util::send_msg(fd, mess) == -1)
+                cerr << "发送消息失败" << endl;
             break;
         }
         // 发送消息
@@ -199,12 +206,10 @@ void HHH::g_chat(int fd)
             {"type", "g_chat"},
             {"group", group},
             {"message", msg}};
-        string message_str = message.dump();
-        if (Util::send_msg(fd, message_str) == -1)
+        string mess = message.dump();
+        if (Util::send_msg(fd, mess) == -1)
             cerr << "发送消息失败" << endl;
     }
-    stopReceiving = true;
-    // 等待接收消息的线程结束
     if (recvThread.joinable())
         recvThread.join();
 }
@@ -226,8 +231,7 @@ void HHH::f_chat(int fd)
     // 离线消息
     json age = {
         {"type", "f_chat_leave"},
-        {"name", name},
-    };
+        {"name", name}};
     string mess = age.dump();
     if (Util::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
@@ -254,8 +258,7 @@ void HHH::f_chat(int fd)
             // 历史消息
             json jjj = {
                 {"type", "f_chatHistry"},
-                {"name", name},
-            };
+                {"name", name}};
             string mmm = jjj.dump();
             if (Util::send_msg(fd, mmm) == -1)
                 cerr << "发送消息失败" << endl;
@@ -263,6 +266,7 @@ void HHH::f_chat(int fd)
             string buffer;
             if (Util::recv_msg(fd, buffer) == -1)
                 err_("recv_msg");
+
             json jj = json::parse(buffer);
             if (jj.contains("f_chatHistry"))
             {
@@ -284,13 +288,11 @@ void HHH::f_chat(int fd)
     }
     getchar();
 
-    mutex mtx;                         // 用于线程同步
-    atomic<bool> stopReceiving(false); // 用于停止接收线程
     thread recvThread;
     // 接收消息的线程函数
     auto receiveMessages = [&]()
     {
-        while (stopReceiving)
+        while (!f_stop.load())
         {
             string buffer;
             cout << buffer << endl;
@@ -304,6 +306,11 @@ void HHH::f_chat(int fd)
                 json j = json::parse(buffer);
                 string f_name = j["f_name"];
                 string reply = j["chat"];
+                if (reply == "exit")
+                {
+                    f_stop.store(true);
+                    break;
+                }
                 if (j.contains("chat"))
                     cout << f_name << ": " << reply << endl;
                 else
@@ -315,18 +322,25 @@ void HHH::f_chat(int fd)
             }
         }
     };
-
     // 启动接收消息的线程
     recvThread = thread(receiveMessages);
-
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
     while (1)
     {
         getline(cin, msg);
-        if (msg == "exit" || msg == "quit")
+        if (msg == "")
+            continue;
+        if (msg == "exit")
         {
-            cout << "聊天结束。" << endl;
+            cout << "聊天结束......" << endl;
+            json message = {
+                {"type", "chat"},
+                {"name", name},
+                {"message", msg}};
+            string message_str = message.dump();
+            if (Util::send_msg(fd, message_str) == -1)
+                cerr << "发送消息失败" << endl;
             break;
         }
         // 发送消息
@@ -338,8 +352,6 @@ void HHH::f_chat(int fd)
         if (Util::send_msg(fd, message_str) == -1)
             cerr << "发送消息失败" << endl;
     }
-    stopReceiving = true;
-    // 等待接收消息的线程结束
     if (recvThread.joinable())
         recvThread.join();
 }

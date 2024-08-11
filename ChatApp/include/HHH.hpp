@@ -4,7 +4,7 @@
 class HHH
 {
 public:
-    HHH() : running(true) {}
+    HHH() : running(true), f_stop(false), g_stop(false) {}
 
     void run(int fd);
     void menu();
@@ -32,6 +32,8 @@ public:
 
 private:
     atomic<bool> running;
+    atomic<bool> f_stop; // 用于停止接收线程
+    atomic<bool> g_stop;
 };
 
 #endif

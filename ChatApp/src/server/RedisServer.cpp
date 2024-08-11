@@ -587,31 +587,35 @@ string RedisServer::getAndRemoveFriendRequest(const string &receiver)
 // 存储群聊消息
 void RedisServer::storeGroupMessage(const string &groupName, const string &message)
 {
-    redisReply *reply = (redisReply *)redisCommand(context, "RPUSH %s %s", groupName.c_str(), message.c_str());
+    string key = groupName + ":messages";
+    redisReply *reply = (redisReply *)redisCommand(context, "RPUSH %b %b", key.data(), key.size(), message.data(), message.size());
     if (reply == nullptr || context->err)
     {
-        cerr << "存储群聊消息失败" << endl;
+        cerr << "Redis 存储群聊消息失败: " << (context ? context->errstr : "未知错误") << endl;
         if (reply)
             freeReplyObject(reply);
         throw runtime_error("存储群聊消息失败");
     }
+    cout << "群聊消息已存储: " << message << endl;
     freeReplyObject(reply);
 }
-//获取群聊记录
+// 获取群聊记录
 vector<string> RedisServer::getGroupMessages(const string &groupName)
 {
     vector<string> messages;
-    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", groupName.c_str());
+    string key = groupName + ":messages";
+    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %b 0 -1", key.data(), key.size());
     if (reply == nullptr || context->err)
     {
-        cerr << "获取群聊记录失败" << endl;
+        cerr << "Redis 获取群聊记录失败: " << (context ? context->errstr : "未知错误") << endl;
         if (reply)
             freeReplyObject(reply);
         throw runtime_error("获取群聊记录失败");
     }
+    // 遍历回复中的元素并将消息存储到 vector 中
     for (size_t i = 0; i < reply->elements; ++i)
         messages.push_back(reply->element[i]->str);
-
+    // 释放回复对象
     freeReplyObject(reply);
     return messages;
 }

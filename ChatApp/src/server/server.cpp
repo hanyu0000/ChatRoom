@@ -160,7 +160,7 @@ void handleClientMessage(int fd, const json &j)
     cout << msg_type << endl;
     if (msg_type == "login")
     {
-        login(fd, j);
+        login(fd, j); // 登录
     }
     else if (msg_type == "register")
     {
@@ -225,6 +225,10 @@ void handleClientMessage(int fd, const json &j)
     else if (msg_type == "f_chatHistry")
     {
         f_chatHistry(fd, j); // 聊天记录
+    }
+    else if (msg_type == "g_chatHistry")
+    {
+        g_chatHistry(fd, j); // 聊天记录
     }
     else if (msg_type == "blockfriend")
     {

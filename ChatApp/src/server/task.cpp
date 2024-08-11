@@ -162,23 +162,38 @@ void g_chat(int fd, json j)
     cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
     string group = j["group"].get<string>();
 
-    vector<string> Group = redis.getGroupMembers(group);
-    for (const auto &name : Group)
+    string hhh = j["message"].get<string>();
+    if (hhh == "exit")
     {
-        cout << name << endl;
+        cout << "客户端退出聊天" << endl;
+        json to = {
+            {"g_chat", hhh}};
+        string age = to.dump();
+        if (Util::send_msg(fd, age) == -1)
+            err_("send_msg");
+        cout << "成功转发退出群聊消息！" << endl;
+    }
+    string reply = my_name + ':' + j["message"].get<string>(); // 消息
+    cout << reply << endl;
+    redis.storeGroupMessage(group, reply); // 存聊天记录
+
+    vector<string> userlist = redis.getGroupMembers(group);
+    cout << "群聊 < " << group << " > 的用户列表: " << endl;
+    for (const auto &name : userlist)
+    {
         int f_fd = get_fd(name, client_map);
         if (f_fd == -1 || f_fd == fd)
+        {
+            cout << name << "不在线" << endl;
             continue;
-
-        string reply = my_name + ':' + j["message"].get<string>(); // 消息
+        }
+        cout << f_fd << ":" << name << "在线" << endl;
         json to = {
-            {"chat", reply},
-            {"f_name", my_name}};
+            {"g_chat", reply}};
         string message = to.dump();
-
-        redis.storeGroupMessage(group, reply); // 存聊天记录
         if (Util::send_msg(f_fd, message) == -1)
             err_("send_msg");
+        cout << "成功转发群聊消息！" << endl;
     }
 }
 // 请求群聊天记录
@@ -188,11 +203,30 @@ void g_chatHistry(int fd, json j)
     cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
     string group = j["group"].get<string>();
 
-    vector<string> g_Chat = redis.getGroupMessages(group);
-    for (const auto &message : g_Chat)
+    vector<string> g_chat = redis.getGroupMessages(group);
+    for (const auto &message : g_chat)
+        cout << message << endl;
+    if (g_chat.empty())
+        cout << "没有聊天记录！" << endl;
+
+    json to_my = {
+        {"g_chatHistry", g_chat}};
+    string message = to_my.dump();
+    if (Util::send_msg(fd, message) == -1)
+        err_("send_msg");
+}
+//  请求聊天记录
+void f_chatHistry(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string f_name = j["name"].get<string>();
+
+    vector<string> Chat = redis.getChatRecord(my_name, f_name);
+    for (const auto &message : Chat)
         cout << message << endl;
     json to_my = {
-        {"g_chatHistry", g_Chat}};
+        {"f_chatHistry", Chat}};
     string message = to_my.dump();
     if (Util::send_msg(fd, message) == -1)
         err_("send_msg");
@@ -210,11 +244,18 @@ void f_chat(int fd, json j)
         {"chat", reply},
         {"f_name", my_name}};
     string message = to.dump();
-
-    redis.storeChatRecord(f_name, my_name, reply); // 存聊天记录
-    if (f_fd == -1)                                // 离线
+    if (reply == "exit")
     {
-        redis.storeOfflineMessage(my_name, f_name, reply);
+        cout << "客户端退出聊天" << endl;
+        if (Util::send_msg(fd, message) == -1)
+            err_("send_msg");
+        cout << " 退出聊天转发成功！ " << endl;
+        return;
+    }
+    redis.storeChatRecord(f_name, my_name, reply); // 存聊天记录
+    if (f_fd == -1)
+    {
+        redis.storeOfflineMessage(my_name, f_name, reply); // 离线
         return;
     }
     if (Util::send_msg(f_fd, message) == -1)
@@ -320,22 +361,6 @@ void f_addreply(int fd, json j)
         if (Util::send_msg(fd, message) == -1)
             err_("send_msg");
     }
-}
-//  请求聊天记录
-void f_chatHistry(int fd, json j)
-{
-    string my_name = get_name(fd, client_map);
-    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
-    string f_name = j["name"].get<string>();
-
-    vector<string> Chat = redis.getChatRecord(my_name, f_name);
-    for (const auto &message : Chat)
-        cout << message << endl;
-    json to_my = {
-        {"f_chatHistry", Chat}};
-    string message = to_my.dump();
-    if (Util::send_msg(fd, message) == -1)
-        err_("send_msg");
 }
 //  请求离线消息f_chat_leave
 void f_chat_leave(int fd, json j)
