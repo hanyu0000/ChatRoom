@@ -595,7 +595,7 @@ void delete_people(int fd, json j)
 
     json response;
     // 我是群主，可以删任何人
-    if (1)
+    if (redis.isGroupMaster(group, my_name))
     {
         redis.removeMemberFromGroup(group, name);
         response = {
@@ -604,7 +604,7 @@ void delete_people(int fd, json j)
     // 我是管理员，可以删普通用户
     else if (redis.isGroupManager(group, my_name))
     {
-        if (1)
+        if (redis.isGroupMaster(group, my_name))
         {
             response = {
                 {"type", "delete_people"}};
@@ -652,10 +652,12 @@ void g_create(int fd, json j)
 
     string group = j["group"].get<string>();
     cout << "创建群聊: " << group << endl;
+    // 群聊-群主
+    redis.setGroupMaster(group, my_name);
 
     redis.createGroup(group);            // 创建群聊
     redis.mycreateGroup(group, my_name); // 加入群聊列表
-fdvgfghb
+
     vector<string> members = j["members"];
     redis.addMemberToGroup(group, my_name);
     redis.addUserToGroupList(my_name, group);
@@ -689,17 +691,29 @@ void g_join(int fd, json j)
     cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
     string group = j["group"].get<string>();
     cout << group << endl;
+
+    if (!redis.groupExists(group)) // 群聊不存在
+    {
+        json Json = {
+            {"type", "join_group"},
+            {"group", "NO"}};
+        string str = Json.dump();
+        if (Util::send_msg(fd, str) == -1)
+            cerr << "发送消息失败" << endl;
+        return;
+    }
+
     string mess = my_name + ":" + group;
     // 获取群成员
     vector<string> members = redis.getGroupMembers(group);
     for (const auto &member : members)
     {
         // 是群主或管理员
-        /* if (redis.isGroupManager(group, member))
+        if (redis.isGroupManager(group, member) || redis.isGroupMaster(group, member))
         {
-            cout << "管理:" << member << endl;
+            cout << member << endl;
             redis.storeGroupRequest(member, mess);
-        } */
+        }
     }
 }
 // 处理入群申请

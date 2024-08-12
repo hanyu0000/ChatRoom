@@ -740,7 +740,19 @@ void HHH::g_join(int fd)
     string str = Json.dump();
     if (Util::send_msg(fd, str) == -1)
         cerr << "发送消息失败" << endl;
-    cout << "成功发送加入群聊消息！" << endl;
+
+    string buf;
+    if (Util::recv_msg(fd, buf) == -1)
+        err_("recv_msg");
+    json j = json::parse(buf);
+    string reply = j["group"];
+    if (reply == "NO")
+    {
+        cout << "该群聊不存在！" << endl;
+        return;
+    }
+    cout << "发送群聊申请成功!" << endl;
+    getchar();
     getchar();
 }
 // 好友申请回复

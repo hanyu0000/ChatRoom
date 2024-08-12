@@ -757,3 +757,57 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
     freeReplyObject(reply);
     return file_info;
 }
+// 群聊-群主
+void RedisServer::setGroupMaster(const string &group, const string &username)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SET %s_master %s", group.c_str(), username.c_str());
+    if (reply == nullptr)
+    {
+        cerr << "Redis SET 命令失败" << endl;
+        return;
+    }
+
+    if (reply->type == REDIS_REPLY_STATUS && strcmp(reply->str, "OK") == 0)
+        cout << "群聊主成功设置: " << group << " -> " << username << endl;
+    else
+        cerr << "设置群聊主失败: " << group << endl;
+
+    freeReplyObject(reply);
+}
+bool RedisServer::groupExists(const string &group) const
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "EXISTS %s_master", group.c_str());
+    if (reply == nullptr)
+    {
+        cerr << "Redis EXISTS 命令失败" << endl;
+        return false;
+    }
+
+    bool exists = (reply->integer == 1);
+    if (exists)
+        cout << "群聊存在: " << group << endl;
+    else
+        cout << "群聊不存在: " << group << endl;
+
+    freeReplyObject(reply);
+    return exists;
+}
+// 判断用户是否是群主
+bool RedisServer::isGroupMaster(const string &group, const string &username)
+{
+    // 执行 Redis GET 命令获取群聊的群主信息
+    redisReply *reply = (redisReply *)redisCommand(context, "GET %s_master", group.c_str());
+    if (reply == nullptr)
+    {
+        cerr << "Redis GET 命令失败" << endl;
+        return false;
+    }
+    // 检查返回值是否为字符串类型
+    bool isMaster = false;
+    if (reply->type == REDIS_REPLY_STRING)
+        isMaster = (strcmp(reply->str, username.c_str()) == 0);
+    else
+        cerr << "群聊主信息不存在或格式错误" << endl;
+    freeReplyObject(reply);
+    return isMaster;
+}

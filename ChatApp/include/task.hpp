@@ -57,10 +57,15 @@ public:
     // 获取屏蔽列表
     vector<string> getBlockedUsers(const string &username);
 
-    // 我创建的群聊
+    // 创建的群聊
     void mycreateGroup(const string &groupName, const string &creator);
-    // 获取我创建的群聊列表
+    // 获取群聊列表
     vector<string> getGroupsByUser(const string &username);
+    // 群聊-群主
+    void setGroupMaster(const string &group, const string &username);
+    // 判断用户是否是群主
+    bool isGroupMaster(const string &group, const string &username);
+    bool groupExists(const string &group) const;
 
     // 群主加管理员
     void addAdminToGroup(const string &groupName, const string &adminName);
