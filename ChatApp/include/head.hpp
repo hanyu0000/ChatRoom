@@ -36,6 +36,27 @@ using namespace std;
 class Util
 {
 public:
+    static int readn(int fd, int size, char *buf)
+    {
+        char *p = buf;
+        int count = size;
+        while (count > 0)
+        {
+            int len = recv(fd, p, count, 0);
+            if (len == -1)
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    cout << " 继续尝试读取" << endl;
+                return -1;
+            }
+            else if (len == 0)
+                return size - count; // 连接关闭
+            p += len;
+            count -= len;
+        }
+        return size; // 返回读取的字节数
+    }
+
     static int writen(int fd, const string &msg)
     {
         int count = msg.size();
@@ -44,7 +65,11 @@ public:
         {
             int len = send(fd, buf, count, 0);
             if (len < 0)
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    cout << " 继续尝试写入" << endl;
                 return -1;
+            }
             else if (len == 0)
                 continue;
             count -= len;
@@ -64,23 +89,6 @@ public:
         return writen(fd, data);
     }
 
-    static int readn(int fd, int size, char *buf)
-    {
-        char *p = buf;
-        int count = size;
-        while (count > 0)
-        {
-            int len = recv(fd, p, count, 0);
-            if (len == -1)
-                return -1;
-            else if (len == 0)
-                return size - count;
-            p += len;
-            count -= len;
-        }
-        return size; // 返回读取的字节数
-    }
-
     static int recv_msg(int cfd, string &msg)
     {
         // 读消息头，获取消息长度
@@ -88,7 +96,6 @@ public:
         if (readn(cfd, 4, (char *)&len) != 4)
             return -1;
         len = ntohl(len);
-
         // 根据消息长度分配缓冲区并读取消息体
         vector<char> buf(len);
         int ret = readn(cfd, len, buf.data());

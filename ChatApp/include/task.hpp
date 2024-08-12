@@ -52,6 +52,8 @@ public:
     bool blockUser(const string &username, const string &blockname);
     // 取消屏蔽用户
     bool unblockUser(const string &username, const string &blockname);
+    // 判断用户是否被另一个用户屏蔽
+    bool isUserBlocked(const string &username, const string &blockname);
     // 获取屏蔽列表
     vector<string> getBlockedUsers(const string &username);
 
@@ -60,17 +62,13 @@ public:
     // 获取我创建的群聊列表
     vector<string> getGroupsByUser(const string &username);
 
-    // 判断用户是否是群聊的群主
-    bool isGroupOwner(const string &groupName, const string &username);
-    // 判断用户是否是群聊的管理员
-    bool isGroupManager(const string &groupName, const string &username);
-
     // 群主加管理员
-    bool addAdminToGroup(const string &groupName, const string &adminName);
+    void addAdminToGroup(const string &groupName, const string &adminName);
     // 群主删管理员
-    bool removeAdminFromGroup(const string &groupName, const string &adminName);
+    void removeAdminFromGroup(const string &groupName, const string &adminName);
     // 管理员列表
     vector<string> getManagers(const string &groupName);
+    bool isGroupManager(const string &groupName, const string &username);
 
     // 删除用户信息
     bool deleteUser(const string &username);
@@ -123,11 +121,31 @@ public:
     void storeFriendRequest(const string &receiver, const string &sender);
     // 取出并处理好友申请
     string getAndRemoveFriendRequest(const string &receiver);
+    // 存储群聊申请
+    void storeGroupRequest(const string &receiver, const string &sender);
+    // 取出并处理申请
+    pair<string, string> getAndRemoveGroupRequest(const string &receiver);
+    // 删除申请
+    void removeGroupRequest(const string &receiver, const string &message);
 
     // 存储群聊消息
     void storeGroupMessage(const string &groupName, const string &message);
+    // 删除群聊消息
+    void deleteAllGroupMessages(const string &groupName);
     // 获取群聊记录
     vector<string> getGroupMessages(const string &groupName);
+
+    // 当前聊天对象
+    void setCurrentChatPartner(const string &user, const string &chatPartner);
+    // 取出当前聊天对象
+    string getCurrentChatPartner(const string &user);
+    // 清除用户的当前聊天对象
+    void clearCurrentChatPartner(const string &user);
+
+    // 存文件路径名
+    void storeFilePath(const string &sender, const string &receiver, const string &filepath);
+    // 取文件路径
+    pair<string, string> getFilePath(const string &receiver);
 
 private:
     redisContext *context;
@@ -144,7 +162,9 @@ void g_chatHistry(int fd, json j);
 void file(int fd, json j);      // 文件
 void send_file(int fd, json j); // 收
 void delete_people(int fd, json j);
+void g_reply(int fd, json j);
 void f_chat_leave(int fd, json j);
+void g_addreply(int fd, json j);
 void newfriend_leave(int fd, json j);
 void add_manager(int fd, json j);    // 设置管理员
 void delete_manager(int fd, json j); // 删除管理员

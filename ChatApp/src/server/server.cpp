@@ -50,19 +50,15 @@ void runServer(int port)
     while (1)
     {
         cout << "等待事件发生......" << endl;
-        // 检测事件发生
-        int n = epoll_wait(epfd, evs, size, -1);
+        int n = epoll_wait(epfd, evs, size, -1); // 检测事件发生
         for (int i = 0; i < n; ++i)
         {
-            // 取出当前的文件描述符
-            int fd = evs[i].data.fd;
-            // 判断文件描述符是否用于监听
-            if (evs[i].events & EPOLLIN)
+            int fd = evs[i].data.fd;     // 取出当前的文件描述符
+            if (evs[i].events & EPOLLIN) // 判断文件描述符是否用于监听
             {
                 if (fd == lfd)
                 {
-                    // 建立新的连接
-                    int c_fd = accept(fd, nullptr, nullptr);
+                    int c_fd = accept(fd, nullptr, nullptr); // 建立新的连接
                     if (c_fd == -1)
                         err_("accept");
 
@@ -97,27 +93,28 @@ void process_client_messages(int fd)
     ThreadPool pool(4, 10);
 
     // 读取消息头，获取消息长度
-    uint32_t msg_len = 0;
-    int ret = Util::readn(fd, sizeof(uint32_t), (char *)&msg_len);
+    uint32_t _len = 0;
+    int ret = Util::readn(fd, sizeof(uint32_t), (char *)&_len);
     if (ret != sizeof(uint32_t))
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             cout << "服务端数据接受完毕......" << endl;
         else
         {
-            cout << "用户" << fd << "下线" << endl;
+            cout << "----------用户fd: " << fd << "下线----------" << endl;
             client_map.erase(fd);
+            epoll_ctl(fd, EPOLL_CTL_DEL, fd, nullptr);
+            close(fd);
         }
         return;
     }
 
-    msg_len = ntohl(msg_len); // 将消息长度从网络字节序转换为主机字节序
+    _len = ntohl(_len); // 将消息长度从网络字节序转换为主机字节序
 
-    // 根据消息长度分配缓冲区并读取消息体
-    char *buffer = new char[msg_len + 1];
-    memset(buffer, 0, msg_len + 1);
-    ret = Util::readn(fd, msg_len, buffer);
-    if (ret != msg_len)
+    char *buffer = new char[_len + 1];
+    memset(buffer, 0, _len + 1);
+    ret = Util::readn(fd, _len, buffer);
+    if (ret != _len)
     {
         if (ret == 0)
         {
@@ -132,15 +129,11 @@ void process_client_messages(int fd)
         return;
     }
 
-    // 处理消息
     string message(buffer, ret);
     delete[] buffer;
     try
     {
         auto j = json::parse(message);
-        // bind()方法会创建一个新函数，称为绑定函数，当调用这个绑定函数时，绑定函数会以创建它时传入
-        // bind()方法的第一个参数作为 this，传入 bind() 方法的第二个
-        // 以及以后的参数加上绑定函数运行时本身的参数按照顺序作为原函数的参数来调用原函数。
         auto task = bind(handleClientMessage, fd, j);
         pool.addTask(task);
     }
@@ -182,11 +175,11 @@ void handleClientMessage(int fd, const json &j)
     {
         my_group_list(fd, j); // 我创建的群聊列表
     }
-    else if (msg_type == "add_manager")
+    else if (msg_type == "addmanage")
     {
         add_manager(fd, j); // 设置管理员
     }
-    else if (msg_type == "delete_manager")
+    else if (msg_type == "deletemanage")
     {
         delete_manager(fd, j); // 删除管理员
     }
@@ -277,6 +270,14 @@ void handleClientMessage(int fd, const json &j)
     else if (msg_type == "join_group")
     {
         g_join(fd, j); // 加入群聊
+    }
+    else if (msg_type == "g_reply")
+    {
+        g_reply(fd, j); // 群聊申请
+    } 
+    else if (msg_type == "apply_g_reply")
+    {
+        g_addreply(fd, j); 
     }
 }
 void fd_user(int fd, string &name)
