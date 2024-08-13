@@ -164,8 +164,6 @@ void my_group_list(int fd, json j); // 我创建的群聊列表
 void f_chat(int fd, json j);        // 好友聊天
 void g_chat(int fd, json j);
 void g_chatHistry(int fd, json j);
-void file(int fd, json j);      // 文件
-void send_file(int fd, json j); // 收
 void delete_people(int fd, json j);
 void g_reply(int fd, json j);
 void f_chat_leave(int fd, json j);

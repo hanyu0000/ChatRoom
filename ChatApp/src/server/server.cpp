@@ -108,9 +108,7 @@ void process_client_messages(int fd)
         }
         return;
     }
-
     _len = ntohl(_len); // 将消息长度从网络字节序转换为主机字节序
-
     char *buffer = new char[_len + 1];
     memset(buffer, 0, _len + 1);
     ret = Util::readn(fd, _len, buffer);
@@ -128,7 +126,6 @@ void process_client_messages(int fd)
         delete[] buffer;
         return;
     }
-
     string message(buffer, ret);
     delete[] buffer;
     try
@@ -146,7 +143,15 @@ void process_client_messages(int fd)
         cerr << "JSON 解析错误: " << e.what() << endl;
     }
 }
-
+/*
+else if (msg_type == "file")
+{
+    file(fd, j); // 收文件
+}
+else if (msg_type == "send_file")
+{
+    send_file(fd, j); // 发文件
+} */
 void handleClientMessage(int fd, const json &j)
 {
     string msg_type = j["type"];
@@ -207,14 +212,6 @@ void handleClientMessage(int fd, const json &j)
     {
         f_chat_leave(fd, j); // 离线消息
     }
-    else if (msg_type == "file")
-    {
-        file(fd, j); // 收文件
-    }
-    else if (msg_type == "send_file")
-    {
-        send_file(fd, j); // 发文件
-    }
     else if (msg_type == "f_chatHistry")
     {
         f_chatHistry(fd, j); // 聊天记录
@@ -274,10 +271,10 @@ void handleClientMessage(int fd, const json &j)
     else if (msg_type == "g_reply")
     {
         g_reply(fd, j); // 群聊申请
-    } 
+    }
     else if (msg_type == "apply_g_reply")
     {
-        g_addreply(fd, j); 
+        g_addreply(fd, j);
     }
 }
 void fd_user(int fd, string &name)

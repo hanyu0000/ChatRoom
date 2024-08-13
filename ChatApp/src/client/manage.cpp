@@ -240,8 +240,6 @@ void HHH::g_chat(int fd)
         }
         else if (a == 'N' || a == 'n')
             break;
-        else
-            cout << "请输入正确选项:" << endl;
     }
     getchar();
     thread recvThread;
@@ -268,8 +266,6 @@ void HHH::g_chat(int fd)
                 }
                 if (j.contains("g_chat"))
                     cout << reply << endl;
-                else
-                    cerr << "收到未知格式的消息" << endl;
             }
             catch (const json::parse_error &e)
             {
@@ -277,13 +273,15 @@ void HHH::g_chat(int fd)
             }
         }
     };
-    // 启动接收消息的线程
+
+    getchar();
+
     recvThread = thread(receiveMessages);
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
     while (1)
     {
-        getline(cin, msg);
+        cin >> msg;
         if (msg == "")
             continue;
         if (msg == "exit")
@@ -380,9 +378,8 @@ void HHH::f_chat(int fd)
         }
         else if (a == 'N' || a == 'n')
             break;
-        else
-            cout << "请输入正确选项:" << endl;
     }
+
     getchar();
 
     thread recvThread;
@@ -401,18 +398,19 @@ void HHH::f_chat(int fd)
             try
             {
                 json j = json::parse(buffer);
-                string f_name = j["f_name"];
                 string reply = j["chat"];
                 if (reply == "exit")
                 {
                     f_stop.store(true);
                     break;
                 }
-                else if (reply == "blocked")
+                if (reply == "blocked")
                 {
                     cout << "您已经被对方屏蔽！" << endl;
+                    f_stop.store(true);
                     break;
                 }
+                string f_name = j["f_name"];
                 cout << f_name << ": " << reply << endl;
             }
             catch (const json::parse_error &e)
@@ -421,13 +419,14 @@ void HHH::f_chat(int fd)
             }
         }
     };
+
     // 启动接收消息的线程
     recvThread = thread(receiveMessages);
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
     while (1)
     {
-        getline(cin, msg);
+        cin >> msg;
         if (msg == "")
             continue;
         if (msg == "exit")
