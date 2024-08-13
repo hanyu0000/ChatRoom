@@ -1,17 +1,13 @@
 #include "head.hpp"
 #include "HHH.hpp"
+namespace fs = filesystem;
 void show_list(int fd);
 void getmygrouplist(int fd);
-void file_pase(int fd, string &name);
+void file_pase(int fd, string &name, char *filename);
 void file_recv(int fd);
-void file_pase(int fd, string &name)
+void file_pase(int fd, string &name, char *filename)
 {
-    char filename[1024] = {"/home/zxc/wk/wl.h"};
-    cout << "请输入要传输的文件路径名：" << endl;
-    // cin.ignore();
-    // cin >> filename;
-    cout << filename << endl;
-
+    cout << "文件路径:" << filename << endl;
     int file_fd = open(filename, O_RDONLY);
     if (file_fd == -1)
         err_("open file fail");
@@ -24,71 +20,34 @@ void file_pase(int fd, string &name)
     }
 
     off_t filesize = info.st_size; // st_size;  文件字节数(文件大小)
+    cout << "文件字节数:" << filesize << endl;
     json j = {
-        {"type", "file"},
+        {"type", "recv_file"},
         {"name", name},
-        {"filename", filename},
+        {"filename", fs::path(filename).filename().string()},
         {"filesize", filesize}};
     string message = j.dump();
-    if (Util::send_msg(fd, message) == -1)
+    if (IO::send_msg(fd, message) == -1)
         err_("send_msg");
 
-    off_t len = 0; // 每次发送的字节数
     off_t sum = 0; // 累计发送的字节数
     while (sum < filesize)
     {
         // sendfile 函数用于将文件的内容直接从文件描述符发送到套接字，而不经过用户空间的缓冲区
-        len = sendfile(fd, file_fd, nullptr, filesize - sum);
+        ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
         if (len == -1)
-        {
-            perror("sendfile");
-            break;
-        }
-        else if (len == 0)
-        {
-            cout << "没有数据发送" << endl;
-            break;
-        }
-        sum += len;
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                // 如果发送缓冲区满了，稍微等待
+                this_thread::sleep_for(chrono::milliseconds(100));
+                continue;
+            }
+            else
+                err_("sendfile");
+        cout << "已发送 " << len << " 字节" << endl;
     }
     close(file_fd);
     cout << "文件发送完成！" << endl;
-}
-void file_recv(int fd)
-{
-    char buffer[4096];
-    ssize_t len;
-
-    // 接收文件大小
-    string buffer_size;
-    if (Util::recv_msg(fd, buffer_size) == -1)
-        err_("recv_msg");
-    json j = json::parse(buffer_size);
-    size_t filesize = j["filesize"];
-    // 获取文件名并打开文件准备写入
-    string filename = j["have_file"];
-    int file_fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (file_fd == -1)
-        err_("打开文件失败");
-
-    size_t received_size = 0;
-    while (received_size < filesize)
-    {
-        len = recv(fd, buffer, sizeof(buffer), 0);
-        if (len <= 0)
-        {
-            if (len == 0)
-                cout << "文件接收完成！" << endl;
-            else
-                perror("接收文件内容失败");
-            break;
-        }
-        if (write(file_fd, buffer, len) != len)
-            err_("写入文件失败");
-        received_size += len;
-    }
-    close(file_fd);
-    cout << "文件成功保存为 " << filename << endl;
 }
 // 文件传输
 void HHH::file_pass(int fd)
@@ -105,8 +64,16 @@ void HHH::file_pass(int fd)
         cin >> a;
         if (a == '1')
         {
+            char filename[1024];
+            cout << "请输入要传输的文件路径名：" << endl;
+            cin.ignore();
+            cin >> filename;
+            cout << "文件路径:" << filename << endl;
+            cout << "" << endl;
+            cout << "请选择:" << endl;
             cout << "       A.私聊      B.群聊   " << endl;
             char b;
+
             while (1)
             {
                 cin >> b;
@@ -120,7 +87,7 @@ void HHH::file_pass(int fd)
                     if (name.empty())
                         return;
 
-                    thread fileThread(file_pase, fd, ref(name));
+                    thread fileThread(file_pase, fd, ref(name), filename);
                     fileThread.detach();
                     break;
                 }
@@ -136,12 +103,13 @@ void HHH::file_pass(int fd)
         else if (a == '2')
         {
             json jj = {
-                {"type", "send_file"}};
+                {"type", "charge_file"}};
             string m = jj.dump();
-            if (Util::send_msg(fd, m) == -1)
+            if (IO::send_msg(fd, m) == -1)
                 cerr << "发送消息失败" << endl;
+
             string buffer;
-            if (Util::recv_msg(fd, buffer) == -1)
+            if (IO::recv_msg(fd, buffer) == -1)
                 err_("recv_msg");
             json j = json::parse(buffer);
             string reply = j["have_file"];
@@ -151,46 +119,117 @@ void HHH::file_pass(int fd)
                 break;
             }
             else
-                cout << "您有来自:" << reply << "的文件！" << endl;
-            cout << "您是否接收该文件? Y or N" << endl;
-            char b;
-            while (1)
             {
-                cin >> b;
-                if (b == 'Y' || b == 'y')
+                cout << "您有来自:" << reply << "的文件！" << endl;
+                cout << "您是否接收该文件? Y or N" << endl;
+                char b;
+                while (1)
                 {
-                    json mess = {
-                        {"type", "send_file"},
-                        {"YYY", "YYY"}};
-                    string aa = mess.dump();
-                    if (Util::send_msg(fd, aa) == -1)
-                        cerr << "发送消息失败" << endl;
-                    // 接受文件(线程)
-                    thread newthread(file_recv, fd);
-                    newthread.detach();
-                    break;
+                    cin >> b;
+                    if (b == 'Y' || b == 'y')
+                    {
+                        json mess = {
+                            {"type", "send_file"},
+                            {"YYY", "YYY"}};
+                        string aa = mess.dump();
+                        if (IO::send_msg(fd, aa) == -1)
+                            cerr << "发送消息失败" << endl;
+
+                        // 接受文件(线程)
+                        thread newthread(file_recv, fd);
+                        newthread.detach();
+                        break;
+                    }
+                    else if (b == 'N' || b == 'n')
+                    {
+                        json mess = {
+                            {"type", "send_file"},
+                            {"NNN", "NNN"}};
+                        string aa = mess.dump();
+                        if (IO::send_msg(fd, aa) == -1)
+                            cerr << "发送消息失败" << endl;
+                        break;
+                    }
+                    else
+                        cout << "请输入正确选项:" << endl;
                 }
-                else if (b == 'N' || b == 'n')
-                {
-                    json mess = {
-                        {"type", "send_file"},
-                        {"NNN", "NNN"}};
-                    string aa = mess.dump();
-                    if (Util::send_msg(fd, aa) == -1)
-                        cerr << "发送消息失败" << endl;
-                    break;
-                }
-                else
-                    cout << "请输入正确选项:" << endl;
+                break;
             }
-            break;
         }
         else if (a == '3')
             break;
         else
             cout << "请输入正确数字:" << endl;
     }
-    getchar();
+}
+// 接收文件
+void file_recv(int fd)
+{
+    string buf;
+    if (IO::recv_msg(fd, buf) == -1)
+        err_("recv_msg");
+
+    json j;
+    try
+    {
+        j = json::parse(buf);
+    }
+    catch (const json::parse_error &e)
+    {
+        cerr << "JSON 解析错误: " << e.what() << endl;
+        return;
+    }
+
+    if (j.contains("sendfile"))
+    {
+
+        string filename = j["sendfile"];
+        cout << "文件路径:" << filename << endl;
+        size_t filesize = j["filesize"];
+        cout << "文件大小:" << filesize << endl;
+
+        string directory = "/home/zxc/client";
+        string filepath = directory + "/" + filename; // 文件路径
+        cout << filepath << endl;
+
+        // 检查并创建目录
+        struct stat st;
+        if (stat(directory.c_str(), &st) == -1)
+        {
+            if (mkdir(directory.c_str(), 0755) == -1)
+                err_("创建目录失败");
+        }
+
+        int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        if (file_fd == -1)
+            err_("打开文件失败");
+
+        char buffer[4096];
+        off_t sum = 0;
+        ssize_t len;
+        while (sum < filesize)
+        {
+            len = recv(fd, buffer, sizeof(buffer), 0);
+            if (len > 0)
+            {
+                cout << "接收到 " << len << " 字节" << endl;
+                if (write(file_fd, buffer, len) != len)
+                    err_("write file");
+                sum += len;
+            }
+            else if (len == 0)
+            {
+                cout << "连接关闭！" << endl;
+                break;
+            }
+            else if (errno == EAGAIN || errno == EWOULDBLOCK)
+                this_thread::sleep_for(chrono::milliseconds(10));
+            else
+                err_("recv_file");
+        }
+        close(file_fd);
+        cout << "文件成功保存为 " << filepath << endl;
+    }
 }
 // 群聊
 void HHH::g_chat(int fd)
@@ -201,8 +240,9 @@ void HHH::g_chat(int fd)
 
     g_showlist(fd);
 
-    cout << "输入你要聊天的群聊：" << endl;
     string group;
+    cout << "输入你要聊天的群聊：" << endl;
+    cin.ignore();
     getline(cin, group);
     if (group.empty())
         return;
@@ -218,11 +258,11 @@ void HHH::g_chat(int fd)
                 {"type", "g_chatHistry"},
                 {"group", group}};
             string mmm = jjj.dump();
-            if (Util::send_msg(fd, mmm) == -1)
+            if (IO::send_msg(fd, mmm) == -1)
                 cerr << "发送消息失败" << endl;
 
             string buffer;
-            if (Util::recv_msg(fd, buffer) == -1)
+            if (IO::recv_msg(fd, buffer) == -1)
                 err_("recv_msg");
             json jj = json::parse(buffer);
             if (jj.contains("g_chatHistry"))
@@ -241,7 +281,9 @@ void HHH::g_chat(int fd)
         else if (a == 'N' || a == 'n')
             break;
     }
+
     getchar();
+
     thread recvThread;
     // 接收消息的线程函数
     auto receiveMessages = [&]()
@@ -250,7 +292,7 @@ void HHH::g_chat(int fd)
         {
             string buffer;
             cout << buffer << endl;
-            if (Util::recv_msg(fd, buffer) == -1)
+            if (IO::recv_msg(fd, buffer) == -1)
             {
                 cerr << "接收消息失败: " << errno << " (" << strerror(errno) << ")" << endl;
                 break;
@@ -274,8 +316,6 @@ void HHH::g_chat(int fd)
         }
     };
 
-    getchar();
-
     recvThread = thread(receiveMessages);
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
@@ -292,7 +332,7 @@ void HHH::g_chat(int fd)
                 {"group", group},
                 {"message", msg}};
             string mess = message.dump();
-            if (Util::send_msg(fd, mess) == -1)
+            if (IO::send_msg(fd, mess) == -1)
                 cerr << "发送消息失败" << endl;
             break;
         }
@@ -302,7 +342,7 @@ void HHH::g_chat(int fd)
             {"group", group},
             {"message", msg}};
         string mess = message.dump();
-        if (Util::send_msg(fd, mess) == -1)
+        if (IO::send_msg(fd, mess) == -1)
             cerr << "发送消息失败" << endl;
     }
     if (recvThread.joinable())
@@ -323,16 +363,17 @@ void HHH::f_chat(int fd)
     getline(cin, name);
     if (name.empty())
         return;
+
     // 离线消息
     json age = {
         {"type", "f_chat_leave"},
         {"name", name}};
     string mess = age.dump();
-    if (Util::send_msg(fd, mess) == -1)
+    if (IO::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
 
     string buf;
-    if (Util::recv_msg(fd, buf) == -1)
+    if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json j = json::parse(buf);
     if (j.contains("f_chat_leave") && j["f_chat_leave"].is_array())
@@ -355,11 +396,11 @@ void HHH::f_chat(int fd)
                 {"type", "f_chatHistry"},
                 {"name", name}};
             string mmm = jjj.dump();
-            if (Util::send_msg(fd, mmm) == -1)
+            if (IO::send_msg(fd, mmm) == -1)
                 cerr << "发送消息失败" << endl;
 
             string buffer;
-            if (Util::recv_msg(fd, buffer) == -1)
+            if (IO::recv_msg(fd, buffer) == -1)
                 err_("recv_msg");
 
             json jj = json::parse(buffer);
@@ -390,7 +431,7 @@ void HHH::f_chat(int fd)
         {
             string buffer;
             cout << buffer << endl;
-            if (Util::recv_msg(fd, buffer) == -1)
+            if (IO::recv_msg(fd, buffer) == -1)
             {
                 cerr << "接收消息失败: " << errno << " (" << strerror(errno) << ")" << endl;
                 break;
@@ -424,6 +465,15 @@ void HHH::f_chat(int fd)
     recvThread = thread(receiveMessages);
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
+
+    json m = {
+        {"type", "chat"},
+        {"name", name},
+        {"message", "12345zxcvb"}};
+    string m_str = m.dump();
+    if (IO::send_msg(fd, m_str) == -1)
+        cerr << "发送消息失败" << endl;
+
     while (1)
     {
         cin >> msg;
@@ -437,7 +487,7 @@ void HHH::f_chat(int fd)
                 {"name", name},
                 {"message", msg}};
             string message_str = message.dump();
-            if (Util::send_msg(fd, message_str) == -1)
+            if (IO::send_msg(fd, message_str) == -1)
                 cerr << "发送消息失败" << endl;
             break;
         }
@@ -447,7 +497,7 @@ void HHH::f_chat(int fd)
             {"name", name},
             {"message", msg}};
         string message_str = message.dump();
-        if (Util::send_msg(fd, message_str) == -1)
+        if (IO::send_msg(fd, message_str) == -1)
             cerr << "发送消息失败" << endl;
     }
     if (recvThread.joinable())
@@ -478,11 +528,11 @@ void HHH::g_add_manager(int fd)
             {"type", "userlist"},
             {"group", group}};
     string b = ulist.dump();
-    if (Util::send_msg(fd, b) == -1)
+    if (IO::send_msg(fd, b) == -1)
         cerr << "发送消息失败" << endl;
     // 获取用户列表
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
     if (j.contains("userlist"))
@@ -516,7 +566,7 @@ void HHH::g_add_manager(int fd)
         {"group", group},
         {"members", Friends}};
     string message = Json.dump();
-    if (Util::send_msg(fd, message) == -1)
+    if (IO::send_msg(fd, message) == -1)
         cerr << "发送消息失败" << endl;
     getchar();
 }
@@ -543,11 +593,11 @@ void HHH::g_delete_manager(int fd)
             {"type", "managelist"},
             {"group", group}};
     string b = ulist.dump();
-    if (Util::send_msg(fd, b) == -1)
+    if (IO::send_msg(fd, b) == -1)
         cerr << "发送消息失败" << endl;
     // 获取管理员列表
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
     if (j.contains("managelist"))
@@ -582,7 +632,7 @@ void HHH::g_delete_manager(int fd)
         {"group", group},
         {"members", Friends}};
     string message = Json.dump();
-    if (Util::send_msg(fd, message) == -1)
+    if (IO::send_msg(fd, message) == -1)
         cerr << "发送消息失败" << endl;
     getchar();
 }
@@ -605,11 +655,11 @@ void HHH::g_delete_people(int fd)
             {"type", "userlist"},
             {"group", group}};
     string str = g.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     // 接收群用户列表
     string buf;
-    if (Util::recv_msg(fd, buf) == -1)
+    if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json i = json::parse(buf);
     if (i.contains("userlist"))
@@ -637,12 +687,12 @@ void HHH::g_delete_people(int fd)
         {"group", group},
         {"name", name}};
     string message = Json.dump();
-    if (Util::send_msg(fd, message) == -1)
+    if (IO::send_msg(fd, message) == -1)
         cerr << "发送消息失败" << endl;
 
     // 接受回应
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
     string reply = j["type"];
@@ -662,13 +712,13 @@ void HHH::g_reply(int fd)
     json age = {
         {"type", "g_reply"}};
     string mess = age.dump();
-    if (Util::send_msg(fd, mess) == -1)
+    if (IO::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
 
     while (1)
     {
         string buf;
-        if (Util::recv_msg(fd, buf) == -1)
+        if (IO::recv_msg(fd, buf) == -1)
             err_("recv_msg");
 
         json jj = json::parse(buf);
@@ -696,7 +746,7 @@ void HHH::g_reply(int fd)
                             {"group", group},
                             {"reply", "YES"}};
                     string request_str = request.dump();
-                    if (Util::send_msg(fd, request_str) == -1)
+                    if (IO::send_msg(fd, request_str) == -1)
                         err_("send_msg");
                     break;
                 }
@@ -708,7 +758,7 @@ void HHH::g_reply(int fd)
                             {"name", name},
                             {"reply", "NO"}};
                     string request_str = request.dump();
-                    if (Util::send_msg(fd, request_str) == -1)
+                    if (IO::send_msg(fd, request_str) == -1)
                         err_("send_msg");
                     break;
                 }
@@ -737,11 +787,11 @@ void HHH::g_join(int fd)
         {"type", "join_group"},
         {"group", group}};
     string str = Json.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         cerr << "发送消息失败" << endl;
 
     string buf;
-    if (Util::recv_msg(fd, buf) == -1)
+    if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json j = json::parse(buf);
     string reply = j["group"];
@@ -764,12 +814,12 @@ void HHH::f_reply(int fd)
     json age = {
         {"type", "newfriend_leave"}};
     string mess = age.dump();
-    if (Util::send_msg(fd, mess) == -1)
+    if (IO::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
     while (1)
     {
         string buf;
-        if (Util::recv_msg(fd, buf) == -1)
+        if (IO::recv_msg(fd, buf) == -1)
             err_("recv_msg");
 
         json jj = json::parse(buf);
@@ -795,7 +845,7 @@ void HHH::f_reply(int fd)
                             {"name", name},
                             {"reply", "YES"}};
                     string request_str = request.dump();
-                    if (Util::send_msg(fd, request_str) == -1)
+                    if (IO::send_msg(fd, request_str) == -1)
                         err_("send_msg");
                     break;
                 }
@@ -807,7 +857,7 @@ void HHH::f_reply(int fd)
                             {"name", name},
                             {"reply", "NO"}};
                     string request_str = request.dump();
-                    if (Util::send_msg(fd, request_str) == -1)
+                    if (IO::send_msg(fd, request_str) == -1)
                         err_("send_msg");
                     break;
                 }
@@ -840,7 +890,7 @@ void HHH::f_block(int fd)
             {"type", "blockfriend"},
             {"name", name}};
     string str = a.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     cout << "好友屏蔽成功！" << endl;
     getchar();
@@ -856,11 +906,11 @@ void HHH::f_unblock(int fd)
         {
             {"type", "block_list"}};
     string request_str = request.dump();
-    if (Util::send_msg(fd, request_str) == -1)
+    if (IO::send_msg(fd, request_str) == -1)
         err_("send_msg");
     // 接收列表
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
     vector<string> block_list;
@@ -890,7 +940,7 @@ void HHH::f_unblock(int fd)
             {"type", "unblockfriend"},
             {"name", name}};
     string str = a.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     cout << "取消好友屏蔽成功！" << endl;
     getchar();
@@ -913,7 +963,7 @@ void HHH::f_add(int fd)
             {"type", "addfriend"},
             {"name", name}};
     string str = a.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     cout << "好友申请发送成功！等待对方同意" << endl;
     getchar();
@@ -937,7 +987,7 @@ void HHH::f_delete(int fd)
             {"type", "deletefriend"},
             {"name", name}};
     string str = a.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     cout << "好友删除成功！" << endl;
     getchar();
@@ -949,11 +999,11 @@ void show_list(int fd)
         {
             {"type", "chatlist"}};
     string request_str = request.dump();
-    if (Util::send_msg(fd, request_str) == -1)
+    if (IO::send_msg(fd, request_str) == -1)
         err_("send_msg");
     // 接收好友列表
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     try
     {
@@ -998,11 +1048,11 @@ void HHH::g_showuser(int fd)
             {"type", "userlist"},
             {"group", group}};
     string str = g.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     // 接收群用户列表
     string buf;
-    if (Util::recv_msg(fd, buf) == -1)
+    if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json i = json::parse(buf);
     if (i.contains("userlist"))
@@ -1026,11 +1076,11 @@ void HHH::g_showlist(int fd)
     json request = {
         {"type", "grouplist"}};
     string str = request.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
     // 接收并处理响应
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
 
     json response = json::parse(buffer);
@@ -1065,7 +1115,7 @@ void HHH::g_leave(int fd)
         {"type", "leave_group"},
         {"group", group}};
     string str = Json.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         cerr << "发送消息失败" << endl;
     cout << "您成功退出该群聊！" << endl;
     getchar();
@@ -1077,11 +1127,11 @@ void getmygrouplist(int fd)
         {
             {"type", "mygrouplist"}};
     string reply = mylist.dump();
-    if (Util::send_msg(fd, reply) == -1)
+    if (IO::send_msg(fd, reply) == -1)
         cerr << "发送消息失败" << endl;
     // 接收列表
     string buffer;
-    if (Util::recv_msg(fd, buffer) == -1)
+    if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
 
     json j = json::parse(buffer);
@@ -1137,7 +1187,7 @@ void HHH::g_create(int fd)
         {"group", group},
         {"members", Friends}};
     string message = Json.dump();
-    if (Util::send_msg(fd, message) == -1)
+    if (IO::send_msg(fd, message) == -1)
         err_("发送消息失败");
     cout << "群聊创建成功!" << endl;
     getchar();
@@ -1161,7 +1211,7 @@ void HHH::g_disband(int fd)
         {"type", "disband_group"},
         {"group", group}};
     string str = Json.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         cerr << "发送消息失败" << endl;
     cout << "您成功解散该群聊！" << endl;
     getchar();

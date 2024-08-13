@@ -32,8 +32,7 @@
 #include <condition_variable>
 using namespace nlohmann;
 using namespace std;
-
-class Util
+class IO
 {
 public:
     static int readn(int fd, int size, char *buf)

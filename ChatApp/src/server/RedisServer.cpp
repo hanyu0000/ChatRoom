@@ -616,36 +616,6 @@ vector<string> RedisServer::getGroupMessages(const string &groupName)
     freeReplyObject(reply);
     return messages;
 }
-
-// 用户当前聊天对象
-void RedisServer::setCurrentChatPartner(const string &user, const string &chatPartner)
-{
-    string key = "current_chat:" + user;
-    redisCommand(context, "SET %s %s", key.c_str(), chatPartner.c_str());
-}
-string RedisServer::getCurrentChatPartner(const string &user)
-{
-    // 获取用户的当前聊天对象
-    string key = "current_chat:" + user;
-    redisReply *reply = (redisReply *)redisCommand(context, "GET %s", key.c_str());
-    if (reply->type == REDIS_REPLY_STRING)
-    {
-        string chatPartner = reply->str;
-        freeReplyObject(reply);
-        return chatPartner;
-    }
-    else
-    {
-        freeReplyObject(reply);
-        return "NO"; // 如果没有找到聊天对象，返回空字符串
-    }
-}
-// 清除用户的当前聊天对象
-void RedisServer::clearCurrentChatPartner(const string &user)
-{
-    string key = "current_chat:" + user;
-    redisCommand(context, "DEL %s", key.c_str());
-}
 // 存储申请
 void RedisServer::storeGroupRequest(const string &receiver, const string &message)
 {

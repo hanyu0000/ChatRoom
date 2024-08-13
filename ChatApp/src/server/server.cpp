@@ -2,9 +2,12 @@
 #include "ThreadPool.hpp"
 #include "task.hpp"
 map<int, string> client_map;
+// 定义一个映射，记录每个客户端的最后心跳时间
+unordered_map<int, chrono::steady_clock::time_point> last_heartbeat_map;
+const int HEARTBEAT_TIMEOUT = 10;
+
 void handleClientMessage(int fd, const json &j);
 void process_client_messages(int fd);
-
 void runServer(int port)
 {
     // 创建一个通讯端点，返回端点文件描述符
@@ -49,8 +52,7 @@ void runServer(int port)
     // 握手成功
     while (1)
     {
-        cout << "等待事件发生......" << endl;
-        int n = epoll_wait(epfd, evs, size, -1); // 检测事件发生
+        int n = epoll_wait(epfd, evs, size, 1000); // 检测事件发生
         for (int i = 0; i < n; ++i)
         {
             int fd = evs[i].data.fd;     // 取出当前的文件描述符
@@ -63,6 +65,8 @@ void runServer(int port)
                         err_("accept");
 
                     cout << "新连接建立,文件描述符为: " << c_fd << endl;
+                    // 添加新的客户端并初始化心跳时间戳
+                    last_heartbeat_map[c_fd] = chrono::steady_clock::now();
                     // 文件描述符修改为非阻塞
                     int flag = fcntl(c_fd, F_GETFL);
                     flag |= O_NONBLOCK;
@@ -78,6 +82,21 @@ void runServer(int port)
                     process_client_messages(fd);
             }
         }
+        // 定期检查心跳包超时
+        auto now = chrono::steady_clock::now();
+        for (auto it = last_heartbeat_map.begin(); it != last_heartbeat_map.end();)
+        {
+            if (chrono::duration_cast<chrono::seconds>(now - it->second).count() > HEARTBEAT_TIMEOUT)
+            {
+                cout << "客户端fd: " << it->first << "超时，断开连接" << endl;
+                epoll_ctl(epfd, EPOLL_CTL_DEL, it->first, nullptr);
+                client_map.erase(it->first);
+                close(it->first);
+                it = last_heartbeat_map.erase(it);
+            }
+            else
+                ++it;
+        }
     }
     close(lfd);
     close(epfd);
@@ -87,14 +106,15 @@ int main()
     runServer(8080);
     return 0;
 }
-
 void process_client_messages(int fd)
 {
+    // 更新心跳时间戳
+    last_heartbeat_map[fd] = chrono::steady_clock::now();
     ThreadPool pool(4, 10);
 
     // 读取消息头，获取消息长度
     uint32_t _len = 0;
-    int ret = Util::readn(fd, sizeof(uint32_t), (char *)&_len);
+    int ret = IO::readn(fd, sizeof(uint32_t), (char *)&_len);
     if (ret != sizeof(uint32_t))
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -111,7 +131,7 @@ void process_client_messages(int fd)
     _len = ntohl(_len); // 将消息长度从网络字节序转换为主机字节序
     char *buffer = new char[_len + 1];
     memset(buffer, 0, _len + 1);
-    ret = Util::readn(fd, _len, buffer);
+    ret = IO::readn(fd, _len, buffer);
     if (ret != _len)
     {
         if (ret == 0)
@@ -131,6 +151,12 @@ void process_client_messages(int fd)
     try
     {
         auto j = json::parse(message);
+        if (j.contains("type") && j["type"] == "heartbeat")
+        {
+            // 更新心跳时间戳
+            last_heartbeat_map[fd] = std::chrono::steady_clock::now();
+            return;
+        }
         auto task = bind(handleClientMessage, fd, j);
         pool.addTask(task);
     }
@@ -143,136 +169,139 @@ void process_client_messages(int fd)
         cerr << "JSON 解析错误: " << e.what() << endl;
     }
 }
-/*
-else if (msg_type == "file")
-{
-    file(fd, j); // 收文件
-}
-else if (msg_type == "send_file")
-{
-    send_file(fd, j); // 发文件
-} */
 void handleClientMessage(int fd, const json &j)
 {
-    string msg_type = j["type"];
-    cout << msg_type << endl;
-    if (msg_type == "login")
+    string type = j["type"];
+    cout << type << endl;
+    if (type == "login")
     {
         login(fd, j); // 登录
     }
-    else if (msg_type == "register")
+    else if (type == "recv_file")
+    {
+        recv_file(fd, j); // 收文件
+    }
+    else if (type == "send_file")
+    {
+        send_file(fd, j); // 发文件
+    }
+    else if (type == "charge_file")
+    {
+        charge_file(fd, j);
+    }
+    else if (type == "register")
     {
         doregister(fd, j); // 注册
     }
-    else if (msg_type == "logout")
+    else if (type == "logout")
     {
         logout(fd, j); // 注销
     }
-    else if (msg_type == "isUser")
+    else if (type == "isUser")
     {
         isUser(fd, j); // 是否注册
     }
-    else if (msg_type == "chatlist")
+    else if (type == "chatlist")
     {
         f_chatlist(fd, j); // 好友列表
     }
-    else if (msg_type == "mygrouplist")
+    else if (type == "mygrouplist")
     {
         my_group_list(fd, j); // 我创建的群聊列表
     }
-    else if (msg_type == "addmanage")
+    else if (type == "addmanage")
     {
         add_manager(fd, j); // 设置管理员
     }
-    else if (msg_type == "deletemanage")
+    else if (type == "deletemanage")
     {
         delete_manager(fd, j); // 删除管理员
     }
-    else if (msg_type == "newfriend_leave")
+    else if (type == "newfriend_leave")
     {
         newfriend_leave(fd, j);
     }
-    else if (msg_type == "managelist")
+    else if (type == "managelist")
     {
         managelist(fd, j); // 管理员列表
     }
-    else if (msg_type == "delete_people")
+    else if (type == "delete_people")
     {
         delete_people(fd, j);
     }
-    else if (msg_type == "chat")
+    else if (type == "chat")
     {
         f_chat(fd, j); // 好友聊天
     }
-    else if (msg_type == "g_chat")
+    else if (type == "g_chat")
     {
         g_chat(fd, j); // 群聊
     }
-    else if (msg_type == "f_chat_leave")
+    else if (type == "f_chat_leave")
     {
         f_chat_leave(fd, j); // 离线消息
     }
-    else if (msg_type == "f_chatHistry")
+    else if (type == "f_chatHistry")
     {
         f_chatHistry(fd, j); // 聊天记录
     }
-    else if (msg_type == "g_chatHistry")
+    else if (type == "g_chatHistry")
     {
         g_chatHistry(fd, j); // 聊天记录
     }
-    else if (msg_type == "blockfriend")
+    else if (type == "blockfriend")
     {
         f_block(fd, j); // 好友屏蔽
     }
-    else if (msg_type == "unblockfriend")
+    else if (type == "unblockfriend")
     {
         f_unblock(fd, j); // 好友取消屏蔽
     }
-    else if (msg_type == "block_list")
+    else if (type == "block_list")
     {
         block_list(fd, j); // 屏蔽列表
     }
-    else if (msg_type == "addfriend")
+    else if (type == "addfriend")
     {
         f_add(fd, j); // 好友添加
     }
-    else if (msg_type == "addfriendreply")
+    else if (type == "addfriendreply")
     {
         f_addreply(fd, j); // 好友申请回复
     }
-    else if (msg_type == "deletefriend")
+    else if (type == "deletefriend")
     {
         f_delete(fd, j); // 好友删除
     }
-    else if (msg_type == "userlist")
+    else if (type == "userlist")
     {
         g_showuser(fd, j); // 查看群用户
     }
-    else if (msg_type == "grouplist")
+    else if (type == "grouplist")
     {
         g_showlist(fd, j); // 查询群聊
     }
-    else if (msg_type == "create_group")
+    else if (type == "create_group")
     {
         g_create(fd, j); // 创建群聊
     }
-    else if (msg_type == "disband_group")
+    else if (type == "disband_group")
     {
         g_disband(fd, j); // 删除群聊
     }
-    else if (msg_type == "leave_group")
+    else if (type == "leave_group")
     {
         g_leave(fd, j); // 退出群聊
     }
-    else if (msg_type == "join_group")
+    else if (type == "join_group")
     {
         g_join(fd, j); // 加入群聊
     }
-    else if (msg_type == "g_reply")
+    else if (type == "g_reply")
     {
         g_reply(fd, j); // 群聊申请
     }
-    else if (msg_type == "apply_g_reply")
+    else if (type == "apply_g_reply")
     {
         g_addreply(fd, j);
     }

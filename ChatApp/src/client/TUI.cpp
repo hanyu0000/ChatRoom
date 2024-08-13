@@ -86,7 +86,7 @@ void TUI::dologin(int fd)
                 {"type", "login"},
                 {"name", name}};
         string str = u_i.dump();
-        if (Util::send_msg(fd, str) == -1)
+        if (IO::send_msg(fd, str) == -1)
             err_("send_msg");
 
         cout << " " << endl;
@@ -119,11 +119,11 @@ void TUI::doregister(int fd)
             {"name", name},
             {"pwd", pwd}};
     string str = u_i.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
 
     string strResponse;
-    if (Util::recv_msg(fd, strResponse) == -1)
+    if (IO::recv_msg(fd, strResponse) == -1)
         err_("recv_msg");
     try
     {
@@ -176,11 +176,11 @@ void TUI::dologout(int fd)
                     {"name", name},
                     {"pwd", pwd}};
             string str = u_i.dump();
-            if (Util::send_msg(fd, str) == -1)
+            if (IO::send_msg(fd, str) == -1)
                 err_("send_msg");
 
             string strResponse;
-            if (Util::recv_msg(fd, strResponse) == -1)
+            if (IO::recv_msg(fd, strResponse) == -1)
                 err_("recv_msg");
             try
             {
@@ -207,11 +207,11 @@ int TUI::read_response(int fd, const string &name, const string &pwd)
             {"name", name},
             {"pwd", pwd}};
     string str = u_i.dump();
-    if (Util::send_msg(fd, str) == -1)
+    if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
 
     string strResponse;
-    if (Util::recv_msg(fd, strResponse) == -1)
+    if (IO::recv_msg(fd, strResponse) == -1)
         err_("recv_msg");
     try
     {

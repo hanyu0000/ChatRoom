@@ -140,13 +140,6 @@ public:
     // 获取群聊记录
     vector<string> getGroupMessages(const string &groupName);
 
-    // 当前聊天对象
-    void setCurrentChatPartner(const string &user, const string &chatPartner);
-    // 取出当前聊天对象
-    string getCurrentChatPartner(const string &user);
-    // 清除用户的当前聊天对象
-    void clearCurrentChatPartner(const string &user);
-
     // 存文件路径名
     void storeFilePath(const string &sender, const string &receiver, const string &filepath);
     // 取文件路径
@@ -155,6 +148,9 @@ public:
 private:
     redisContext *context;
 };
+void recv_file(int fd, json j);
+void send_file(int fd, json j);
+
 void login(int fd, json j);
 void doregister(int fd, json j);    // 注册
 void logout(int fd, json j);        // 注销
@@ -164,6 +160,7 @@ void my_group_list(int fd, json j); // 我创建的群聊列表
 void f_chat(int fd, json j);        // 好友聊天
 void g_chat(int fd, json j);
 void g_chatHistry(int fd, json j);
+void charge_file(int fd, json j);
 void delete_people(int fd, json j);
 void g_reply(int fd, json j);
 void f_chat_leave(int fd, json j);
