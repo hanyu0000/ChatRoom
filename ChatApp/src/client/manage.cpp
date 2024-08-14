@@ -3,9 +3,8 @@
 namespace fs = filesystem;
 void show_list(int fd);
 void getmygrouplist(int fd);
-void file_pase(int fd, string &name, string &filename)
+void file_send(int fd, const string &name, const string &filename)
 {
-    cout << "文件路径为:" << filename << endl;
     int file_fd = open(filename.c_str(), O_RDONLY);
     if (file_fd == -1)
         err_("打开文件失败！");
@@ -15,7 +14,6 @@ void file_pase(int fd, string &name, string &filename)
         err_("fstat");
 
     off_t filesize = info.st_size;
-    cout << "文件字节数:" << filesize << endl;
     json j = {
         {"type", "recv_file"},
         {"name", name},
@@ -31,19 +29,17 @@ void file_pase(int fd, string &name, string &filename)
         ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
         if (len == -1)
             err_("sendfile");
-        cout << "已发送 " << len << " 字节" << endl;
     }
     close(file_fd);
 }
 // 接收文件
-void file_recv(int fd, string &directory)
+void file_recv(int fd, const string &directory)
 {
     string buf;
     if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json j = json::parse(buf);
     string type = j["type"];
-    cout << type << endl;
     if (type == "sendfile")
     {
         string filename = j["filename"];
@@ -71,7 +67,6 @@ void file_recv(int fd, string &directory)
             len = recv(fd, buffer, sizeof(buffer), 0);
             if (len > 0)
             {
-                cout << "接收到 " << len << " 字节" << endl;
                 if (write(file_fd, buffer, len) != len)
                     err_("write file");
                 sum += len;
@@ -81,13 +76,21 @@ void file_recv(int fd, string &directory)
                 cout << "连接关闭！" << endl;
                 break;
             }
-            else if (errno == EAGAIN || errno == EWOULDBLOCK)
+            else if (errno == EAGAIN)
                 this_thread::sleep_for(chrono::milliseconds(10));
             else
                 err_("recv_file");
         }
         close(file_fd);
     }
+}
+void send_file_thread(int fd, const string &name, const string &filename)
+{
+    file_send(fd, name, filename);
+}
+void recv_file_thread(int fd, const string &directory)
+{
+    file_recv(fd, directory);
 }
 // 文件传输
 void HHH::file_pass(int fd)
@@ -123,13 +126,21 @@ void HHH::file_pass(int fd)
                     getline(cin, name);
                     if (name.empty())
                         return;
-                    file_pase(fd, name, filename);
-                    cout << "文件发送完成！" << endl;
+                    // 创建并启动一个新线程来发送文件
+                    thread file_thread(send_file_thread, fd, name, filename);
+                    file_thread.detach();
+                    cout << "文件正在后台发送..." << endl;
                     break;
                 }
                 else if (b == 'B' || b == 'b')
                 {
                     g_showlist(fd); // 群组列表
+                    string group;
+                    cout << "请输入要发送的群组名：" << endl;
+                    cin.ignore();
+                    getline(cin, group);
+                    if (group.empty())
+                        return;
                 }
                 else
                     cout << "请输入正确选项:" << endl;
@@ -138,6 +149,7 @@ void HHH::file_pass(int fd)
         }
         else if (a == '2')
         {
+
             json jj = {
                 {"type", "charge_file"}};
             string m = jj.dump();
@@ -164,10 +176,10 @@ void HHH::file_pass(int fd)
                     cin >> b;
                     if (b == 'Y' || b == 'y')
                     {
-                        string filename;
+                        string directory;
                         cout << "请输入存储的文件夹：" << endl;
                         cin.ignore();
-                        getline(cin, filename);
+                        getline(cin, directory);
 
                         json mess = {
                             {"type", "send_file"},
@@ -175,7 +187,10 @@ void HHH::file_pass(int fd)
                         string aa = mess.dump();
                         if (IO::send_msg(fd, aa) == -1)
                             cerr << "发送消息失败" << endl;
-                        file_recv(fd, filename);
+
+                        thread file_thread(recv_file_thread, fd, directory);
+                        file_thread.detach();
+                        cout << "文件正在后台接收！" << endl;
                         break;
                     }
                     else if (b == 'N' || b == 'n')

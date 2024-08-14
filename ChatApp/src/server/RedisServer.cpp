@@ -700,6 +700,7 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
         cerr << "执行 Redis 命令失败" << endl;
         throw runtime_error("Redis 命令执行失败");
     }
+
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0)
     {
         for (size_t i = 0; i < reply->elements; ++i)
@@ -715,7 +716,15 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
                 {
                     file_info = {path_reply->str, sender};
                     freeReplyObject(path_reply);
-                    break;
+                    // 删除文件路径
+                    redisReply *del_reply = (redisReply *)redisCommand(context, "HDEL %s filepath", key.c_str());
+                    if (!del_reply)
+                    {
+                        cerr << "删除 Redis 键失败" << endl;
+                        throw runtime_error("Redis 键删除失败");
+                    }
+                    freeReplyObject(del_reply);
+                    break; // 找到并删除一个文件路径后退出
                 }
                 freeReplyObject(path_reply);
             }

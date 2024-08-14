@@ -45,7 +45,7 @@ void recv_file(int fd, json j)
             cout << "连接关闭！" << endl;
             break;
         }
-        else if (errno == EAGAIN || errno == EWOULDBLOCK)
+        else if (errno == EAGAIN)
             this_thread::sleep_for(chrono::milliseconds(10));
         else
             err_("recv_file");
@@ -57,7 +57,6 @@ void charge_file(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
     pair<string, string> file_info = redis.getFilePath(my_name);
-
     string filepath = file_info.first;
     string sender = file_info.second;
     if (filepath.empty())
@@ -84,11 +83,6 @@ void charge_file(int fd, json j)
 void send_file(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
-    pair<string, string> file_info = redis.getFilePath(my_name);
-    string filepath = file_info.first;
-    string sender = file_info.second;
-    cout << "文件路径:" << filepath << endl;
-
     if (j.contains("NNN"))
     {
         cout << "用户不接收该文件消息!" << endl;
@@ -96,15 +90,19 @@ void send_file(int fd, json j)
     }
     else if (j.contains("YYY"))
     {
+        pair<string, string> file_info = redis.getFilePath(my_name);
+        string filepath = file_info.first;
+        cout << "文件路径:" << filepath << endl;
         int file_fd = open(filepath.c_str(), O_RDONLY);
         if (file_fd == -1)
             err_("打开文件失败");
 
-        struct stat st;
-        if (fstat(file_fd, &st) == -1)
-            err_("获取文件信息失败");
+        struct stat info;
+        if (fstat(file_fd, &info) == -1)
+            err_("fstat");
 
-        size_t filesize = st.st_size;
+        size_t filesize = info.st_size;
+        cout << "文件大小:" << filesize << endl;
         // 发送文件大小给接收者
         json json = {
             {"type", "sendfile"},
@@ -123,11 +121,19 @@ void send_file(int fd, json j)
             {
                 if (errno == EAGAIN)
                 {
-                    usleep(1000); 
+                    usleep(1000);
                     continue;
                 }
                 else
+                {
+                    cerr << "Error during sendfile: " << strerror(errno) << endl;
+                    cerr << "Details:" << endl;
+                    cerr << "  Current offset: " << sum << endl;
+                    cerr << "  Remaining bytes: " << filesize - sum << endl;
+                    cerr << "  File descriptor: " << file_fd << endl;
+                    cerr << "  Destination descriptor: " << fd << endl;
                     err_("sendfile");
+                }
             }
         }
         close(file_fd);

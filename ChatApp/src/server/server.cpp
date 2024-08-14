@@ -3,7 +3,7 @@
 #include "task.hpp"
 map<int, string> client_map;
 void handleClientMessage(int fd, const json &j);
-void process_client_messages(int fd);
+void process_client_messages(int fd, int epfd);
 void runServer(int port)
 {
     // 创建一个通讯端点，返回端点文件描述符
@@ -74,7 +74,7 @@ void runServer(int port)
                         err_("epoll_ctl");
                 }
                 else
-                    process_client_messages(fd);
+                    process_client_messages(fd, epfd);
             }
         }
     }
@@ -86,7 +86,7 @@ int main()
     runServer(8080);
     return 0;
 }
-void process_client_messages(int fd)
+void process_client_messages(int fd, int epfd)
 {
     // 读取消息头，获取消息长度
     uint32_t _len = 0;
@@ -99,7 +99,7 @@ void process_client_messages(int fd)
         {
             cout << "----------用户fd: " << fd << "下线----------" << endl;
             client_map.erase(fd);
-            epoll_ctl(fd, EPOLL_CTL_DEL, fd, nullptr);
+            epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
             close(fd);
         }
         return;
@@ -113,8 +113,8 @@ void process_client_messages(int fd)
         if (ret == 0)
         {
             cout << "----------用户fd: " << fd << "下线----------" << endl;
-            epoll_ctl(fd, EPOLL_CTL_DEL, fd, nullptr); // 从epoll模型中删除文件描述符
-            client_map.erase(fd);                      // 从客户端映射中删除
+            epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr); // 从epoll模型中删除文件描述符
+            client_map.erase(fd);                        // 从客户端映射中删除
             close(fd);
         }
         else
