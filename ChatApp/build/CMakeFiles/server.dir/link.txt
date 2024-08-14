@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/server.dir/src/server/server.cpp.o CMakeFiles/server.dir/src/server/RedisServer.cpp.o CMakeFiles/server.dir/src/server/task.cpp.o CMakeFiles/server.dir/src/server/ThreadPool.cpp.o -o server  -lhiredis 
