@@ -8,9 +8,7 @@ string getCurrentChatObject(const string &user);
 void recv_file(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
-    string f_name = j["name"];
     off_t filesize = j["filesize"];
-
     string filename = j["filename"];
     string directory = "/home/zxc/files";
 
@@ -19,9 +17,25 @@ void recv_file(int fd, json j)
         if (mkdir(directory.c_str(), 0755) == -1)
             err_("mkdir failed");
 
-    string filepath = directory + "/" + filename; //
+    string filepath = directory + "/" + filename;
     cout << "文件路径为:" << filepath << endl;
-    redis.storeFilePath(my_name, f_name, filepath); // 存文件路径
+
+    if (j.contains("name"))
+    {
+        string f_name = j["name"];
+        redis.storeFilePath(my_name, f_name, filepath); // 存文件路径
+    }
+    else if (j.contains("group"))
+    {
+        string group = j["group"];
+        vector<string> userlist = redis.getGroupMembers(group); // 群聊的用户列表
+        for (const auto &name : userlist)
+        {
+            if (name == my_name)
+                continue;
+            redis.storeFilePath(my_name, name, filepath); // 存文件路径
+        }
+    }
 
     int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (file_fd == -1)
@@ -94,9 +108,13 @@ void send_file(int fd, json j)
     }
     else if (j.contains("YYY"))
     {
+        string f_name = j["name"];
         pair<string, string> file_info = redis.getFilePath(my_name);
         string filepath = file_info.first;
         cout << "文件路径:" << filepath << endl;
+
+        redis.deleteFilePath(f_name, my_name);
+
         int file_fd = open(filepath.c_str(), O_RDONLY);
         if (file_fd == -1)
             err_("打开文件失败");
@@ -129,15 +147,7 @@ void send_file(int fd, json j)
                     continue;
                 }
                 else
-                {
-                    cerr << "Error during sendfile: " << strerror(errno) << endl;
-                    cerr << "Details:" << endl;
-                    cerr << "  Current offset: " << sum << endl;
-                    cerr << "  Remaining bytes: " << filesize - sum << endl;
-                    cerr << "  File descriptor: " << file_fd << endl;
-                    cerr << "  Destination descriptor: " << fd << endl;
                     err_("sendfile");
-                }
             }
         }
         close(file_fd);
@@ -228,6 +238,7 @@ void g_chat(int fd, json j)
     string my_name = get_name(fd, client_map);
     cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
     string group = j["group"].get<string>();
+    current_chat_map[my_name] = group;
 
     string hhh = j["message"].get<string>();
     if (hhh == "exit")
@@ -248,8 +259,9 @@ void g_chat(int fd, json j)
     cout << "群聊 < " << group << " > 的用户列表: " << endl;
     for (const auto &name : userlist)
     {
+        string cur_group = getCurrentChatObject(name);
         int f_fd = get_fd(name, client_map);
-        if (f_fd == -1 || f_fd == fd)
+        if (f_fd == -1 || f_fd == fd || cur_group != group)
         {
             cout << name << "不在线" << endl;
             continue;

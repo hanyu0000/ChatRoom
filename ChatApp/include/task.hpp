@@ -144,6 +144,8 @@ public:
     void storeFilePath(const string &sender, const string &receiver, const string &filepath);
     // 取文件路径
     pair<string, string> getFilePath(const string &receiver);
+    // 删除文件路径
+    void deleteFilePath(const string &sender, const string &receiver);
 
 private:
     redisContext *context;

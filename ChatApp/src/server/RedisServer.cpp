@@ -689,16 +689,17 @@ void RedisServer::storeFilePath(const string &sender, const string &receiver, co
     }
     freeReplyObject(reply);
 }
-// 取文件路径
+// 获取文件路径
 pair<string, string> RedisServer::getFilePath(const string &receiver)
 {
     pair<string, string> file_info = {"", ""}; // 默认初始化为空的 pair
     string key_pattern = "*:files:" + receiver;
+
     redisReply *reply = (redisReply *)redisCommand(context, "KEYS %s", key_pattern.c_str());
     if (!reply)
     {
-        cerr << "执行 Redis 命令失败" << endl;
-        throw runtime_error("Redis 命令执行失败");
+        cerr << "执行 Redis KEYS 命令失败" << endl;
+        throw runtime_error("Redis KEYS 命令执行失败");
     }
 
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0)
@@ -710,31 +711,53 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
             if (pos != string::npos)
             {
                 string sender = key.substr(0, pos);
+
                 // 获取文件路径
                 redisReply *path_reply = (redisReply *)redisCommand(context, "HGET %s filepath", key.c_str());
-                if (path_reply && path_reply->type == REDIS_REPLY_STRING)
+                if (!path_reply)
+                {
+                    cerr << "执行 Redis HGET 命令失败" << endl;
+                    freeReplyObject(reply); // 释放上一个 reply 对象
+                    throw runtime_error("Redis HGET 命令执行失败");
+                }
+
+                if (path_reply->type == REDIS_REPLY_STRING)
                 {
                     file_info = {path_reply->str, sender};
-                    freeReplyObject(path_reply);
-                    // 删除文件路径
-                    redisReply *del_reply = (redisReply *)redisCommand(context, "HDEL %s filepath", key.c_str());
-                    if (!del_reply)
-                    {
-                        cerr << "删除 Redis 键失败" << endl;
-                        throw runtime_error("Redis 键删除失败");
-                    }
-                    freeReplyObject(del_reply);
-                    break; // 找到并删除一个文件路径后退出
+                    freeReplyObject(path_reply); // 释放 path_reply 对象
+                    break;                       // 找到一个文件路径后退出
                 }
-                freeReplyObject(path_reply);
+                freeReplyObject(path_reply); // 如果路径不是字符串类型，仍需要释放 path_reply 对象
             }
         }
     }
     else
+    {
         cout << "没有找到匹配的文件路径！" << endl;
+    }
 
-    freeReplyObject(reply);
+    freeReplyObject(reply); // 释放最初的 reply 对象
     return file_info;
+}
+// 删除文件路径
+void RedisServer::deleteFilePath(const string &sender, const string &receiver)
+{
+    string key = sender + ":files:" + receiver;
+
+    // 删除文件路径
+    redisReply *del_reply = (redisReply *)redisCommand(context, "HDEL %s filepath", key.c_str());
+    if (!del_reply)
+    {
+        cerr << "删除 Redis 键失败" << endl;
+        throw runtime_error("Redis 键删除失败");
+    }
+
+    if (del_reply->type != REDIS_REPLY_INTEGER || del_reply->integer == 0)
+    {
+        cerr << "删除 Redis 键失败或键不存在" << endl;
+    }
+
+    freeReplyObject(del_reply); // 释放删除操作的 reply 对象
 }
 // 群聊-群主
 void RedisServer::setGroupMaster(const string &group, const string &username)

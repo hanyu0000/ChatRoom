@@ -1,13 +1,51 @@
 #include "head.hpp"
 #include "HHH.hpp"
 namespace fs = filesystem;
-void show_list(int fd);
+void show_list(int fd); // 好友列表
 void getmygrouplist(int fd);
+void group_file_send(int fd, const string &group, const string &filename)
+{
+    int file_fd = open(filename.c_str(), O_RDONLY);
+    if (file_fd == -1)
+    {
+        cout << "文件路径错误！" << endl;
+        cout << "请重新输入文件路径！" << endl;
+        return;
+    }
+
+    struct stat info;
+    if (fstat(file_fd, &info) == -1)
+        err_("fstat");
+
+    off_t filesize = info.st_size;
+    json j = {
+        {"type", "recv_file"},
+        {"group", group},
+        {"filename", fs::path(filename).filename().string()},
+        {"filesize", filesize}};
+    string message = j.dump();
+    if (IO::send_msg(fd, message) == -1)
+        err_("send_msg");
+
+    off_t sum = 0;
+    while (sum < filesize)
+    {
+        ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
+        if (len == -1)
+            err_("sendfile");
+        cout << "已经发送:" << sum << "字节，总共有" << filesize << "字节的数据" << endl;
+    }
+    close(file_fd);
+}
 void file_send(int fd, const string &name, const string &filename)
 {
     int file_fd = open(filename.c_str(), O_RDONLY);
     if (file_fd == -1)
-        err_("打开文件失败！");
+    {
+        cout << "文件路径错误！" << endl;
+        cout << "请重新输入文件路径！" << endl;
+        return;
+    }
 
     struct stat info;
     if (fstat(file_fd, &info) == -1)
@@ -79,7 +117,7 @@ void file_recv(int fd, const string &directory)
                 break;
             }
             else if (errno == EAGAIN)
-                this_thread::sleep_for(chrono::milliseconds(10));
+                this_thread::sleep_for(chrono::milliseconds(50));
             else
                 err_("recv_file");
         }
@@ -108,6 +146,7 @@ void HHH::file_pass(int fd)
             cout << "请选择:" << endl;
             cout << "       A.私聊      B.群聊   " << endl;
             char b;
+
             while (1)
             {
                 cin >> b;
@@ -121,17 +160,24 @@ void HHH::file_pass(int fd)
                     if (name.empty())
                         return;
                     file_send(fd, name, filename);
+                    cout << "文件发送完毕" << endl;
                     break;
                 }
                 else if (b == 'B' || b == 'b')
                 {
                     g_showlist(fd); // 群组列表
+
                     string group;
                     cout << "请输入要发送的群组名：" << endl;
-                    cin.ignore();
+                    // cin.ignore();
                     getline(cin, group);
                     if (group.empty())
                         return;
+
+                    cout << group << endl;
+                    group_file_send(fd, group, filename);
+                    cout << "文件发送完毕" << endl;
+                    break;
                 }
                 else
                     cout << "请输入正确选项:" << endl;
@@ -174,12 +220,14 @@ void HHH::file_pass(int fd)
 
                         json mess = {
                             {"type", "send_file"},
+                            {"name", reply},
                             {"YYY", "YYY"}};
                         string aa = mess.dump();
                         if (IO::send_msg(fd, aa) == -1)
                             cerr << "发送消息失败" << endl;
 
                         file_recv(fd, directory);
+                        cout << "文件接收完毕" << endl;
                         break;
                     }
                     else if (b == 'N' || b == 'n')
@@ -294,9 +342,12 @@ void HHH::g_chat(int fd)
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
     while (1)
     {
-        cin >> msg;
-        if (msg == "")
+        getline(cin, msg);
+        if (msg.length() >= 4096)
+        {
+            cout << "消息太长!请重新输入:" << endl;
             continue;
+        }
         if (msg == "exit")
         {
             cout << "聊天结束......" << endl;
@@ -438,7 +489,6 @@ void HHH::f_chat(int fd)
     recvThread = thread(receiveMessages);
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
-
     json m = {
         {"type", "chat"},
         {"name", name},
@@ -449,9 +499,15 @@ void HHH::f_chat(int fd)
 
     while (1)
     {
-        cin >> msg;
+        cin.ignore();
+        getline(cin, msg);
         if (msg == "")
             continue;
+        if (msg.length() >= 4096)
+        {
+            cout << "消息太长!请重新输入:" << endl;
+            continue;
+        }
         if (msg == "exit")
         {
             cout << "聊天结束......" << endl;
