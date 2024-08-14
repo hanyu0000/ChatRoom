@@ -59,7 +59,7 @@ void file_recv(int fd, const string &directory)
         if (file_fd == -1)
             err_("打开文件失败");
 
-        char buffer[4096];
+        char buffer[4 << 20];
         off_t sum = 0;
         ssize_t len;
         while (sum < filesize)

@@ -12,6 +12,7 @@
 #include <vector>
 #include <thread>
 #include <future>
+#include <chrono>
 #include <cstddef>
 #include <cstring>
 #include <fstream>

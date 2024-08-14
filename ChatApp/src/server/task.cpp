@@ -19,15 +19,15 @@ void recv_file(int fd, json j)
         if (mkdir(directory.c_str(), 0755) == -1)
             err_("mkdir failed");
 
-    string filepath = directory + "/" + filename; // 文件路径
-    cout << filepath << endl;
+    string filepath = directory + "/" + filename; //
+    cout << "文件路径为:" << filepath << endl;
     redis.storeFilePath(my_name, f_name, filepath); // 存文件路径
 
     int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
     if (file_fd == -1)
         err_("打开文件失败");
 
-    char buffer[4096];
+    char buffer[4 << 20];
     off_t sum = 0;
     ssize_t len;
     while (sum < filesize)
@@ -35,22 +35,27 @@ void recv_file(int fd, json j)
         len = recv(fd, buffer, sizeof(buffer), 0);
         if (len > 0)
         {
-            cout << "接收到 " << len << " 字节" << endl;
             if (write(file_fd, buffer, len) != len)
+            {
+                close(file_fd);
                 err_("write file");
+            }
             sum += len;
+            cout << "总共接收了：" << sum << " 字节，预计大小：" << filesize << " 字节" << endl;
         }
         else if (len == 0)
         {
-            cout << "连接关闭！" << endl;
+            cout << "连接关闭!!!" << endl;
             break;
         }
         else if (errno == EAGAIN)
-            this_thread::sleep_for(chrono::milliseconds(10));
+            this_thread::sleep_for(chrono::milliseconds(50));
         else
+        {
+            close(file_fd);
             err_("recv_file");
+        }
     }
-    cout << "文件接收完毕!" << endl;
     close(file_fd);
 }
 void charge_file(int fd, json j)
