@@ -29,6 +29,7 @@ void file_send(int fd, const string &name, const string &filename)
         ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
         if (len == -1)
             err_("sendfile");
+        cout << "已经发送:" << sum << "字节，总共有" << filesize << "字节的数据" << endl;
     }
     close(file_fd);
 }
@@ -70,6 +71,7 @@ void file_recv(int fd, const string &directory)
                 if (write(file_fd, buffer, len) != len)
                     err_("write file");
                 sum += len;
+                cout << "已经接收:" << sum << "字节，总共有" << filesize << "字节的数据" << endl;
             }
             else if (len == 0)
             {
@@ -83,14 +85,6 @@ void file_recv(int fd, const string &directory)
         }
         close(file_fd);
     }
-}
-void send_file_thread(int fd, const string &name, const string &filename)
-{
-    file_send(fd, name, filename);
-}
-void recv_file_thread(int fd, const string &directory)
-{
-    file_recv(fd, directory);
 }
 // 文件传输
 void HHH::file_pass(int fd)
@@ -126,10 +120,7 @@ void HHH::file_pass(int fd)
                     getline(cin, name);
                     if (name.empty())
                         return;
-                    // 创建并启动一个新线程来发送文件
-                    thread file_thread(send_file_thread, fd, name, filename);
-                    file_thread.detach();
-                    cout << "文件正在后台发送..." << endl;
+                    file_send(fd, name, filename);
                     break;
                 }
                 else if (b == 'B' || b == 'b')
@@ -188,9 +179,7 @@ void HHH::file_pass(int fd)
                         if (IO::send_msg(fd, aa) == -1)
                             cerr << "发送消息失败" << endl;
 
-                        thread file_thread(recv_file_thread, fd, directory);
-                        file_thread.detach();
-                        cout << "文件正在后台接收！" << endl;
+                        file_recv(fd, directory);
                         break;
                     }
                     else if (b == 'N' || b == 'n')

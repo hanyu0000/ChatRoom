@@ -41,7 +41,6 @@ void recv_file(int fd, json j)
                 err_("write file");
             }
             sum += len;
-            cout << "总共接收了：" << sum << " 字节，预计大小：" << filesize << " 字节" << endl;
         }
         else if (len == 0)
         {

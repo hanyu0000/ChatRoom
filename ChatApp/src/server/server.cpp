@@ -283,6 +283,7 @@ void process_client_messages(int fd, int epfd)
     }
     string message(buffer, ret);
     delete[] buffer;
+
     try
     {
         ThreadPool pool(4, 10);
