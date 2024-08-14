@@ -2,10 +2,6 @@
 #include "ThreadPool.hpp"
 #include "task.hpp"
 map<int, string> client_map;
-// 定义一个映射，记录每个客户端的最后心跳时间
-unordered_map<int, chrono::steady_clock::time_point> last_heartbeat_map;
-const int HEARTBEAT_TIMEOUT = 10;
-
 void handleClientMessage(int fd, const json &j);
 void process_client_messages(int fd);
 void runServer(int port)
@@ -65,8 +61,7 @@ void runServer(int port)
                         err_("accept");
 
                     cout << "新连接建立,文件描述符为: " << c_fd << endl;
-                    // 添加新的客户端并初始化心跳时间戳
-                    last_heartbeat_map[c_fd] = chrono::steady_clock::now();
+
                     // 文件描述符修改为非阻塞
                     int flag = fcntl(c_fd, F_GETFL);
                     flag |= O_NONBLOCK;
@@ -82,21 +77,6 @@ void runServer(int port)
                     process_client_messages(fd);
             }
         }
-        // 定期检查心跳包超时
-        auto now = chrono::steady_clock::now();
-        for (auto it = last_heartbeat_map.begin(); it != last_heartbeat_map.end();)
-        {
-            if (chrono::duration_cast<chrono::seconds>(now - it->second).count() > HEARTBEAT_TIMEOUT)
-            {
-                cout << "客户端fd: " << it->first << "超时，断开连接" << endl;
-                epoll_ctl(epfd, EPOLL_CTL_DEL, it->first, nullptr);
-                client_map.erase(it->first);
-                close(it->first);
-                it = last_heartbeat_map.erase(it);
-            }
-            else
-                ++it;
-        }
     }
     close(lfd);
     close(epfd);
@@ -108,16 +88,12 @@ int main()
 }
 void process_client_messages(int fd)
 {
-    // 更新心跳时间戳
-    last_heartbeat_map[fd] = chrono::steady_clock::now();
-    ThreadPool pool(4, 10);
-
     // 读取消息头，获取消息长度
     uint32_t _len = 0;
     int ret = IO::readn(fd, sizeof(uint32_t), (char *)&_len);
     if (ret != sizeof(uint32_t))
     {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        if (errno == EAGAIN)
             cout << "服务端数据接受完毕......" << endl;
         else
         {
@@ -150,15 +126,19 @@ void process_client_messages(int fd)
     delete[] buffer;
     try
     {
+        ThreadPool pool(4, 10);
         auto j = json::parse(message);
-        if (j.contains("type") && j["type"] == "heartbeat")
+        string type = j["type"];
+        if (type == "recv_file")
         {
-            // 更新心跳时间戳
-            last_heartbeat_map[fd] = std::chrono::steady_clock::now();
-            return;
+            auto task = bind(recv_file, fd, j);
+            pool.addTask(task);
         }
-        auto task = bind(handleClientMessage, fd, j);
-        pool.addTask(task);
+        else
+        {
+            auto task = bind(handleClientMessage, fd, j);
+            pool.addTask(task);
+        }
     }
     catch (const json::parse_error &e)
     {
@@ -177,13 +157,9 @@ void handleClientMessage(int fd, const json &j)
     {
         login(fd, j); // 登录
     }
-    else if (type == "recv_file")
-    {
-        recv_file(fd, j); // 收文件
-    }
     else if (type == "send_file")
     {
-        send_file(fd, j); // 发文件
+        send_file(fd, j);
     }
     else if (type == "charge_file")
     {

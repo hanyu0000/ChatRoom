@@ -102,16 +102,13 @@ void send_file(int fd, json j)
 
         struct stat st;
         if (fstat(file_fd, &st) == -1)
-        {
-            close(file_fd);
             err_("获取文件信息失败");
-        }
-        size_t filesize = st.st_size;
-        cout << "文件字节数:" << filesize << endl;
 
+        size_t filesize = st.st_size;
         // 发送文件大小给接收者
         json json = {
-            {"sendfile", fs::path(filepath).filename().string()},
+            {"type", "sendfile"},
+            {"filename", fs::path(filepath).filename().string()},
             {"filesize", filesize}};
         string message = json.dump();
         if (IO::send_msg(fd, message) == -1)
@@ -123,14 +120,15 @@ void send_file(int fd, json j)
         {
             ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
             if (len == -1)
-                if (errno == EAGAIN || errno == EWOULDBLOCK)
+            {
+                if (errno == EAGAIN)
                 {
-                    this_thread::sleep_for(chrono::milliseconds(100));
+                    usleep(1000); 
                     continue;
                 }
                 else
                     err_("sendfile");
-            cout << "已发送 " << len << " 字节" << endl;
+            }
         }
         close(file_fd);
         cout << "文件发送完成！" << endl;

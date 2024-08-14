@@ -44,7 +44,7 @@ public:
             int len = recv(fd, p, count, 0);
             if (len == -1)
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                if (errno == EAGAIN)
                     cout << " 继续尝试读取" << endl;
                 return -1;
             }
@@ -65,7 +65,7 @@ public:
             int len = send(fd, buf, count, 0);
             if (len < 0)
             {
-                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                if (errno == EAGAIN)
                     cout << " 继续尝试写入" << endl;
                 return -1;
             }

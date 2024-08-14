@@ -3,23 +3,18 @@
 namespace fs = filesystem;
 void show_list(int fd);
 void getmygrouplist(int fd);
-void file_pase(int fd, string &name, char *filename);
-void file_recv(int fd);
-void file_pase(int fd, string &name, char *filename)
+void file_pase(int fd, string &name, string &filename)
 {
-    cout << "文件路径:" << filename << endl;
-    int file_fd = open(filename, O_RDONLY);
+    cout << "文件路径为:" << filename << endl;
+    int file_fd = open(filename.c_str(), O_RDONLY);
     if (file_fd == -1)
-        err_("open file fail");
+        err_("打开文件失败！");
 
     struct stat info;
-    if (fstat(file_fd, &info) == -1) // 用于获取文件的状态信息
-    {
-        close(file_fd);
+    if (fstat(file_fd, &info) == -1)
         err_("fstat");
-    }
 
-    off_t filesize = info.st_size; // st_size;  文件字节数(文件大小)
+    off_t filesize = info.st_size;
     cout << "文件字节数:" << filesize << endl;
     json j = {
         {"type", "recv_file"},
@@ -30,24 +25,69 @@ void file_pase(int fd, string &name, char *filename)
     if (IO::send_msg(fd, message) == -1)
         err_("send_msg");
 
-    off_t sum = 0; // 累计发送的字节数
+    off_t sum = 0;
     while (sum < filesize)
     {
-        // sendfile 函数用于将文件的内容直接从文件描述符发送到套接字，而不经过用户空间的缓冲区
         ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
         if (len == -1)
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-            {
-                // 如果发送缓冲区满了，稍微等待
-                this_thread::sleep_for(chrono::milliseconds(100));
-                continue;
-            }
-            else
-                err_("sendfile");
+            err_("sendfile");
         cout << "已发送 " << len << " 字节" << endl;
     }
     close(file_fd);
-    cout << "文件发送完成！" << endl;
+}
+// 接收文件
+void file_recv(int fd, string &directory)
+{
+    string buf;
+    if (IO::recv_msg(fd, buf) == -1)
+        err_("recv_msg");
+    json j = json::parse(buf);
+    string type = j["type"];
+    cout << type << endl;
+    if (type == "sendfile")
+    {
+        string filename = j["filename"];
+        size_t filesize = j["filesize"];
+        cout << "文件大小:" << filesize << endl;
+
+        string filepath = directory + "/" + filename; // 文件路径
+        cout << "文件路径:" << filepath << endl;
+
+        // 检查并创建目录
+        struct stat st;
+        if (stat(directory.c_str(), &st) == -1)
+            if (mkdir(directory.c_str(), 0755) == -1)
+                err_("创建目录失败");
+
+        int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        if (file_fd == -1)
+            err_("打开文件失败");
+
+        char buffer[4096];
+        off_t sum = 0;
+        ssize_t len;
+        while (sum < filesize)
+        {
+            len = recv(fd, buffer, sizeof(buffer), 0);
+            if (len > 0)
+            {
+                cout << "接收到 " << len << " 字节" << endl;
+                if (write(file_fd, buffer, len) != len)
+                    err_("write file");
+                sum += len;
+            }
+            else if (len == 0)
+            {
+                cout << "连接关闭！" << endl;
+                break;
+            }
+            else if (errno == EAGAIN || errno == EWOULDBLOCK)
+                this_thread::sleep_for(chrono::milliseconds(10));
+            else
+                err_("recv_file");
+        }
+        close(file_fd);
+    }
 }
 // 文件传输
 void HHH::file_pass(int fd)
@@ -64,16 +104,13 @@ void HHH::file_pass(int fd)
         cin >> a;
         if (a == '1')
         {
-            char filename[1024];
+            string filename;
             cout << "请输入要传输的文件路径名：" << endl;
             cin.ignore();
-            cin >> filename;
-            cout << "文件路径:" << filename << endl;
-            cout << "" << endl;
+            getline(cin, filename);
             cout << "请选择:" << endl;
             cout << "       A.私聊      B.群聊   " << endl;
             char b;
-
             while (1)
             {
                 cin >> b;
@@ -86,9 +123,8 @@ void HHH::file_pass(int fd)
                     getline(cin, name);
                     if (name.empty())
                         return;
-
-                    thread fileThread(file_pase, fd, ref(name), filename);
-                    fileThread.detach();
+                    file_pase(fd, name, filename);
+                    cout << "文件发送完成！" << endl;
                     break;
                 }
                 else if (b == 'B' || b == 'b')
@@ -128,16 +164,18 @@ void HHH::file_pass(int fd)
                     cin >> b;
                     if (b == 'Y' || b == 'y')
                     {
+                        string filename;
+                        cout << "请输入存储的文件夹：" << endl;
+                        cin.ignore();
+                        getline(cin, filename);
+
                         json mess = {
                             {"type", "send_file"},
                             {"YYY", "YYY"}};
                         string aa = mess.dump();
                         if (IO::send_msg(fd, aa) == -1)
                             cerr << "发送消息失败" << endl;
-
-                        // 接受文件(线程)
-                        thread newthread(file_recv, fd);
-                        newthread.detach();
+                        file_recv(fd, filename);
                         break;
                     }
                     else if (b == 'N' || b == 'n')
@@ -160,75 +198,6 @@ void HHH::file_pass(int fd)
             break;
         else
             cout << "请输入正确数字:" << endl;
-    }
-}
-// 接收文件
-void file_recv(int fd)
-{
-    string buf;
-    if (IO::recv_msg(fd, buf) == -1)
-        err_("recv_msg");
-
-    json j;
-    try
-    {
-        j = json::parse(buf);
-    }
-    catch (const json::parse_error &e)
-    {
-        cerr << "JSON 解析错误: " << e.what() << endl;
-        return;
-    }
-
-    if (j.contains("sendfile"))
-    {
-
-        string filename = j["sendfile"];
-        cout << "文件路径:" << filename << endl;
-        size_t filesize = j["filesize"];
-        cout << "文件大小:" << filesize << endl;
-
-        string directory = "/home/zxc/client";
-        string filepath = directory + "/" + filename; // 文件路径
-        cout << filepath << endl;
-
-        // 检查并创建目录
-        struct stat st;
-        if (stat(directory.c_str(), &st) == -1)
-        {
-            if (mkdir(directory.c_str(), 0755) == -1)
-                err_("创建目录失败");
-        }
-
-        int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-        if (file_fd == -1)
-            err_("打开文件失败");
-
-        char buffer[4096];
-        off_t sum = 0;
-        ssize_t len;
-        while (sum < filesize)
-        {
-            len = recv(fd, buffer, sizeof(buffer), 0);
-            if (len > 0)
-            {
-                cout << "接收到 " << len << " 字节" << endl;
-                if (write(file_fd, buffer, len) != len)
-                    err_("write file");
-                sum += len;
-            }
-            else if (len == 0)
-            {
-                cout << "连接关闭！" << endl;
-                break;
-            }
-            else if (errno == EAGAIN || errno == EWOULDBLOCK)
-                this_thread::sleep_for(chrono::milliseconds(10));
-            else
-                err_("recv_file");
-        }
-        close(file_fd);
-        cout << "文件成功保存为 " << filepath << endl;
     }
 }
 // 群聊
