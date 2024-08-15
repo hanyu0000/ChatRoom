@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/client.dir/src/client/client.cpp.o CMakeFiles/client.dir/src/client/HHH.cpp.o CMakeFiles/client.dir/src/client/file.cpp.o CMakeFiles/client.dir/src/client/group.cpp.o CMakeFiles/client.dir/src/client/friend.cpp.o CMakeFiles/client.dir/src/client/TUI.cpp.o -o client  -lhiredis 
