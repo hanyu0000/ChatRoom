@@ -22,17 +22,20 @@ int main(int argc, char *argv[])
     if (connect(fd, (struct sockaddr *)&serv, sizeof(serv)) == -1)
         err_("connect");
 
-    TUI tui;
-    tui.run(fd);
-    cout << "" << endl;
-    cout << " ---------------------------------------------------" << endl;
-    cout << "" << endl;
-    cout << " ---------------欢迎来到聊天室！！！----------------" << endl;
-    cout << "" << endl;
-    cout << " ---------------------------------------------------" << endl;
-    cout << "" << endl;
-    HHH mnue;
-    mnue.run(fd);
+    while (1)
+    {
+        TUI tui;
+        tui.run(fd);
+        cout << "" << endl;
+        cout << " ---------------------------------------------------" << endl;
+        cout << "" << endl;
+        cout << " ---------------欢迎来到聊天室！！！----------------" << endl;
+        cout << "" << endl;
+        cout << " ---------------------------------------------------" << endl;
+        cout << "" << endl;
+        HHH mnue;
+        mnue.run(fd);
+    }
 
     close(fd);
     return 0;

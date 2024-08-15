@@ -1,0 +1,8 @@
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/client.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/server.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/edit_cache.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/rebuild_cache.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/list_install_components.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/install.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/install/local.dir
+/home/zxc/ChatRoom/ChatApp/build/CMakeFiles/install/strip.dir

@@ -17,7 +17,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(CLIENT_SOURCES
     src/client/client.cpp
     src/client/HHH.cpp
-    src/client/manage.cpp
+    src/client/file.cpp
+    src/client/group.cpp
+    src/client/friend.cpp
     src/client/TUI.cpp
 )
 # 添加服务器源文件

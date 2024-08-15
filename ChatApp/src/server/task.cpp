@@ -4,6 +4,12 @@ RedisServer redis;
 namespace fs = filesystem;
 map<string, string> current_chat_map;
 string getCurrentChatObject(const string &user);
+void return_last(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "----------用户fd: " << fd << "下线----------" << endl;
+    client_map.erase(fd);
+}
 // 收文件
 void recv_file(int fd, json j)
 {

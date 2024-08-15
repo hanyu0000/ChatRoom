@@ -154,6 +154,7 @@ void recv_file(int fd, json j);
 void send_file(int fd, json j);
 
 void login(int fd, json j);
+void return_last(int fd, json j);   // 返回上一级页面
 void doregister(int fd, json j);    // 注册
 void logout(int fd, json j);        // 注销
 void isUser(int fd, json j);        // 是否注册

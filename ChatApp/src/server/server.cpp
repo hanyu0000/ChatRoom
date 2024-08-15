@@ -16,9 +16,13 @@ void handleClientMessage(int fd, const json &j)
     {
         login(fd, j); // 登录
     }
+    else if (type == "return")
+    {
+        return_last(fd, j); // 返回上一级页面
+    }
     else if (type == "send_file")
     {
-        send_file(fd, j);
+        send_file(fd, j); // 发文件
     }
     else if (type == "charge_file")
     {
