@@ -11,13 +11,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(HIREDIS REQUIRED hiredis)
 include_directories(${HIREDIS_INCLUDE_DIRS})
 
-# 查找 ncurses 库
-find_package(Curses REQUIRED)
-include_directories(${CURSES_INCLUDE_DIRS})
-
 # 包含项目头文件目录
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
 # 添加客户端源文件
 set(CLIENT_SOURCES
     src/client/client.cpp
@@ -25,7 +20,6 @@ set(CLIENT_SOURCES
     src/client/manage.cpp
     src/client/TUI.cpp
 )
-
 # 添加服务器源文件
 set(SERVER_SOURCES
     src/server/server.cpp
@@ -33,11 +27,9 @@ set(SERVER_SOURCES
     src/server/task.cpp
     src/server/ThreadPool.cpp
 )
-
 # 添加客户端可执行文件
 add_executable(client ${CLIENT_SOURCES})
 target_link_libraries(client ${HIREDIS_LIBRARIES} ${CURSES_LIBRARIES})
-
 # 添加服务器可执行文件
 add_executable(server ${SERVER_SOURCES})
 target_link_libraries(server ${HIREDIS_LIBRARIES})

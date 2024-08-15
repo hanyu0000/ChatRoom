@@ -241,6 +241,8 @@ void g_chat(int fd, json j)
     current_chat_map[my_name] = group;
 
     string hhh = j["message"].get<string>();
+    if (hhh == "12345zxcvb")
+        return;
     if (hhh == "exit")
     {
         cout << "客户端退出聊天" << endl;
@@ -249,6 +251,7 @@ void g_chat(int fd, json j)
         string age = to.dump();
         if (IO::send_msg(fd, age) == -1)
             err_("send_msg");
+        current_chat_map.erase(my_name);
         cout << "成功转发退出群聊消息！" << endl;
     }
     string reply = my_name + ':' + j["message"].get<string>(); // 消息

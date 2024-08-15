@@ -340,14 +340,21 @@ void HHH::g_chat(int fd)
     recvThread = thread(receiveMessages);
     string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
+
+    json m = {
+        {"type", "chat"},
+        {"group", group},
+        {"message", "12345zxcvb"}};
+    string m_str = m.dump();
+    if (IO::send_msg(fd, m_str) == -1)
+        cerr << "发送消息失败" << endl;
+
     while (1)
     {
+        cin.ignore();
         getline(cin, msg);
-        if (msg.length() >= 4096)
-        {
-            cout << "消息太长!请重新输入:" << endl;
+        if (msg == "")
             continue;
-        }
         if (msg == "exit")
         {
             cout << "聊天结束......" << endl;
@@ -360,17 +367,25 @@ void HHH::g_chat(int fd)
                 cerr << "发送消息失败" << endl;
             break;
         }
+
         // 发送消息
         json message = {
             {"type", "g_chat"},
             {"group", group},
             {"message", msg}};
         string mess = message.dump();
+
+        if (mess.length() >= 1024)
+        {
+            cout << "消息太长!请重新输入:" << endl;
+            continue;
+        }
         if (IO::send_msg(fd, mess) == -1)
             cerr << "发送消息失败" << endl;
     }
     if (recvThread.joinable())
         recvThread.join();
+    getchar();
 }
 // 好友聊天
 void HHH::f_chat(int fd)
@@ -503,11 +518,6 @@ void HHH::f_chat(int fd)
         getline(cin, msg);
         if (msg == "")
             continue;
-        if (msg.length() >= 4096)
-        {
-            cout << "消息太长!请重新输入:" << endl;
-            continue;
-        }
         if (msg == "exit")
         {
             cout << "聊天结束......" << endl;
@@ -520,12 +530,19 @@ void HHH::f_chat(int fd)
                 cerr << "发送消息失败" << endl;
             break;
         }
+
         // 发送消息
         json message = {
             {"type", "chat"},
             {"name", name},
             {"message", msg}};
         string message_str = message.dump();
+
+        if (mess.length() >= 1024)
+        {
+            cout << "消息太长!请重新输入:" << endl;
+            continue;
+        }
         if (IO::send_msg(fd, message_str) == -1)
             cerr << "发送消息失败" << endl;
     }
