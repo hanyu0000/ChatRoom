@@ -25,7 +25,6 @@ void recv_file(int fd, json j)
 
     string filepath = directory + "/" + filename;
     cout << "文件路径为:" << filepath << endl;
-
     if (j.contains("name"))
     {
         string f_name = j["name"];
@@ -68,7 +67,7 @@ void recv_file(int fd, json j)
             break;
         }
         else if (errno == EAGAIN)
-            this_thread::sleep_for(chrono::milliseconds(50));
+            this_thread::sleep_for(chrono::milliseconds(10));
         else
         {
             close(file_fd);
@@ -76,6 +75,7 @@ void recv_file(int fd, json j)
         }
     }
     close(file_fd);
+    cout << "文件发送完成" << endl;
 }
 void charge_file(int fd, json j)
 {
@@ -385,6 +385,16 @@ void f_add(int fd, json j)
         json a =
             {
                 {"nopeople", f_name}};
+        string str = a.dump();
+        if (IO::send_msg(fd, str) == -1)
+            err_("send_msg");
+        return;
+    }
+    if (f_name == my_name) 
+    {
+        json a =
+            {
+                {"me", f_name}};
         string str = a.dump();
         if (IO::send_msg(fd, str) == -1)
             err_("send_msg");

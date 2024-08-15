@@ -185,6 +185,22 @@ void HHH::f_add(int fd)
     string str = a.dump();
     if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
+
+    string buf;
+    if (IO::recv_msg(fd, buf) == -1)
+        err_("recv_msg");
+
+    json j = json::parse(buf);
+    if (j.contains("nopeople"))
+    {
+        cout << "该用户不存在!" << endl;
+        return;
+    }
+    else if (j.contains("me"))
+    {
+        cout << "请不要输入自己姓名!" << endl;
+        return;
+    }
     cout << "好友申请发送成功！等待对方同意" << endl;
     getchar();
 }
@@ -359,7 +375,7 @@ void show_list(int fd)
     if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
-    
+
     vector<string> chatlist;
     if (j.contains("chatlist"))
     {

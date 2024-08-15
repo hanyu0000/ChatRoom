@@ -245,12 +245,13 @@ void runServer(int port)
                 }
             }
         }
+        close(lfd);
+        close(epfd);
     }
-    close(lfd);
-    close(epfd);
 }
 void process_client_messages(int fd, int epfd)
 {
+    ThreadPool pool(4, 10);
     // 读取消息头，获取消息长度
     uint32_t len = 0;
     int ret = IO::readn(fd, sizeof(uint32_t), (char *)&len);
@@ -288,29 +289,32 @@ void process_client_messages(int fd, int epfd)
     string message(buffer, ret);
     delete[] buffer;
 
-    try
+    auto j = json::parse(message);
+    if (j.contains("type"))
     {
-        ThreadPool pool(4, 10);
-        auto j = json::parse(message);
         string type = j["type"];
         if (type == "recv_file")
         {
-            auto task = bind(recv_file, fd, j);
-            pool.addTask(task);
+
+            epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
+            auto task = [=]()
+            {
+                cout << "start.." << endl;
+                sleep(2);
+                recv_file(fd, j);
+                struct epoll_event ev;
+                ev.events = EPOLLIN | EPOLLET;
+                ev.data.fd = fd;
+                epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+            };
+            pool.addTask(task); // 将任务提交给线程池
+            // std::thread (task).detach();
         }
         else
         {
             auto task = bind(handleClientMessage, fd, j);
             pool.addTask(task);
         }
-    }
-    catch (const json::parse_error &e)
-    {
-        cerr << "JSON 解析失败: " << e.what() << endl;
-    }
-    catch (const json::type_error &e)
-    {
-        cerr << "JSON 解析错误: " << e.what() << endl;
     }
 }
 void fd_user(int fd, string &name)

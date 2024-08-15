@@ -266,7 +266,7 @@ void file_recv(int fd, const string &directory)
                 break;
             }
             else if (errno == EAGAIN)
-                this_thread::sleep_for(chrono::milliseconds(50));
+                this_thread::sleep_for(chrono::milliseconds(10));
             else
                 err_("recv_file");
         }

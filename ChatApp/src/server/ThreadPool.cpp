@@ -9,7 +9,8 @@ ThreadPool::ThreadPool(int min, int max) : maxThreads(max),
     manager = new thread(&ThreadPool::manager, this); // 创建管理线程
     for (int i = 0; i < curThreads; ++i)
     {
-        thread t(&ThreadPool::worker, this);            // 创建工作线程
+        thread t(&ThreadPool::worker, this);// 创建工作线程
+        t.detach();
         workers.insert(make_pair(t.get_id(), move(t))); // 将工作线程放进线程池
     }
 }
@@ -66,6 +67,7 @@ void ThreadPool::my_manager()
         else if (idle == 0 && current < maxThreads) //+
         {
             thread t(&ThreadPool::worker, this);
+            t.detach();
             workers.insert(make_pair(t.get_id(), move(t)));
             curThreads++;
             idleThreads++;
