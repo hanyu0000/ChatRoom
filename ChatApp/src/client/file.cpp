@@ -1,138 +1,11 @@
 #include "head.hpp"
 #include "HHH.hpp"
 namespace fs = filesystem;
-void show_list(int fd); // 好友列表
+void show_list(int fd);
 void getmygrouplist(int fd);
-void HHH::last(int fd)
-{
-    json j = {
-        {"type", "return"}};
-    string m = j.dump();
-    if (IO::send_msg(fd, m) == -1)
-        cerr << "发送消息失败" << endl;
-}
-void group_file_send(int fd, const string &group, const string &filename)
-{
-    int file_fd = open(filename.c_str(), O_RDONLY);
-    if (file_fd == -1)
-    {
-        cout << "文件路径错误！" << endl;
-        cout << "请重新输入文件路径！" << endl;
-        return;
-    }
-
-    struct stat info;
-    if (fstat(file_fd, &info) == -1)
-        err_("fstat");
-
-    off_t filesize = info.st_size;
-    json j = {
-        {"type", "recv_file"},
-        {"group", group},
-        {"filename", fs::path(filename).filename().string()},
-        {"filesize", filesize}};
-    string message = j.dump();
-    if (IO::send_msg(fd, message) == -1)
-        err_("send_msg");
-
-    off_t sum = 0;
-    while (sum < filesize)
-    {
-        ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
-        if (len == -1)
-            err_("sendfile");
-    }
-    close(file_fd);
-}
-void file_send(int fd, const string &name, const string &filename)
-{
-    int file_fd = open(filename.c_str(), O_RDONLY);
-    if (file_fd == -1)
-    {
-        cout << "文件路径错误！" << endl;
-        cout << "请重新输入文件路径！" << endl;
-        return;
-    }
-
-    struct stat info;
-    if (fstat(file_fd, &info) == -1)
-        err_("fstat");
-
-    off_t filesize = info.st_size;
-    json j = {
-        {"type", "recv_file"},
-        {"name", name},
-        {"filename", fs::path(filename).filename().string()},
-        {"filesize", filesize}};
-    string message = j.dump();
-    if (IO::send_msg(fd, message) == -1)
-        err_("send_msg");
-
-    off_t sum = 0;
-    while (sum < filesize)
-    {
-        ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
-        if (len == -1)
-            err_("sendfile");
-    }
-    close(file_fd);
-}
-// 接收文件
-void file_recv(int fd, const string &directory)
-{
-    string buf;
-    if (IO::recv_msg(fd, buf) == -1)
-        err_("recv_msg");
-    json j = json::parse(buf);
-    string type = j["type"];
-    if (type == "sendfile")
-    {
-        string filename = j["filename"];
-        size_t filesize = j["filesize"];
-        cout << "文件大小:" << filesize << endl;
-
-        string filepath = directory + "/" + filename; // 文件路径
-        cout << "文件路径:" << filepath << endl;
-
-        // 检查并创建目录
-        struct stat st;
-        if (stat(directory.c_str(), &st) == -1)
-            if (mkdir(directory.c_str(), 0755) == -1)
-                err_("创建目录失败");
-
-        int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-        if (file_fd == -1)
-        {
-            cout << "文件路径错误！" << endl;
-            cout << "请重新输入文件路径！" << endl;
-            return;
-        }
-
-        char buffer[4 << 20];
-        off_t sum = 0;
-        ssize_t len;
-        while (sum < filesize)
-        {
-            len = recv(fd, buffer, sizeof(buffer), 0);
-            if (len > 0)
-            {
-                if (write(file_fd, buffer, len) != len)
-                    err_("write file");
-                sum += len;
-            }
-            else if (len == 0)
-            {
-                cout << "连接关闭！" << endl;
-                break;
-            }
-            else if (errno == EAGAIN)
-                this_thread::sleep_for(chrono::milliseconds(50));
-            else
-                err_("recv_file");
-        }
-        close(file_fd);
-    }
-}
+void group_file_send(int fd, const string &group, const string &filename);
+void file_send(int fd, const string &name, const string &filename);
+void file_recv(int fd, const string &directory);
 void group_send_file_thread(int fd, const string &name, const string &filename)
 {
     group_file_send(fd, name, filename);
@@ -148,7 +21,6 @@ void recv_file_thread(int fd, const string &directory)
 // 文件传输
 void HHH::file_pass(int fd)
 {
-    cout << " " << endl;
     cout << "-------------------文件传输-------------------" << endl;
     cout << " " << endl;
 
@@ -277,5 +149,127 @@ void HHH::file_pass(int fd)
             break;
         else
             cout << "请输入正确数字:" << endl;
+    }
+}
+void group_file_send(int fd, const string &group, const string &filename)
+{
+    int file_fd = open(filename.c_str(), O_RDONLY);
+    if (file_fd == -1)
+    {
+        cout << "文件路径错误！" << endl;
+        cout << "请重新输入文件路径！" << endl;
+        return;
+    }
+
+    struct stat info;
+    if (fstat(file_fd, &info) == -1)
+        err_("fstat");
+
+    off_t filesize = info.st_size;
+    json j = {
+        {"type", "recv_file"},
+        {"group", group},
+        {"filename", fs::path(filename).filename().string()},
+        {"filesize", filesize}};
+    string message = j.dump();
+    if (IO::send_msg(fd, message) == -1)
+        err_("send_msg");
+
+    off_t sum = 0;
+    while (sum < filesize)
+    {
+        ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
+        if (len == -1)
+            err_("sendfile");
+    }
+    close(file_fd);
+}
+void file_send(int fd, const string &name, const string &filename)
+{
+    int file_fd = open(filename.c_str(), O_RDONLY);
+    if (file_fd == -1)
+    {
+        cout << "文件路径错误！" << endl;
+        cout << "请重新输入文件路径！" << endl;
+        return;
+    }
+
+    struct stat info;
+    if (fstat(file_fd, &info) == -1)
+        err_("fstat");
+
+    off_t filesize = info.st_size;
+    json j = {
+        {"type", "recv_file"},
+        {"name", name},
+        {"filename", fs::path(filename).filename().string()},
+        {"filesize", filesize}};
+    string message = j.dump();
+    if (IO::send_msg(fd, message) == -1)
+        err_("send_msg");
+
+    off_t sum = 0;
+    while (sum < filesize)
+    {
+        ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
+        if (len == -1)
+            err_("sendfile");
+    }
+    close(file_fd);
+}
+// 接收文件
+void file_recv(int fd, const string &directory)
+{
+    string buf;
+    if (IO::recv_msg(fd, buf) == -1)
+        err_("recv_msg");
+    json j = json::parse(buf);
+    string type = j["type"];
+    if (type == "sendfile")
+    {
+        string filename = j["filename"];
+        size_t filesize = j["filesize"];
+        cout << "文件大小:" << filesize << endl;
+
+        string filepath = directory + "/" + filename; // 文件路径
+        cout << "文件路径:" << filepath << endl;
+
+        // 检查并创建目录
+        struct stat st;
+        if (stat(directory.c_str(), &st) == -1)
+            if (mkdir(directory.c_str(), 0755) == -1)
+                err_("创建目录失败");
+
+        int file_fd = open(filepath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        if (file_fd == -1)
+        {
+            cout << "文件路径错误！" << endl;
+            cout << "请重新输入文件路径！" << endl;
+            return;
+        }
+
+        char buffer[4 << 20];
+        off_t sum = 0;
+        ssize_t len;
+        while (sum < filesize)
+        {
+            len = recv(fd, buffer, sizeof(buffer), 0);
+            if (len > 0)
+            {
+                if (write(file_fd, buffer, len) != len)
+                    err_("write file");
+                sum += len;
+            }
+            else if (len == 0)
+            {
+                cout << "连接关闭！" << endl;
+                break;
+            }
+            else if (errno == EAGAIN)
+                this_thread::sleep_for(chrono::milliseconds(50));
+            else
+                err_("recv_file");
+        }
+        close(file_fd);
     }
 }

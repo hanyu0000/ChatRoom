@@ -5,10 +5,14 @@
 int main(int argc, char *argv[])
 {
     signal(SIGTSTP, SIG_IGN); // 忽略Ctrl+Z
-    signal(SIGTERM, SIG_IGN);
+    // signal(SIGTERM, SIG_IGN);
+    signal(SIGQUIT, SIG_IGN); //忽略 Ctrl+\ 
 
     if (argc != 2)
+    {
+        cout << "请输入对应的端口号!" << endl;
         exit(1);
+    }
 
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1)

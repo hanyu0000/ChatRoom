@@ -1,13 +1,20 @@
 #include "head.hpp"
 #include "HHH.hpp"
-void show_list(int fd); // 好友列表
+void show_list(int fd);
+// 退出管理页面
+void HHH::last(int fd)
+{
+    json j = {
+        {"type", "return"}};
+    string m = j.dump();
+    if (IO::send_msg(fd, m) == -1)
+        cerr << "发送消息失败" << endl;
+}
 // 好友聊天
 void HHH::f_chat(int fd)
 {
-    cout << " " << endl;
     cout << "-------------------好友聊天-------------------" << endl;
     cout << " " << endl;
-
     show_list(fd);
 
     string name;
@@ -24,7 +31,6 @@ void HHH::f_chat(int fd)
     string mess = age.dump();
     if (IO::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
-
     string buf;
     if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
@@ -38,20 +44,19 @@ void HHH::f_chat(int fd)
     }
 
     cout << "是否需要拉取历史消息? Y or N" << endl;
+
     char a;
     while (1)
     {
         cin >> a;
         if (a == 'Y' || a == 'y')
         {
-            // 历史消息
             json jjj = {
                 {"type", "f_chatHistry"},
                 {"name", name}};
             string mmm = jjj.dump();
             if (IO::send_msg(fd, mmm) == -1)
                 cerr << "发送消息失败" << endl;
-
             string buffer;
             if (IO::recv_msg(fd, buffer) == -1)
                 err_("recv_msg");
@@ -113,7 +118,6 @@ void HHH::f_chat(int fd)
             }
         }
     };
-
     // 启动接收消息的线程
     recvThread = thread(receiveMessages);
     string msg;
@@ -145,13 +149,11 @@ void HHH::f_chat(int fd)
             break;
         }
 
-        // 发送消息
         json message = {
             {"type", "chat"},
             {"name", name},
             {"message", msg}};
         string message_str = message.dump();
-
         if (mess.length() >= 1024)
         {
             cout << "消息太长!请重新输入:" << endl;
@@ -167,7 +169,6 @@ void HHH::f_chat(int fd)
 // 好友添加
 void HHH::f_add(int fd)
 {
-    cout << " " << endl;
     cout << "----------------添加好友----------------" << endl;
     cout << " " << endl;
     string name;
@@ -190,25 +191,24 @@ void HHH::f_add(int fd)
 // 好友申请回复
 void HHH::f_reply(int fd)
 {
-    cout << " " << endl;
     cout << "-------------------新好友消息-------------------" << endl;
     cout << " " << endl;
-
     json age = {
         {"type", "newfriend_leave"}};
     string mess = age.dump();
     if (IO::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
+
     while (1)
     {
         string buf;
         if (IO::recv_msg(fd, buf) == -1)
             err_("recv_msg");
 
-        json jj = json::parse(buf);
-        if (jj.contains("newfriend_leave"))
+        json j = json::parse(buf);
+        if (j.contains("newfriend_leave"))
         {
-            string name = jj["newfriend_leave"];
+            string name = j["newfriend_leave"];
             if (name == "NO")
             {
                 cout << "您没有新的好友申请" << endl;
@@ -249,18 +249,14 @@ void HHH::f_reply(int fd)
             }
         }
     }
-
     getchar();
 }
 // 好友屏蔽
 void HHH::f_block(int fd)
 {
-    cout << " " << endl;
     cout << "----------------好友屏蔽----------------" << endl;
     cout << " " << endl;
-
     show_list(fd);
-
     string name;
     cout << "请输入您要屏蔽的好友名称:" << endl;
     cin.ignore();
@@ -281,21 +277,19 @@ void HHH::f_block(int fd)
 // 取消屏蔽
 void HHH::f_unblock(int fd)
 {
-    cout << " " << endl;
     cout << "----------------取消屏蔽好友----------------" << endl;
     cout << " " << endl;
-
     json request =
         {
             {"type", "block_list"}};
     string request_str = request.dump();
     if (IO::send_msg(fd, request_str) == -1)
         err_("send_msg");
-    // 接收列表
     string buffer;
     if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
+
     vector<string> block_list;
     if (j.contains("block_list"))
     {
@@ -331,7 +325,6 @@ void HHH::f_unblock(int fd)
 // 删除好友
 void HHH::f_delete(int fd)
 {
-    cout << " " << endl;
     cout << "----------------删除好友----------------" << endl;
     cout << " " << endl;
     show_list(fd);
@@ -365,26 +358,20 @@ void show_list(int fd)
     string buffer;
     if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
-    try
+    json j = json::parse(buffer);
+    
+    vector<string> chatlist;
+    if (j.contains("chatlist"))
     {
-        json j = json::parse(buffer);
-        vector<string> chatlist;
-        if (j.contains("chatlist"))
-        {
-            chatlist = j["chatlist"];
-            if (chatlist.empty())
-            {
-                cout << "您的好友列表为空！" << endl;
-                return;
-            }
-        }
-        cout << "您的好友列表:" << endl;
         chatlist = j["chatlist"];
-        for (const auto &name : chatlist)
-            cout << name << endl;
+        if (chatlist.empty())
+        {
+            cout << "您的好友列表为空！" << endl;
+            return;
+        }
     }
-    catch (const json::parse_error &e)
-    {
-        cerr << "JSON解析错误: " << e.what() << endl;
-    }
+    cout << "您的好友列表:" << endl;
+    chatlist = j["chatlist"];
+    for (const auto &name : chatlist)
+        cout << name << endl;
 }

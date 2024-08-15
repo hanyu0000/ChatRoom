@@ -50,7 +50,7 @@ void TUI::menu()
     cout << " " << endl;
     cout << " " << endl;
     cout << "********************************" << endl;
-    cout << "* 欢迎来到聊天室!请输入你的选项: *" << endl;
+    cout << "* 欢迎来到聊天室!请输入你的选项:  *" << endl;
     cout << "*                               *" << endl;
     cout << "*           1.登录              *" << endl;
     cout << "*           2.注册              *" << endl;
