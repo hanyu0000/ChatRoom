@@ -187,11 +187,11 @@ bool RedisServer::deleteGroup(const string &groupName, const string &masterName)
     }
     return false;
 }
-// 存储群聊
+// 存储我的群聊
 void RedisServer::mycreateGroup(const string &groupName, const string &creator)
 {
     // 将群聊名称存储在 Redis 中，使用集合来存储用户创建的群聊名称
-    redisReply *reply = (redisReply *)redisCommand(context, "SADD user_groups:%s %s", creator.c_str(), groupName.c_str());
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD my_groups:%s %s", creator.c_str(), groupName.c_str());
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
         cerr << "Failed to create group " << groupName << endl;
@@ -202,11 +202,28 @@ void RedisServer::mycreateGroup(const string &groupName, const string &creator)
     freeReplyObject(reply);
     cout << "Group " << groupName << " created successfully by " << creator << endl;
 }
-// 查询群聊
+// 删除我的群聊
+void RedisServer::deleteGroupByUser(const string &groupName, const string &username)
+{
+    // 从 Redis 中删除指定用户的群聊名称
+    redisReply *reply = (redisReply *)redisCommand(context, "SREM my_groups:%s %s", username.c_str(), groupName.c_str());
+
+    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
+    {
+        cerr << "Failed to delete group " << groupName << " for user " << username << endl;
+        if (reply)
+            freeReplyObject(reply);
+        throw runtime_error("Failed to delete group");
+    }
+
+    freeReplyObject(reply);
+    cout << "Group " << groupName << " deleted successfully for user " << username << endl;
+}
+// 查询我的群聊
 vector<string> RedisServer::getGroupsByUser(const string &username)
 {
     vector<string> groups;
-    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS user_groups:%s", username.c_str());
+    redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS my_groups:%s", username.c_str());
     if (reply->type == REDIS_REPLY_ARRAY)
     {
         for (size_t i = 0; i < reply->elements; ++i)
@@ -774,6 +791,23 @@ void RedisServer::setGroupMaster(const string &group, const string &username)
     else
         cerr << "设置群聊主失败: " << group << endl;
 
+    freeReplyObject(reply);
+}
+// 删除群聊的群主
+void RedisServer::deleteGroupMaster(const string &group)
+{
+    // 执行 Redis DEL 命令删除群聊的群主信息
+    redisReply *reply = (redisReply *)redisCommand(context, "DEL %s_master", group.c_str());
+    if (reply == nullptr)
+    {
+        cerr << "Redis DEL 命令失败" << endl;
+        return;
+    }
+    // 检查删除结果
+    if (reply->type == REDIS_REPLY_INTEGER && reply->integer == 1)
+        cout << "成功删除群聊主: " << group << endl;
+    else
+        cerr << "群聊主不存在或删除失败: " << group << endl;
     freeReplyObject(reply);
 }
 bool RedisServer::groupExists(const string &group) const

@@ -66,6 +66,10 @@ public:
     // 判断用户是否是群主
     bool isGroupMaster(const string &group, const string &username);
     bool groupExists(const string &group) const;
+    // 删除群聊的群主
+    void deleteGroupMaster(const string &group);
+    // 删除我的群聊
+    void deleteGroupByUser(const string &groupName, const string &username);
 
     // 群主加管理员
     void addAdminToGroup(const string &groupName, const string &adminName);

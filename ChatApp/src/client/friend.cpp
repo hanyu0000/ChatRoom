@@ -18,12 +18,14 @@ void HHH::f_chat(int fd)
     int n = show_list(fd);
     if (n == 1)
         return;
+
     string name;
     cout << "请输入你要聊天的好友: " << endl;
     cin.ignore();
     getline(cin, name);
     if (name.empty())
         return;
+
     // 离线消息
     json age = {
         {"type", "f_chat_leave"},
@@ -31,6 +33,7 @@ void HHH::f_chat(int fd)
     string mess = age.dump();
     if (IO::send_msg(fd, mess) == -1)
         cerr << "发送消息失败" << endl;
+        
     string buf;
     if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
@@ -78,6 +81,7 @@ void HHH::f_chat(int fd)
             break;
     }
 
+    int mmm = 0;
     thread recvThread;
     // 接收消息的线程函数
     auto receiveMessages = [&]()
@@ -104,6 +108,7 @@ void HHH::f_chat(int fd)
                 {
                     cout << "您已经被对方屏蔽！" << endl;
                     f_stop.store(true);
+                    mmm = 1;
                     break;
                 }
                 string f_name = j["f_name"];
@@ -117,8 +122,6 @@ void HHH::f_chat(int fd)
     };
     // 启动接收消息的线程
     recvThread = thread(receiveMessages);
-    string msg;
-    cout << "请输入聊天消息( 'exit' 结束): " << endl;
     json m = {
         {"type", "chat"},
         {"name", name},
@@ -126,9 +129,12 @@ void HHH::f_chat(int fd)
     string m_str = m.dump();
     if (IO::send_msg(fd, m_str) == -1)
         cerr << "发送消息失败" << endl;
-
+    string msg;
+    cout << "请输入聊天消息( 'exit' 结束): " << endl;
     while (1)
     {
+        if (mmm == 1)
+            break;
         getline(cin, msg);
         if (msg == "")
             continue;
@@ -159,7 +165,6 @@ void HHH::f_chat(int fd)
     }
     if (recvThread.joinable())
         recvThread.join();
-    getchar();
 }
 // 好友添加
 void HHH::f_add(int fd)

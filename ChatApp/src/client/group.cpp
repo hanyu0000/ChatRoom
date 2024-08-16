@@ -7,13 +7,35 @@ void HHH::g_chat(int fd)
 {
     cout << "-------------------群聊-------------------" << endl;
     cout << " " << endl;
-    g_showlist(fd);
+    json request = {
+        {"type", "grouplist"}};
+    string str = request.dump();
+    if (IO::send_msg(fd, str) == -1)
+        err_("send_msg");
+    // 接收并处理响应
+    string buffer;
+    if (IO::recv_msg(fd, buffer) == -1)
+        err_("recv_msg");
+    json response = json::parse(buffer);
+    if (response.contains("grouplist"))
+    {
+        cout << "您的群聊列表:" << endl;
+        vector<string> grouplist = response["grouplist"];
+        if (grouplist.empty())
+        {
+            cout << "您的群聊列表为空！" << endl;
+            return;
+        }
+        for (const auto &name : grouplist)
+            cout << name << endl;
+    }
+
     string group;
     cout << "输入你要聊天的群聊：" << endl;
+    cin.ignore();
     getline(cin, group);
     if (group.empty())
         return;
-    cout << group << endl;
 
     cout << "是否需要拉取历史消息? Y or N" << endl;
     char a;
@@ -558,7 +580,10 @@ void HHH::g_create(int fd)
 
     int n = show_list(fd);
     if (n == 1)
+    {
+        cout << "群聊好友不能只有一个人!" << endl;
         return;
+    }
     cout << "请输入要添加到群聊的好友名（多个好友用逗号分隔）:" << endl;
     getline(cin, input);
     if (input.empty())

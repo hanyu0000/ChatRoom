@@ -312,9 +312,6 @@ void f_chat(int fd, json j)
     current_chat_map[my_name] = f_name;
     cout << my_name << ":" << f_name << endl;
 
-    string reply = j["message"].get<string>(); // 消息
-    if (reply == "12345zxcvb")
-        return;
     // 是否被屏蔽
     if (redis.isUserBlocked(my_name, f_name))
     {
@@ -326,6 +323,9 @@ void f_chat(int fd, json j)
             err_("send_msg");
         return;
     }
+    string reply = j["message"].get<string>(); // 消息
+    if (reply == "12345zxcvb")
+        return;
 
     json to = {
         {"chat", reply},
@@ -544,7 +544,7 @@ void delete_manager(int fd, json j)
     string group = j["group"].get<string>();
     vector<string> members = j["members"];
     for (const auto &member : members)
-        redis.removeAdminFromGroup(group, member); // 群主加管理员
+        redis.removeAdminFromGroup(group, member);
 }
 // 管理员列表
 void managelist(int fd, json j)
@@ -715,7 +715,7 @@ void g_create(int fd, json j)
     redis.setGroupMaster(group, my_name);
 
     redis.createGroup(group);            // 创建群聊
-    redis.mycreateGroup(group, my_name); // 加入群聊列表
+    redis.mycreateGroup(group, my_name); // 加入我的群聊列表
 
     vector<string> members = j["members"];
     redis.addMemberToGroup(group, my_name);
@@ -736,12 +736,18 @@ void g_disband(int fd, json j)
     string group = j["group"].get<string>();
     cout << group << endl;
 
-    redis.deleteGroup(group, my_name);             // 删除群聊
-    redis.deleteAllGroupMessages(group);           // 删除聊天记录
+    redis.deleteGroupMaster(group);
+    redis.deleteGroupByUser(group, my_name);
+    vector<string> managelist = redis.getManagers(group);
+    for (const auto &member : managelist)
+        redis.removeAdminFromGroup(group, member);
+
     redis.removeUserFromGroupList(my_name, group); // 从群列表里面删除
     vector<string> members = redis.getGroupMembers(group);
     for (const auto &member : members)
         redis.removeUserFromGroupList(member, group);
+    redis.deleteGroup(group, my_name);   // 删除群聊
+    redis.deleteAllGroupMessages(group); // 删除聊天记录
 }
 // 加入群聊
 void g_join(int fd, json j)
