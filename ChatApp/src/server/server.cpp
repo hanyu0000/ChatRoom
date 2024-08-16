@@ -5,7 +5,7 @@ map<int, string> client_map;
 using Clock = chrono::steady_clock;
 using TimePoint = chrono::time_point<Clock>;
 map<int, Clock::time_point> last_activity_map; // 映射文件描述符到最后活动时间
-const chrono::minutes TIMEOUT_DURATION(10);    // 超过10分钟未活动
+const chrono::minutes TIMEOUT_DURATION(30);    // 超过30分钟未活动
 void runServer(int port);
 void process_client_messages(int fd, int epfd);
 void handleClientMessage(int fd, const json &j)
@@ -245,9 +245,9 @@ void runServer(int port)
                 }
             }
         }
-        close(lfd);
-        close(epfd);
     }
+    close(lfd);
+    close(epfd);
 }
 void process_client_messages(int fd, int epfd)
 {
@@ -295,20 +295,16 @@ void process_client_messages(int fd, int epfd)
         string type = j["type"];
         if (type == "recv_file")
         {
-
             epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
             auto task = [=]()
             {
-                cout << "start.." << endl;
-                sleep(2);
                 recv_file(fd, j);
                 struct epoll_event ev;
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = fd;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
             };
-            pool.addTask(task); // 将任务提交给线程池
-            // std::thread (task).detach();
+            pool.addTask(task); 
         }
         else
         {

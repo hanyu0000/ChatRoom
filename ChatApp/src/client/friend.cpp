@@ -1,6 +1,6 @@
 #include "head.hpp"
 #include "HHH.hpp"
-void show_list(int fd);
+int show_list(int fd);
 // 退出管理页面
 void HHH::last(int fd)
 {
@@ -15,15 +15,15 @@ void HHH::f_chat(int fd)
 {
     cout << "-------------------好友聊天-------------------" << endl;
     cout << " " << endl;
-    show_list(fd);
-
+    int n = show_list(fd);
+    if (n == 1)
+        return;
     string name;
     cout << "请输入你要聊天的好友: " << endl;
     cin.ignore();
     getline(cin, name);
     if (name.empty())
         return;
-
     // 离线消息
     json age = {
         {"type", "f_chat_leave"},
@@ -44,7 +44,6 @@ void HHH::f_chat(int fd)
     }
 
     cout << "是否需要拉取历史消息? Y or N" << endl;
-
     char a;
     while (1)
     {
@@ -78,8 +77,6 @@ void HHH::f_chat(int fd)
         else if (a == 'N' || a == 'n')
             break;
     }
-
-    getchar();
 
     thread recvThread;
     // 接收消息的线程函数
@@ -132,10 +129,14 @@ void HHH::f_chat(int fd)
 
     while (1)
     {
-        cin.ignore();
         getline(cin, msg);
         if (msg == "")
             continue;
+        if (msg.length() >= 256)
+        {
+            cout << "消息太长!请重新输入:" << endl;
+            continue;
+        }
         if (msg == "exit")
         {
             cout << "聊天结束......" << endl;
@@ -148,17 +149,11 @@ void HHH::f_chat(int fd)
                 cerr << "发送消息失败" << endl;
             break;
         }
-
         json message = {
             {"type", "chat"},
             {"name", name},
             {"message", msg}};
         string message_str = message.dump();
-        if (mess.length() >= 1024)
-        {
-            cout << "消息太长!请重新输入:" << endl;
-            continue;
-        }
         if (IO::send_msg(fd, message_str) == -1)
             cerr << "发送消息失败" << endl;
     }
@@ -189,7 +184,6 @@ void HHH::f_add(int fd)
     string buf;
     if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
-
     json j = json::parse(buf);
     if (j.contains("nopeople"))
     {
@@ -272,7 +266,9 @@ void HHH::f_block(int fd)
 {
     cout << "----------------好友屏蔽----------------" << endl;
     cout << " " << endl;
-    show_list(fd);
+    int n = show_list(fd);
+    if (n == 1)
+        return;
     string name;
     cout << "请输入您要屏蔽的好友名称:" << endl;
     cin.ignore();
@@ -343,7 +339,9 @@ void HHH::f_delete(int fd)
 {
     cout << "----------------删除好友----------------" << endl;
     cout << " " << endl;
-    show_list(fd);
+    int n = show_list(fd);
+    if (n == 1)
+        return;
     string name;
     cout << "请输入您要删除的好友名称:" << endl;
     cin.ignore();
@@ -362,7 +360,7 @@ void HHH::f_delete(int fd)
     getchar();
 }
 // 好友列表
-void show_list(int fd)
+int show_list(int fd)
 {
     json request =
         {
@@ -383,11 +381,12 @@ void show_list(int fd)
         if (chatlist.empty())
         {
             cout << "您的好友列表为空！" << endl;
-            return;
+            return 1;
         }
     }
     cout << "您的好友列表:" << endl;
     chatlist = j["chatlist"];
     for (const auto &name : chatlist)
         cout << name << endl;
+    return 0;
 }

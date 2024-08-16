@@ -258,7 +258,7 @@ void g_chat(int fd, json j)
         if (IO::send_msg(fd, age) == -1)
             err_("send_msg");
         current_chat_map.erase(my_name);
-        cout << "成功转发退出群聊消息！" << endl;
+        return;
     }
     string reply = my_name + ':' + j["message"].get<string>(); // 消息
     cout << reply << endl;
@@ -390,7 +390,7 @@ void f_add(int fd, json j)
             err_("send_msg");
         return;
     }
-    if (f_name == my_name) 
+    if (f_name == my_name)
     {
         json a =
             {

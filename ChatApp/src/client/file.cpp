@@ -1,8 +1,7 @@
 #include "head.hpp"
 #include "HHH.hpp"
 namespace fs = filesystem;
-void show_list(int fd);
-void getmygrouplist(int fd);
+int show_list(int fd);
 void group_file_send(int fd, const string &group, const string &filename);
 void file_send(int fd, const string &name, const string &filename);
 void file_recv(int fd, const string &directory);
@@ -39,13 +38,14 @@ void HHH::file_pass(int fd)
             cout << "请选择:" << endl;
             cout << "       A.私聊      B.群聊   " << endl;
             char b;
-
             while (1)
             {
                 cin >> b;
                 if (b == 'A' || b == 'a')
                 {
-                    show_list(fd); // 好友列表
+                    int n = show_list(fd); // 好友列表
+                    if (n == 1)
+                        return;
                     string name;
                     cout << "请输入要发送的好友名：" << endl;
                     cin.ignore();
@@ -53,8 +53,6 @@ void HHH::file_pass(int fd)
                     if (name.empty())
                         return;
 
-                    // 创建并启动一个新线程来发送文件
-                    cout << "文件正在后台发送..." << endl;
                     thread file_thread(send_file_thread, fd, name, filename);
                     file_thread.join();
                     cout << "文件发送完成!" << endl;
@@ -62,15 +60,33 @@ void HHH::file_pass(int fd)
                 }
                 else if (b == 'B' || b == 'b')
                 {
-                    g_showlist(fd); // 群组列表
-
+                    json request = {
+                        {"type", "grouplist"}};
+                    string str = request.dump();
+                    if (IO::send_msg(fd, str) == -1)
+                        err_("send_msg");
+                    string buffer;
+                    if (IO::recv_msg(fd, buffer) == -1)
+                        err_("recv_msg");
+                    json response = json::parse(buffer);
+                    if (response.contains("grouplist"))
+                    {
+                        cout << "您的群聊列表:" << endl;
+                        vector<string> grouplist = response["grouplist"];
+                        if (grouplist.empty())
+                        {
+                            cout << "您的群聊列表为空！" << endl;
+                            return;
+                        }
+                        for (const auto &name : grouplist)
+                            cout << name << endl;
+                    }
                     string group;
                     cout << "请输入要发送的群组名：" << endl;
                     getline(cin, group);
                     if (group.empty())
                         return;
 
-                    cout << "文件正在后台发送..." << endl;
                     thread file_thread(group_send_file_thread, fd, group, filename);
                     file_thread.join();
                     cout << "文件发送完成!" << endl;
@@ -181,6 +197,7 @@ void group_file_send(int fd, const string &group, const string &filename)
         ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
         if (len == -1)
             err_("sendfile");
+        cout << "统计发送了" << sum << "字节，一共有" << filesize << "字节！" << endl;
     }
     close(file_fd);
 }
@@ -214,6 +231,7 @@ void file_send(int fd, const string &name, const string &filename)
         ssize_t len = sendfile(fd, file_fd, &sum, filesize - sum);
         if (len == -1)
             err_("sendfile");
+        cout << "统计发送了" << sum << "字节，一共有" << filesize << "字节！" << endl;
     }
     close(file_fd);
 }
@@ -259,6 +277,7 @@ void file_recv(int fd, const string &directory)
                 if (write(file_fd, buffer, len) != len)
                     err_("write file");
                 sum += len;
+                cout << "统计收到了" << sum << "字节，一共有" << filesize << "字节！" << endl;
             }
             else if (len == 0)
             {
