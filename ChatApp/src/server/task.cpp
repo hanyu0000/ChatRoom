@@ -736,7 +736,9 @@ void g_disband(int fd, json j)
     string group = j["group"].get<string>();
     cout << group << endl;
 
+    redis.deleteGroup(group);
     redis.deleteGroupMaster(group);
+    redis.deleteGroupFromUserLists(group); // 从用户群列表里面删除
     redis.deleteGroupByUser(group, my_name);
     vector<string> managelist = redis.getManagers(group);
     for (const auto &member : managelist)
@@ -757,7 +759,7 @@ void g_join(int fd, json j)
     string group = j["group"].get<string>();
     cout << group << endl;
 
-    if (!redis.groupExists(group)) // 群聊不存在
+    if (!redis.isGroupExists(group)) // 群聊不存在
     {
         json Json = {
             {"type", "join_group"},

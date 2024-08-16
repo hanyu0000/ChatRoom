@@ -65,7 +65,6 @@ public:
     void setGroupMaster(const string &group, const string &username);
     // 判断用户是否是群主
     bool isGroupMaster(const string &group, const string &username);
-    bool groupExists(const string &group) const;
     // 删除群聊的群主
     void deleteGroupMaster(const string &group);
     // 删除我的群聊
@@ -77,6 +76,7 @@ public:
     void removeAdminFromGroup(const string &groupName, const string &adminName);
     // 管理员列表
     vector<string> getManagers(const string &groupName);
+    // 判断是不是管理员
     bool isGroupManager(const string &groupName, const string &username);
 
     // 删除用户信息
@@ -98,6 +98,11 @@ public:
 
     // 创建群聊
     bool createGroup(const string &groupName);
+    // 从集合中删除群聊
+    void deleteGroup(const string &groupName);
+    // 判断群聊是否存在
+    bool isGroupExists(const string &groupName);
+
     // 删除群聊并更新创建者的群聊列表
     bool deleteGroup(const string &groupName, const string &masterName);
     // 加入群聊
@@ -113,6 +118,8 @@ public:
     bool removeUserFromGroupList(const string &username, const string &groupName);
     // 用户群列表
     vector<string> getUserGroupList(const string &username);
+    // 删除群聊并从所有用户的群组列表中移除该群聊
+    bool deleteGroupFromUserLists(const string &groupName);
 
     // 存储聊天记录
     void storeChatRecord(const string &user1, const string &user2, const string &message);

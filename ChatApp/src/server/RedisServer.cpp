@@ -1,5 +1,4 @@
 #include "task.hpp"
-
 RedisServer::RedisServer()
 {
     context = redisConnect("127.0.0.1", 6379);
@@ -89,10 +88,8 @@ vector<string> RedisServer::getFriends(const string &username)
     redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS friends:%s", username.c_str());
     vector<string> friends;
     if (reply->type == REDIS_REPLY_ARRAY)
-    {
         for (size_t i = 0; i < reply->elements; i++)
             friends.push_back(reply->element[i]->str);
-    }
     freeReplyObject(reply);
     return friends;
 }
@@ -147,10 +144,8 @@ vector<string> RedisServer::getBlockedUsers(const string &username)
     redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS blocked:%s", username.c_str());
     vector<string> blockedUsers;
     if (reply->type == REDIS_REPLY_ARRAY)
-    {
         for (size_t i = 0; i < reply->elements; i++)
             blockedUsers.push_back(reply->element[i]->str);
-    }
     freeReplyObject(reply);
     return blockedUsers;
 }
@@ -166,10 +161,25 @@ bool RedisServer::removeAllBlockedUsers(const string &username)
 // 创建群聊
 bool RedisServer::createGroup(const string &groupName)
 {
-    redisReply *reply = (redisReply *)redisCommand(context, "SADD groups %s", groupName.c_str());
+    redisReply *reply = (redisReply *)redisCommand(context, "SADD <groups> %s", groupName.c_str());
     bool success = (reply->integer == 1 || reply->integer == 0);
     freeReplyObject(reply);
     return success;
+}
+// 从集合中删除群聊
+void RedisServer::deleteGroup(const string &groupName)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SREM <groups> %s", groupName.c_str());
+    bool success = (reply->integer == 1); // 1 表示删除成功，0 表示群聊不存在
+    freeReplyObject(reply);
+}
+// 判断群聊是否存在
+bool RedisServer::isGroupExists(const string &groupName)
+{
+    redisReply *reply = (redisReply *)redisCommand(context, "SISMEMBER <groups> %s", groupName.c_str());
+    bool exists = (reply->integer == 1); // 如果返回值为1，表示群聊存在
+    freeReplyObject(reply);
+    return exists;
 }
 // 删除群聊
 bool RedisServer::deleteGroup(const string &groupName, const string &masterName)
@@ -200,14 +210,12 @@ void RedisServer::mycreateGroup(const string &groupName, const string &creator)
         throw runtime_error("Failed to create group");
     }
     freeReplyObject(reply);
-    cout << "Group " << groupName << " created successfully by " << creator << endl;
 }
 // 删除我的群聊
 void RedisServer::deleteGroupByUser(const string &groupName, const string &username)
 {
     // 从 Redis 中删除指定用户的群聊名称
     redisReply *reply = (redisReply *)redisCommand(context, "SREM my_groups:%s %s", username.c_str(), groupName.c_str());
-
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
         cerr << "Failed to delete group " << groupName << " for user " << username << endl;
@@ -215,9 +223,7 @@ void RedisServer::deleteGroupByUser(const string &groupName, const string &usern
             freeReplyObject(reply);
         throw runtime_error("Failed to delete group");
     }
-
     freeReplyObject(reply);
-    cout << "Group " << groupName << " deleted successfully for user " << username << endl;
 }
 // 查询我的群聊
 vector<string> RedisServer::getGroupsByUser(const string &username)
@@ -225,10 +231,8 @@ vector<string> RedisServer::getGroupsByUser(const string &username)
     vector<string> groups;
     redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS my_groups:%s", username.c_str());
     if (reply->type == REDIS_REPLY_ARRAY)
-    {
         for (size_t i = 0; i < reply->elements; ++i)
             groups.push_back(reply->element[i]->str);
-    }
     freeReplyObject(reply);
     return groups;
 }
@@ -254,10 +258,8 @@ vector<string> RedisServer::getGroupMembers(const string &groupName)
     vector<string> members;
     redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS %s", groupName.c_str());
     if (reply->type == REDIS_REPLY_ARRAY)
-    {
         for (size_t i = 0; i < reply->elements; ++i)
             members.push_back(reply->element[i]->str);
-    }
     freeReplyObject(reply);
     return members;
 }
@@ -284,12 +286,43 @@ vector<string> RedisServer::getUserGroupList(const string &username)
     vector<string> groups;
     redisReply *reply = (redisReply *)redisCommand(context, "SMEMBERS user_groups:%s", username.c_str());
     if (reply->type == REDIS_REPLY_ARRAY)
-    {
         for (size_t i = 0; i < reply->elements; ++i)
             groups.push_back(reply->element[i]->str);
-    }
     freeReplyObject(reply);
     return groups;
+}
+// 删除群聊并从所有用户的群组列表中移除该群聊
+bool RedisServer::deleteGroupFromUserLists(const string &groupName)
+{
+    // 使用SCAN命令遍历所有 user_groups 键
+    redisReply *scanReply;
+    bool success = true;
+    int cursor = 0;
+    do
+    {
+        scanReply = (redisReply *)redisCommand(context, "SCAN %d MATCH user_groups:*", cursor);
+        if (scanReply->type == REDIS_REPLY_ARRAY && scanReply->elements == 2)
+        {
+            // 更新游标
+            cursor = atoi(scanReply->element[0]->str);
+            // 获取匹配的键
+            redisReply *keys = scanReply->element[1];
+            if (keys->type == REDIS_REPLY_ARRAY)
+            {
+                for (size_t i = 0; i < keys->elements; ++i)
+                {
+                    string key = keys->element[i]->str;
+                    // 从该用户的群组列表中移除指定的群聊
+                    redisReply *remReply = (redisReply *)redisCommand(context, "SREM %s %s", key.c_str(), groupName.c_str());
+                    if (remReply->integer != 1 && remReply->integer != 0)
+                        success = false; // 如果删除失败，标记为失败
+                    freeReplyObject(remReply);
+                }
+            }
+        }
+        freeReplyObject(scanReply);
+    } while (cursor != 0 && success); // 当游标不为 0 时继续扫描
+    return success;
 }
 // 删除用户的所有群列表
 void RedisServer::removeUserFromAllGroups(const string &username)
@@ -307,7 +340,6 @@ void RedisServer::removeUserFromAllGroups(const string &username)
 // 删除用户的群组列表
 bool RedisServer::removeUserGroupList(const string &username)
 {
-    // 使用 DEL 命令删除用户的群组列表
     redisReply *reply = (redisReply *)redisCommand(context, "DEL user_groups:%s", username.c_str());
     bool success = reply->integer == 1;
     freeReplyObject(reply);
@@ -334,7 +366,6 @@ vector<string> RedisServer::getManagers(const string &groupName)
     for (size_t i = 0; i < reply->elements; ++i)
         if (reply->element[i]->str) // 确保元素不为空
             managers.push_back(reply->element[i]->str);
-
     freeReplyObject(reply);
     return managers;
 }
@@ -344,7 +375,6 @@ bool RedisServer::isGroupManager(const string &groupName, const string &username
     // 检查用户是否在管理员列表中
     return find(managers.begin(), managers.end(), username) != managers.end();
 }
-
 // 群主加管理员
 void RedisServer::addAdminToGroup(const string &groupName, const string &adminName)
 {
@@ -445,7 +475,6 @@ bool RedisServer::removeChatRecordsByUser(const string &username)
     {
         string key1 = "chat:" + username + ":" + partner;
         string key2 = "chat:" + partner + ":" + username;
-
         // 删除聊天记录
         redisReply *reply1 = (redisReply *)redisCommand(context, "DEL %s", key1.c_str());
         if (reply1 == nullptr)
@@ -503,7 +532,6 @@ void RedisServer::storeOfflineMessage(const string &sender, const string &receiv
 // 获取离线消息,并清空
 vector<string> RedisServer::getOfflineMessages(const string &receiver, const string &sender)
 {
-    // 键名 "receiver:offline_messages"
     string key = receiver + ":offline_messages";
     vector<string> messages;
     redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key.c_str());
@@ -528,7 +556,6 @@ vector<string> RedisServer::getOfflineMessages(const string &receiver, const str
 // 判断用户离线消息是否为空
 bool RedisServer::hasOfflineMessageFromSender(const string &receiver, const string &sender)
 {
-    // 键名是 "receiver:offline_messages"
     string key = receiver + ":offline_messages";
     // 使用 LRANGE 获取列表中的所有消息
     redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key.c_str());
@@ -578,7 +605,6 @@ string RedisServer::getAndRemoveFriendRequest(const string &receiver)
         sender = "NO";
     else
         cerr << "Redis 命令失败: LPOP" << endl;
-
     if (reply)
         freeReplyObject(reply);
     return sender;
@@ -653,7 +679,6 @@ pair<string, string> RedisServer::getAndRemoveGroupRequest(const string &receive
     redisReply *reply = (redisReply *)redisCommand(context, "LPOP %s", key.c_str());
     string sender = "NO";
     string group;
-
     if (reply != nullptr)
     {
         if (reply->type == REDIS_REPLY_STRING)
@@ -677,7 +702,6 @@ pair<string, string> RedisServer::getAndRemoveGroupRequest(const string &receive
     }
     else
         cerr << "Redis 命令失败: LPOP" << endl;
-
     return {sender, group};
 }
 // 删除申请
@@ -711,14 +735,12 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
 {
     pair<string, string> file_info = {"", ""}; // 默认初始化为空的 pair
     string key_pattern = "*:files:" + receiver;
-
     redisReply *reply = (redisReply *)redisCommand(context, "KEYS %s", key_pattern.c_str());
     if (!reply)
     {
         cerr << "执行 Redis KEYS 命令失败" << endl;
         throw runtime_error("Redis KEYS 命令执行失败");
     }
-
     if (reply->type == REDIS_REPLY_ARRAY && reply->elements > 0)
     {
         for (size_t i = 0; i < reply->elements; ++i)
@@ -749,10 +771,7 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
         }
     }
     else
-    {
         cout << "没有找到匹配的文件路径！" << endl;
-    }
-
     freeReplyObject(reply); // 释放最初的 reply 对象
     return file_info;
 }
@@ -760,7 +779,6 @@ pair<string, string> RedisServer::getFilePath(const string &receiver)
 void RedisServer::deleteFilePath(const string &sender, const string &receiver)
 {
     string key = sender + ":files:" + receiver;
-
     // 删除文件路径
     redisReply *del_reply = (redisReply *)redisCommand(context, "HDEL %s filepath", key.c_str());
     if (!del_reply)
@@ -768,12 +786,8 @@ void RedisServer::deleteFilePath(const string &sender, const string &receiver)
         cerr << "删除 Redis 键失败" << endl;
         throw runtime_error("Redis 键删除失败");
     }
-
     if (del_reply->type != REDIS_REPLY_INTEGER || del_reply->integer == 0)
-    {
         cerr << "删除 Redis 键失败或键不存在" << endl;
-    }
-
     freeReplyObject(del_reply); // 释放删除操作的 reply 对象
 }
 // 群聊-群主
@@ -785,18 +799,15 @@ void RedisServer::setGroupMaster(const string &group, const string &username)
         cerr << "Redis SET 命令失败" << endl;
         return;
     }
-
     if (reply->type == REDIS_REPLY_STATUS && strcmp(reply->str, "OK") == 0)
         cout << "群聊主成功设置: " << group << " -> " << username << endl;
     else
         cerr << "设置群聊主失败: " << group << endl;
-
     freeReplyObject(reply);
 }
 // 删除群聊的群主
 void RedisServer::deleteGroupMaster(const string &group)
 {
-    // 执行 Redis DEL 命令删除群聊的群主信息
     redisReply *reply = (redisReply *)redisCommand(context, "DEL %s_master", group.c_str());
     if (reply == nullptr)
     {
@@ -809,24 +820,6 @@ void RedisServer::deleteGroupMaster(const string &group)
     else
         cerr << "群聊主不存在或删除失败: " << group << endl;
     freeReplyObject(reply);
-}
-bool RedisServer::groupExists(const string &group) const
-{
-    redisReply *reply = (redisReply *)redisCommand(context, "EXISTS %s_master", group.c_str());
-    if (reply == nullptr)
-    {
-        cerr << "Redis EXISTS 命令失败" << endl;
-        return false;
-    }
-
-    bool exists = (reply->integer == 1);
-    if (exists)
-        cout << "群聊存在: " << group << endl;
-    else
-        cout << "群聊不存在: " << group << endl;
-
-    freeReplyObject(reply);
-    return exists;
 }
 // 判断用户是否是群主
 bool RedisServer::isGroupMaster(const string &group, const string &username)

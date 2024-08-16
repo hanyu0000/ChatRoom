@@ -440,7 +440,7 @@ void HHH::g_join(int fd)
     string reply = j["group"];
     if (reply == "NO")
     {
-        cout << "该群聊不存在！" << endl;
+        cout << "该群聊不存在或已经被删除！" << endl;
         return;
     }
     cout << "发送群聊申请成功!" << endl;
