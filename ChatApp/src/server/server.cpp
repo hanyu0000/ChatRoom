@@ -76,6 +76,10 @@ void handleClientMessage(int fd, const json &j)
     {
         g_chat(fd, j); // 群聊
     }
+    else if (type == "chatblocked")
+    {
+        is_Blocked(fd, j);
+    }
     else if (type == "f_chat_leave")
     {
         f_chat_leave(fd, j); // 离线消息
@@ -304,7 +308,7 @@ void process_client_messages(int fd, int epfd)
                 ev.data.fd = fd;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
             };
-            pool.addTask(task); 
+            pool.addTask(task);
         }
         else
         {

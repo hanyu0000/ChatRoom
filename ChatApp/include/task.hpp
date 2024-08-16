@@ -173,6 +173,7 @@ void f_chatlist(int fd, json j);    // 好友列表
 void my_group_list(int fd, json j); // 我创建的群聊列表
 void f_chat(int fd, json j);        // 好友聊天
 void g_chat(int fd, json j);
+void is_Blocked(int fd, json j);
 void g_chatHistry(int fd, json j);
 void charge_file(int fd, json j);
 void delete_people(int fd, json j);

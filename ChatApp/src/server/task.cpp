@@ -303,26 +303,42 @@ void g_chatHistry(int fd, json j)
     if (IO::send_msg(fd, message) == -1)
         err_("send_msg");
 }
+void is_Blocked(int fd, json j)
+{
+    string my_name = get_name(fd, client_map);
+    cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
+    string f_name = j["name"].get<string>();
+
+    cout << my_name << ":" << f_name << endl;
+    // 是否被屏蔽
+    if (redis.isUserBlocked(my_name, f_name))
+    {
+        json to = {
+            {"chatblocked", "YES"},
+            {"f_name", my_name}};
+        string message = to.dump();
+        if (IO::send_msg(fd, message) == -1)
+            err_("send_msg");
+    }
+    else
+    {
+        json to = {
+            {"chatblocked", "YES"},
+            {"f_name", my_name}};
+        string message = to.dump();
+        if (IO::send_msg(fd, message) == -1)
+            err_("send_msg");
+    }
+}
 // 好友聊天
 void f_chat(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
     cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
     string f_name = j["name"].get<string>();
-    current_chat_map[my_name] = f_name;
-    cout << my_name << ":" << f_name << endl;
 
-    // 是否被屏蔽
-    if (redis.isUserBlocked(my_name, f_name))
-    {
-        json to = {
-            {"chat", "blocked"},
-            {"f_name", my_name}};
-        string message = to.dump();
-        if (IO::send_msg(fd, message) == -1)
-            err_("send_msg");
-        return;
-    }
+    cout << my_name << ":" << f_name << endl;
+    current_chat_map[my_name] = f_name;
     string reply = j["message"].get<string>(); // 消息
     if (reply == "12345zxcvb")
         return;
@@ -400,6 +416,12 @@ void f_add(int fd, json j)
             err_("send_msg");
         return;
     }
+    json a =
+        {
+            {"have", f_name}};
+    string str = a.dump();
+    if (IO::send_msg(fd, str) == -1)
+        err_("send_msg");
     redis.storeFriendRequest(f_name, my_name); // 存储好友申请
     cout << "好友申请已存储至 Redis" << endl;
 }
@@ -412,7 +434,6 @@ void newfriend_leave(int fd, json j)
     while (1)
     {
         json b;
-        // 离线消息
         string sender = redis.getAndRemoveFriendRequest(my_name);
         if (sender == "NO")
         {
@@ -453,8 +474,6 @@ void f_addreply(int fd, json j)
         cout << "同意加好友" << endl;
         redis.addFriend(my_name, f_name);
         redis.addFriend(f_name, my_name);
-        if (IO::send_msg(fd, message) == -1)
-            err_("send_msg");
     }
     else if (reply == "NO")
     {
@@ -463,8 +482,6 @@ void f_addreply(int fd, json j)
             {"f_name", f_name}};
         string message = to_my.dump();
         cout << "不同意加好友" << endl;
-        if (IO::send_msg(fd, message) == -1)
-            err_("send_msg");
     }
 }
 //  请求离线消息f_chat_leave
