@@ -303,6 +303,7 @@ void g_chatHistry(int fd, json j)
     if (IO::send_msg(fd, message) == -1)
         err_("send_msg");
 }
+// 检查是否屏蔽
 void is_Blocked(int fd, json j)
 {
     string my_name = get_name(fd, client_map);
@@ -311,24 +312,22 @@ void is_Blocked(int fd, json j)
 
     cout << my_name << ":" << f_name << endl;
     // 是否被屏蔽
+    json to;
     if (redis.isUserBlocked(my_name, f_name))
     {
-        json to = {
+        to = {
             {"chatblocked", "YES"},
             {"f_name", my_name}};
-        string message = to.dump();
-        if (IO::send_msg(fd, message) == -1)
-            err_("send_msg");
     }
     else
     {
-        json to = {
-            {"chatblocked", "YES"},
+        to = {
+            {"chatblocked", "NO"},
             {"f_name", my_name}};
-        string message = to.dump();
-        if (IO::send_msg(fd, message) == -1)
-            err_("send_msg");
     }
+    string message = to.dump();
+    if (IO::send_msg(fd, message) == -1)
+        err_("send_msg");
 }
 // 好友聊天
 void f_chat(int fd, json j)
@@ -340,7 +339,7 @@ void f_chat(int fd, json j)
     cout << my_name << ":" << f_name << endl;
     current_chat_map[my_name] = f_name;
     string reply = j["message"].get<string>(); // 消息
-    if (reply == "12345zxcvb")
+    if (reply == "12345zxcvb" || reply == "")
         return;
 
     json to = {
@@ -349,7 +348,10 @@ void f_chat(int fd, json j)
     string message = to.dump();
     if (reply == "exit")
     {
-        if (IO::send_msg(fd, message) == -1)
+        json to = {
+            {"chat", reply}};
+        string age = to.dump();
+        if (IO::send_msg(fd, age) == -1)
             err_("send_msg");
         current_chat_map.erase(my_name);
         cout << "客户端退出聊天" << endl;
@@ -364,7 +366,6 @@ void f_chat(int fd, json j)
         redis.storeOfflineMessage(my_name, f_name, reply); // 离线
         return;
     }
-
     redis.storeChatRecord(f_name, my_name, reply); // 存聊天记录
     if (IO::send_msg(f_fd, message) == -1)
         err_("send_msg");
@@ -649,6 +650,8 @@ void g_showuser(int fd, json j)
     string group = j["group"].get<string>();
     cout << group << endl;
 
+    string master = redis.getGroupMaster(group);
+    cout << "群主是" << master << endl;
     vector<string> userlist = redis.getGroupMembers(group);
     cout << "群聊 < " << group << " > 的用户列表: " << endl;
     for (const auto &grp : userlist)
@@ -656,7 +659,8 @@ void g_showuser(int fd, json j)
 
     json response = {
         {"type", "userlist"},
-        {"userlist", userlist}};
+        {"userlist", userlist},
+        {"master", master}};
     string message = response.dump();
     if (IO::send_msg(fd, message) == -1)
         err_("send_msg");
@@ -860,9 +864,25 @@ void g_leave(int fd, json j)
     string my_name = get_name(fd, client_map);
     cout << "处理来自 <" << my_name << ">: " << fd << " 的请求: " << j.dump(3) << endl;
     string group = j["group"].get<string>();
-    cout << "用户 <" << my_name << "> 退出群聊: " << group << endl;
-    redis.removeUserFromGroupList(my_name, group);
-    redis.removeMemberFromGroup(group, my_name); // 退出群聊
+    string master = redis.getGroupMaster(group);
+    cout << "群主是" << master << endl;
+    json b;
+    if (master == my_name)
+    {
+        b = {
+            {"master", master}};
+    }
+    else
+    {
+        b = {
+            {"master", "OK"}};
+        cout << "用户 <" << my_name << "> 退出群聊: " << group << endl;
+        redis.removeUserFromGroupList(my_name, group);
+        redis.removeMemberFromGroup(group, my_name); // 退出群聊
+    }
+    string message = b.dump();
+    if (IO::send_msg(fd, message) == -1)
+        err_("send");
 }
 string get_name(int fd, const map<int, string> &client_map)
 {

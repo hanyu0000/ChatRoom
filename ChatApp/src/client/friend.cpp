@@ -25,15 +25,11 @@ void HHH::f_chat(int fd)
     if (IO::recv_msg(fd, bbb) == -1)
         err_("recv_msg");
     json qqq = json::parse(bbb);
-    vector<string> chatlist;
-    if (qqq.contains("chatlist"))
+    vector<string> chatlist = qqq["chatlist"];
+    if (chatlist.empty())
     {
-        chatlist = qqq["chatlist"];
-        if (chatlist.empty())
-        {
-            cout << "您的好友列表为空！" << endl;
-            return;
-        }
+        cout << "您的好友列表为空！" << endl;
+        return;
     }
     cout << "您的好友列表:" << endl;
     chatlist = qqq["chatlist"];
@@ -61,7 +57,7 @@ void HHH::f_chat(int fd)
     string _str = mm.dump();
     if (IO::send_msg(fd, _str) == -1)
         cerr << "发送消息失败" << endl;
-        
+
     string buffer;
     if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
@@ -130,7 +126,6 @@ void HHH::f_chat(int fd)
             break;
     }
 
-    int mmm = 0;
     thread recvThread;
     // 接收消息的线程函数
     auto receiveMessages = [&]()
@@ -138,8 +133,7 @@ void HHH::f_chat(int fd)
         while (!f_stop.load())
         {
             string buffer;
-            cout << buffer << endl;
-            if (IO::recv_msg(fd, buffer) == -1)
+            if (IO::recv_msg(fd, buffer) == 0)
             {
                 cerr << "接收消息失败: " << errno << " (" << strerror(errno) << ")" << endl;
                 break;
@@ -150,7 +144,7 @@ void HHH::f_chat(int fd)
                 string reply = j["chat"];
                 if (reply == "exit")
                 {
-                    f_stop.store(true);
+                    g_stop.store(true);
                     break;
                 }
                 string f_name = j["f_name"];
@@ -171,44 +165,35 @@ void HHH::f_chat(int fd)
     string m_str = m.dump();
     if (IO::send_msg(fd, m_str) == -1)
         cerr << "发送消息失败" << endl;
-    string msg;
-    cout << "请输入聊天消息( 'exit' 结束): " << endl;
+    cout << "请输入消息(输入 'exit' 退出):" << endl;
     while (1)
     {
-        while (getline(cin, msg))
+        string msg;
+        getline(cin, msg);
+        if (msg.length() >= 256)
         {
-            if (msg == "exit")
-                break;
-            if (msg == "")
-                continue;
-            if (msg.length() >= 4096)
-            {
-                cout << "消息太长!请重新输入:" << endl;
-                continue;
-            }
-            if (msg == "exit")
-            {
-                cout << "聊天结束......" << endl;
-                json message = {
-                    {"type", "chat"},
-                    {"name", name},
-                    {"message", msg}};
-                string message_str = message.dump();
-                if (IO::send_msg(fd, message_str) == -1)
-                    cerr << "发送消息失败" << endl;
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                break;
-            }
+            cout << "消息太长!请重新输入:" << endl;
+            continue;
+        }
+        if (msg == "exit")
+        {
             json message = {
                 {"type", "chat"},
                 {"name", name},
-                {"message", msg}};
+                {"message", "exit"}};
             string message_str = message.dump();
             if (IO::send_msg(fd, message_str) == -1)
                 cerr << "发送消息失败" << endl;
+            cout << "聊天结束......" << endl;
+            break;
         }
-        break;
+        json message = {
+            {"type", "chat"},
+            {"name", name},
+            {"message", msg}};
+        string message_str = message.dump();
+        if (IO::send_msg(fd, message_str) == -1)
+            cerr << "发送消息失败" << endl;
     }
     if (recvThread.joinable())
         recvThread.join();

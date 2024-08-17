@@ -263,7 +263,6 @@ vector<string> RedisServer::getGroupMembers(const string &groupName)
     freeReplyObject(reply);
     return members;
 }
-
 // 用户-群列表
 bool RedisServer::addUserToGroupList(const string &username, const string &groupName)
 {
@@ -839,4 +838,26 @@ bool RedisServer::isGroupMaster(const string &group, const string &username)
         cerr << "群聊主信息不存在或格式错误" << endl;
     freeReplyObject(reply);
     return isMaster;
+}
+// 获取群聊的群主
+string RedisServer::getGroupMaster(const string &group)
+{
+    // 执行 Redis GET 命令获取群聊的群主信息
+    redisReply *reply = (redisReply *)redisCommand(context, "GET %s_master", group.c_str());
+    if (reply == nullptr)
+    {
+        cerr << "Redis GET 命令失败" << endl;
+        return "";
+    }
+    string masterName;
+    // 检查返回值是否为字符串类型
+    if (reply->type == REDIS_REPLY_STRING)
+    {
+        masterName = reply->str; // 获取群主名称
+        cout << "群聊主为: " << masterName << endl;
+    }
+    else
+        cerr << "群聊主信息不存在或格式错误" << endl;
+    freeReplyObject(reply);
+    return masterName;
 }

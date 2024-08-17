@@ -16,17 +16,15 @@ void HHH::g_chat(int fd)
         err_("recv_msg");
     json response = json::parse(buffer);
     vector<string> grouplist = response["grouplist"];
-    if (response.contains("grouplist"))
+    cout << "您的群聊列表:" << endl;
+    if (grouplist.empty())
     {
-        cout << "您的群聊列表:" << endl;
-        if (grouplist.empty())
-        {
-            cout << "您的群聊列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : grouplist)
-            cout << name << endl;
+        cout << "您的群聊列表为空！" << endl;
+        return;
     }
+    for (const auto &name : grouplist)
+        cout << name << endl;
+
     string group;
     cout << "输入你要聊天的群聊：" << endl;
     cin.ignore();
@@ -84,7 +82,7 @@ void HHH::g_chat(int fd)
         while (!g_stop.load())
         {
             string buffer;
-            cout << buffer << endl;
+
             if (IO::recv_msg(fd, buffer) == -1)
             {
                 cerr << "接收消息失败: " << errno << " (" << strerror(errno) << ")" << endl;
@@ -110,7 +108,6 @@ void HHH::g_chat(int fd)
     };
 
     recvThread = thread(receiveMessages);
-    string msg;
     cout << "请输入聊天消息( 'exit' 结束): " << endl;
     json m = {
         {"type", "g_chat"},
@@ -120,6 +117,7 @@ void HHH::g_chat(int fd)
     if (IO::send_msg(fd, m_str) == -1)
         cerr << "发送消息失败" << endl;
 
+    string msg;
     while (1)
     {
         getline(cin, msg);
@@ -172,21 +170,16 @@ void HHH::g_add_manager(int fd)
         err_("recv_msg");
     json oo = json::parse(buf);
     vector<string> mygrouplist = oo["mygrouplist"];
-    if (oo.contains("mygrouplist"))
+    cout << "您的群聊列表:" << endl;
+    if (mygrouplist.empty())
     {
-        cout << "您的群聊列表:" << endl;
-        if (mygrouplist.empty())
-        {
-            cout << "您的群聊列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : mygrouplist)
-            cout << name << endl;
+        cout << "您的群聊列表为空！" << endl;
+        return;
     }
-    string group;
-    string input;
-    vector<string> Friends;
+    for (const auto &name : mygrouplist)
+        cout << name << endl;
 
+    string group;
     cout << "输入你要设置的群聊名称:" << endl;
     cin.ignore();
     getline(cin, group);
@@ -212,41 +205,53 @@ void HHH::g_add_manager(int fd)
     if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
-
-    if (j.contains("userlist"))
+    vector<string> list;
+    string master;
+    cout << "您的群聊用户列表:" << endl;
+    master = j["master"];
+    cout << "群主" << master << endl;
+    list = j["userlist"];
+    if (list.empty())
     {
-        cout << "您的群聊用户列表:" << endl;
-        vector<string> list = j["userlist"];
-        if (list.empty())
-        {
-            cout << "该群聊用户列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : list)
-            cout << name << endl;
+        cout << "该群聊用户列表为空！" << endl;
+        return;
     }
+    for (const auto &name : list)
+        cout << name << endl;
+    string input;
     cout << "输入你设置的管理员名称(','分隔):" << endl;
     getline(cin, input);
     if (input.empty())
         return;
 
+    vector<string> Friends;
     size_t pos = 0;
     while ((pos = input.find(',')) != string::npos)
     {
         string friendName = input.substr(0, pos);
-        Friends.push_back(friendName);
+        if (friendName == master)
+            cout << friendName << " 是群主，不能设置为管理员，已忽略..." << endl;
+        else if (find(list.begin(), list.end(), friendName) != list.end())
+            Friends.push_back(friendName);
+        else
+            cout << friendName << " 不在群聊用户列表中，已忽略...." << endl;
         input.erase(0, pos + 1);
     }
+    // 检查最后一个输入的名称
     if (!input.empty())
-        Friends.push_back(input);
+        if (find(list.begin(), list.end(), input) != list.end())
+            Friends.push_back(input);
 
-    json Json = {
-        {"type", "addmanage"},
-        {"group", group},
-        {"members", Friends}};
-    string message = Json.dump();
-    if (IO::send_msg(fd, message) == -1)
-        cerr << "发送消息失败" << endl;
+    if (!Friends.empty())
+    {
+        json Json = {
+            {"type", "addmanage"},
+            {"group", group},
+            {"members", Friends}};
+        string message = Json.dump();
+        if (IO::send_msg(fd, message) == -1)
+            cerr << "发送消息失败" << endl;
+    }
     getchar();
 }
 // 删除管理员(群主)
@@ -265,21 +270,17 @@ void HHH::g_delete_manager(int fd)
         err_("recv_msg");
     json response = json::parse(buf);
     vector<string> grouplist = response["grouplist"];
-    if (response.contains("grouplist"))
+    cout << "您的群聊列表:" << endl;
+    if (grouplist.empty())
     {
-        cout << "您的群聊列表:" << endl;
-        if (grouplist.empty())
-        {
-            cout << "您的群聊列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : grouplist)
-            cout << name << endl;
+        cout << "您的群聊列表为空！" << endl;
+        return;
     }
+    for (const auto &name : grouplist)
+        cout << name << endl;
 
     string group;
     string input;
-    vector<string> Friends;
     cout << "输入你要设置的群聊名称:" << endl;
     cin.ignore();
     getline(cin, group);
@@ -305,41 +306,51 @@ void HHH::g_delete_manager(int fd)
     if (IO::recv_msg(fd, buffer) == -1)
         err_("recv_msg");
     json j = json::parse(buffer);
-    if (j.contains("managelist"))
+    vector<string> mygrouplist = j["managelist"];
+    cout << "您的管理员列表:" << endl;
+    if (mygrouplist.empty())
     {
-        cout << "您的管理员列表:" << endl;
-        vector<string> mygrouplist = j["managelist"];
-        if (mygrouplist.empty())
-        {
-            cout << "该群聊管理员列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : mygrouplist)
-            cout << name << endl;
+        cout << "该群聊管理员列表为空！" << endl;
+        return;
     }
+    for (const auto &name : mygrouplist)
+        cout << name << endl;
 
     cout << "输入你要删除的管理员名称(','分隔):" << endl;
     getline(cin, input);
     if (input.empty())
         return;
 
+    vector<string> Friends;
     size_t pos = 0;
     while ((pos = input.find(',')) != string::npos)
     {
         string friendName = input.substr(0, pos);
-        Friends.push_back(friendName);
+        if (find(mygrouplist.begin(), mygrouplist.end(), friendName) != mygrouplist.end())
+            Friends.push_back(friendName);
+        else
+            cout << friendName << " 不在管理员列表中，已忽略..." << endl;
         input.erase(0, pos + 1);
     }
+    // 检查最后一个输入的名称
     if (!input.empty())
-        Friends.push_back(input);
-
-    json Json = {
-        {"type", "deletemanage"},
-        {"group", group},
-        {"members", Friends}};
-    string message = Json.dump();
-    if (IO::send_msg(fd, message) == -1)
-        cerr << "发送消息失败" << endl;
+    {
+        if (find(mygrouplist.begin(), mygrouplist.end(), input) != mygrouplist.end())
+            Friends.push_back(input);
+        else
+            cout << input << " 不在管理员列表中，已忽略..." << endl;
+    }
+    // 如果有有效的管理员名称被添加，则发送删除请求
+    if (!Friends.empty())
+    {
+        json Json = {
+            {"type", "deletemanage"},
+            {"group", group},
+            {"members", Friends}};
+        string message = Json.dump();
+        if (IO::send_msg(fd, message) == -1)
+            cerr << "发送消息失败" << endl;
+    }
     getchar();
 }
 // 移除群用户(群主/管理员)
@@ -367,18 +378,15 @@ void HHH::g_delete_people(int fd)
     if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json i = json::parse(buf);
-    if (i.contains("userlist"))
+    cout << "群用户列表:" << endl;
+    vector<string> userlist = i["userlist"];
+    if (userlist.empty())
     {
-        cout << "群用户列表:" << endl;
-        vector<string> userlist = i["userlist"];
-        if (userlist.empty())
-        {
-            cout << "该群聊用户列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : userlist)
-            cout << name << endl;
+        cout << "该群聊用户列表为空！" << endl;
+        return;
     }
+    for (const auto &name : userlist)
+        cout << name << endl;
 
     cout << "输入你要删除的用户名称:" << endl;
     string name;
@@ -529,18 +537,15 @@ void HHH::g_showuser(int fd)
     if (IO::recv_msg(fd, buf) == -1)
         err_("recv_msg");
     json i = json::parse(buf);
-    if (i.contains("userlist"))
+    cout << "群用户列表:" << endl;
+    vector<string> userlist = i["userlist"];
+    if (userlist.empty())
     {
-        cout << "群用户列表:" << endl;
-        vector<string> userlist = i["userlist"];
-        if (userlist.empty())
-        {
-            cout << "该群聊用户列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : userlist)
-            cout << name << endl;
+        cout << "该群聊用户列表为空！" << endl;
+        return;
     }
+    for (const auto &name : userlist)
+        cout << name << endl;
     getchar();
 }
 // 查询群聊
@@ -557,18 +562,15 @@ void HHH::g_showlist(int fd)
         err_("recv_msg");
 
     json response = json::parse(buffer);
-    if (response.contains("grouplist"))
+    cout << "您的群聊列表:" << endl;
+    vector<string> grouplist = response["grouplist"];
+    if (grouplist.empty())
     {
-        cout << "您的群聊列表:" << endl;
-        vector<string> grouplist = response["grouplist"];
-        if (grouplist.empty())
-        {
-            cout << "您的群聊列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : grouplist)
-            cout << name << endl;
+        cout << "您的群聊列表为空！" << endl;
+        return;
     }
+    for (const auto &name : grouplist)
+        cout << name << endl;
     getchar();
 }
 // 退出群聊
@@ -576,20 +578,54 @@ void HHH::g_leave(int fd)
 {
     cout << "-------------------退出群聊-------------------" << endl;
     cout << " " << endl;
-    g_showlist(fd);
+    json request = {
+        {"type", "grouplist"}};
+    string str = request.dump();
+    if (IO::send_msg(fd, str) == -1)
+        err_("send_msg");
+    // 接收并处理响应
+    string buffer;
+    if (IO::recv_msg(fd, buffer) == -1)
+        err_("recv_msg");
+
+    json response = json::parse(buffer);
+    cout << "您的群聊列表:" << endl;
+    vector<string> grouplist = response["grouplist"];
+    if (grouplist.empty())
+    {
+        cout << "您的群聊列表为空！" << endl;
+        return;
+    }
+    for (const auto &name : grouplist)
+        cout << name << endl;
+
     string group;
     cout << "请输入要退出的群聊名称:" << endl;
+    cin.ignore();
     getline(cin, group);
     if (group.empty())
         return;
+    if (find(grouplist.begin(), grouplist.end(), group) == grouplist.end())
+    {
+        cout << "您输入的群聊名称无效，不在群聊列表中!" << endl;
+        return;
+    }
 
     json Json = {
         {"type", "leave_group"},
         {"group", group}};
-    string str = Json.dump();
-    if (IO::send_msg(fd, str) == -1)
+    string str_ = Json.dump();
+    if (IO::send_msg(fd, str_) == -1)
         cerr << "发送消息失败" << endl;
-    cout << "您成功退出该群聊！" << endl;
+    string mess;
+    if (IO::recv_msg(fd, mess) == -1)
+        err_("recv_msg");
+    json qqq = json::parse(mess);
+    string reply = qqq["master"];
+    if (reply == "OK")
+        cout << "您成功退出该群聊！" << endl;
+    else
+        cout << "您是群主不能退群!" << endl;
     getchar();
 }
 // 创建群聊(群主)
@@ -599,8 +635,6 @@ void HHH::g_create(int fd)
     cout << " " << endl;
     string group;
     string input;
-    vector<string> Friends;
-
     cout << "请输入群聊名称:" << endl;
     cin.ignore();
     getline(cin, group);
@@ -665,7 +699,6 @@ void HHH::g_create(int fd)
         string message = Json.dump();
         if (IO::send_msg(fd, message) == -1)
             err_("发送消息失败");
-
         cout << "群聊创建成功!" << endl;
     }
     getchar();
@@ -686,17 +719,15 @@ void HHH::g_disband(int fd)
         err_("recv_msg");
     json response = json::parse(buffer);
     vector<string> grouplist = response["grouplist"];
-    if (response.contains("grouplist"))
+    cout << "您的群聊列表:" << endl;
+    if (grouplist.empty())
     {
-        cout << "您的群聊列表:" << endl;
-        if (grouplist.empty())
-        {
-            cout << "您的群聊列表为空！" << endl;
-            return;
-        }
-        for (const auto &name : grouplist)
-            cout << name << endl;
+        cout << "您的群聊列表为空！" << endl;
+        return;
     }
+    for (const auto &name : grouplist)
+        cout << name << endl;
+
     string group;
     cout << "请输入要解散的群聊名称:" << endl;
     cin.ignore();

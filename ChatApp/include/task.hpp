@@ -157,6 +157,8 @@ public:
     pair<string, string> getFilePath(const string &receiver);
     // 删除文件路径
     void deleteFilePath(const string &sender, const string &receiver);
+    // 获取群聊的群主
+    string getGroupMaster(const string &group);
 
 private:
     redisContext *context;
