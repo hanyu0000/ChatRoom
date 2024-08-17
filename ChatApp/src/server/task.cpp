@@ -417,14 +417,24 @@ void f_add(int fd, json j)
             err_("send_msg");
         return;
     }
-    json a =
+    json m =
         {
             {"have", f_name}};
-    string str = a.dump();
+    string str = m.dump();
     if (IO::send_msg(fd, str) == -1)
         err_("send_msg");
-    redis.storeFriendRequest(f_name, my_name); // 存储好友申请
-    cout << "好友申请已存储至 Redis" << endl;
+    int a = redis.hasFriendRequest(my_name, f_name);
+    if (a)
+    {
+        redis.removeFriendRequest(my_name, f_name);
+        redis.addFriend(my_name, f_name);
+        redis.addFriend(f_name, my_name);
+    }
+    else
+    {
+        redis.storeFriendRequest(f_name, my_name); // 存储好友申请
+        cout << "好友申请已存储至 Redis" << endl;
+    }
 }
 //  请求好友申请消息
 void newfriend_leave(int fd, json j)

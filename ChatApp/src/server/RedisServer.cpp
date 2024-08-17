@@ -579,6 +579,43 @@ bool RedisServer::hasOfflineMessageFromSender(const string &receiver, const stri
     freeReplyObject(reply);
     return hasMessageFromSender;
 }
+// 删除某人的好友申请
+void RedisServer::removeFriendRequest(const string &receiver, const string &sender)
+{
+    string key = "friend_requests:" + receiver;
+    redisReply *reply = (redisReply *)redisCommand(context, "LREM %s 1 %s", key.c_str(), sender.c_str());
+    if (reply == nullptr)
+    {
+        cerr << "Redis 命令失败: LREM" << endl;
+        return;
+    }
+    freeReplyObject(reply);
+}
+// 检查 sender 是否已经向 receiver 发送了好友申请
+bool RedisServer::hasFriendRequest(const string &receiver, const string &sender)
+{
+    string key = "friend_requests:" + receiver;
+    redisReply *reply = (redisReply *)redisCommand(context, "LRANGE %s 0 -1", key.c_str());
+    if (reply == nullptr || reply->type != REDIS_REPLY_ARRAY)
+    {
+        cerr << "Redis 命令失败: LRANGE" << endl;
+        if (reply)
+            freeReplyObject(reply);
+        return false; // 如果命令失败，假设没有好友请求
+    }
+    // 遍历列表，检查是否包含指定的发送者
+    bool hasRequest = false;
+    for (size_t i = 0; i < reply->elements; ++i)
+    {
+        if (reply->element[i]->str == sender)
+        {
+            hasRequest = true;
+            break;
+        }
+    }
+    freeReplyObject(reply);
+    return hasRequest;
+}
 // 存储好友申请
 void RedisServer::storeFriendRequest(const string &receiver, const string &sender)
 {

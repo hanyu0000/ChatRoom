@@ -159,6 +159,10 @@ public:
     void deleteFilePath(const string &sender, const string &receiver);
     // 获取群聊的群主
     string getGroupMaster(const string &group);
+    // 检查 sender 是否已经向 receiver 发送了好友申请
+    bool hasFriendRequest(const string &receiver, const string &sender);
+    // 删除某人的好友申请
+    void removeFriendRequest(const string &receiver, const string &sender);
 
 private:
     redisContext *context;
