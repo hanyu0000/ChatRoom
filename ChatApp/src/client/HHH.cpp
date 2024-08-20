@@ -6,11 +6,12 @@ typedef struct HHH_table
     int choice;
     Pointer p;
 } tab;
+//全局数组
 tab gtab[] = {
     {1, &HHH::f_add},
     {2, &HHH::f_reply},
     {3, &HHH::f_delete},
-    {4, &HHH::f_chat}, 
+    {4, &HHH::f_chat},
     {5, &HHH::f_block},
     {6, &HHH::f_unblock},
     {7, &HHH::g_showlist},

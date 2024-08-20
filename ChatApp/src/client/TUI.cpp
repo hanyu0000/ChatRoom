@@ -48,7 +48,6 @@ void TUI::run(int fd)
 void TUI::menu()
 {
     cout << " " << endl;
-    cout << " " << endl;
     cout << "********************************" << endl;
     cout << "* 欢迎来到聊天室!请输入你的选项:  *" << endl;
     cout << "*                               *" << endl;

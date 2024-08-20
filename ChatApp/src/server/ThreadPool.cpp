@@ -48,7 +48,7 @@ void ThreadPool::my_manager()
         this_thread::sleep_for(chrono::seconds(2)); // 每2秒检查
         int idle = idleThreads.load();
         int current = curThreads.load();
-        if (idle > current / 2 && current > minThreads) //-
+        if (idle > current / 2 && current > minThreads) 
         {
             exitNumber.store(2);
             condition.notify_all();

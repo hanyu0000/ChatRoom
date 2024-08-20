@@ -753,7 +753,6 @@ void RedisServer::removeGroupRequest(const string &receiver, const string &messa
     }
     freeReplyObject(reply);
 }
-
 // 存文件路径名
 void RedisServer::storeFilePath(const string &sender, const string &receiver, const string &filepath)
 {

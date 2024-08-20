@@ -66,8 +66,8 @@ void recv_file(int fd, json j)
             cout << "连接关闭!!!" << endl;
             break;
         }
-        else if (errno == EAGAIN)
-            this_thread::sleep_for(chrono::milliseconds(10));
+        /* else if (errno == EAGAIN)
+            this_thread::sleep_for(chrono::milliseconds(10)); */
         else
         {
             close(file_fd);
